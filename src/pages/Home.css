@@ -1,0 +1,109 @@
+.prakiva-home {
+    --background: var(--ion-background-color);
+}
+
+.prakiva-home-logo {
+    display: block;
+    width: 135px;
+    max-width: 65%;
+    height: auto;
+    margin-inline: auto;
+    object-fit: contain;
+}
+
+.prakiva-footer {
+    text-align: center;
+}
+
+/* Prakiva home hero rules. */
+.prakiva-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    /*padding: 28px 4px 14px;*/
+    padding: 10px 4px 14px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.prakiva-hero-icon {
+    display: block;
+    color: var(--ion-color-primary);
+    font-size: 52px;
+    margin: 0 auto 20px;
+    flex-shrink: 0;
+}
+
+.prakiva-hero h1 {
+    color: var(--ion-text-color);
+    text-align: center;
+    font-size: clamp(1.75rem, 6vw, 2.2rem);
+    line-height: 1.15;
+    font-weight: 700;
+    /*margin: 0 0 8px;*/
+    margin: 14px 0 8px;
+    width: 100%;
+}
+
+.prakiva-hero p {
+    color: var(--ion-color-medium-shade);
+    text-align: center;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0;
+    width: 100%;
+}
+
+/* Controller list and status rules. */
+
+.prakiva-controller-summary {
+    margin: 14px 2px 12px;
+    font-size: .95rem;
+    font-weight: 600;
+    color: var(--ion-color-medium-shade);
+}
+
+.prakiva-controller-list {
+    background: transparent;
+    padding: 0;
+    margin: 0 0 16px;
+}
+
+.prakiva-controller-item {
+    --background: var(--ion-card-background, var(--ion-item-background, var(--ion-background-color)));
+    --color: var(--ion-text-color);
+    --border-radius: 14px;
+    --padding-start: 12px;
+    --inner-padding-end: 8px;
+    margin: 8px 0;
+}
+
+.prakiva-controller-item::part(native) {
+    background: var(--ion-card-background, var(--ion-item-background, var(--ion-background-color)));
+    border-radius: 14px;
+}
+
+.prakiva-controller-status {
+    width: 9px;
+    height: 9px;
+    min-width: 9px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-inline: 3px 4px;
+}
+
+.prakiva-controller-status.is-ready {
+    background: #24a148;
+    box-shadow: 0 0 0 3px rgb(36 161 72 / 14%);
+}
+
+.prakiva-controller-status.needs-action {
+    background: #d93025;
+    box-shadow: 0 0 0 3px rgb(217 48 37 / 12%);
+}
+
+.prakiva-controller-status.is-checking {
+    background: #d99b16;
+    box-shadow: 0 0 0 3px rgb(217 155 22 / 12%);
+}

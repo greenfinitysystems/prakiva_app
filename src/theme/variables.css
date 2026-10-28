@@ -1,0 +1,29 @@
+/* Prakiva theme translated from the Flutter Material 3 AppTheme. */
+:root {
+  --ion-color-primary: #39765b;
+  --ion-color-primary-rgb: 57, 118, 91;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #326850;
+  --ion-color-primary-tint: #4d846b;
+  --ion-background-color: #f5f7f3;
+  --ion-background-color-rgb: 245, 247, 243;
+  --ion-text-color: #1a211c;
+  --ion-card-background: #ffffff;
+  --prakiva-page-bg: #f5f7f3;
+  --prakiva-card-bg: #ffffff;
+  --prakiva-muted: #68756c;
+  --prakiva-card-radius: 20px;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    --ion-background-color: #111814;
+    --ion-background-color-rgb: 17, 24, 20;
+    --ion-text-color: #e5ece6;
+    --ion-card-background: #1d2821;
+    --prakiva-page-bg: #111814;
+    --prakiva-card-bg: #1d2821;
+    --prakiva-muted: #a8b5ab;
+  }
+}
