@@ -1,0 +1,214 @@
+.curve-editor {
+    min-width: 0;
+}
+
+.curve-editor-title {
+    margin: 0 0 10px;
+}
+
+.curve-editor-curve-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 12px;
+}
+
+.curve-editor-curve-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    border: 1px solid var(--ion-color-step-200, #d1d5db);
+    border-radius: 999px;
+    padding: 7px 11px;
+    color: var(--ion-text-color);
+    background: transparent;
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.curve-editor-curve-chip.selected {
+    border-color: var(--ion-color-primary, #0d9488);
+    box-shadow: 0 0 0 1px var(--ion-color-primary, #0d9488);
+}
+
+.curve-editor-curve-chip span {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.curve-editor-graph-wrap {
+    width: 100%;
+    overflow: hidden;
+    border: 1px solid var(--ion-color-step-150, #e5e7eb);
+    border-radius: 12px;
+    background: var(--ion-card-background, var(--ion-background-color));
+}
+
+.curve-editor-graph {
+    display: block;
+    width: 100%;
+    height: auto;
+    touch-action: none;
+    user-select: none;
+}
+
+.curve-editor-gridline {
+    stroke: var(--ion-color-step-150, #e5e7eb);
+    stroke-width: 1;
+    stroke-dasharray: 3 5;
+}
+
+.curve-editor-gridline.vertical {
+    stroke-dasharray: 2 6;
+}
+
+.curve-editor-tick {
+    fill: var(--ion-color-medium, #6b7280);
+    font-size: 11px;
+}
+
+.curve-editor-axis-title {
+    fill: var(--ion-color-medium, #6b7280);
+    font-size: 12px;
+}
+
+.curve-editor-path {
+    vector-effect: non-scaling-stroke;
+}
+
+.curve-editor-point {
+    cursor: grab;
+    vector-effect: non-scaling-stroke;
+}
+
+.curve-editor-point:active {
+    cursor: grabbing;
+}
+
+.curve-editor-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+    color: var(--ion-color-medium);
+    font-size: 0.8rem;
+}
+
+@media (max-width: 520px) {
+    .curve-editor-tick {
+        font-size: 10px;
+    }
+}
+
+
+.curve-editor-point-tools {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 10px;
+}
+
+.curve-editor-tool-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 36px;
+    border: 1px solid var(--ion-color-step-200, #d1d5db);
+    border-radius: 9px;
+    padding: 7px 11px;
+    background: var(--ion-card-background, var(--ion-background-color));
+    color: var(--ion-text-color);
+    font: inherit;
+    font-size: 0.88rem;
+    cursor: pointer;
+}
+
+.curve-editor-tool-button:disabled {
+    opacity: 0.42;
+    cursor: not-allowed;
+}
+
+.curve-editor-tool-button span {
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.curve-editor-tool-hint {
+    color: var(--ion-color-medium, #6b7280);
+    font-size: 0.78rem;
+    flex-basis: 100%;
+}
+
+@media (min-width: 560px) {
+    .curve-editor-tool-hint {
+        flex-basis: auto;
+    }
+}
+
+
+/* Point selection and insertion preview */
+.curve-editor-point.selected {
+    stroke: var(--ion-color-warning, #f59e0b);
+    stroke-width: 4px;
+    filter: drop-shadow(0 0 3px rgba(245, 158, 11, 0.8));
+}
+
+.curve-editor-add-preview {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin: 0 0 8px;
+    padding: 7px 10px;
+    border-radius: 8px;
+    background: var(--ion-color-step-50, #f5f5f5);
+    color: var(--ion-text-color);
+    font-size: 0.82rem;
+    line-height: 1.4;
+}
+
+.curve-editor-preview-swatch {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--ion-color-primary, #3880ff);
+    border: 2px dashed var(--ion-color-primary, #3880ff);
+    flex: 0 0 auto;
+}
+
+.curve-editor-add-preview-line {
+    stroke: var(--ion-color-primary, #3880ff);
+    stroke-width: 1.5;
+    stroke-dasharray: 4 5;
+    opacity: 0.7;
+}
+
+.curve-editor-add-preview-point {
+    fill: transparent;
+    stroke: var(--ion-color-primary, #3880ff);
+    stroke-width: 3;
+    stroke-dasharray: 3 2;
+}
+
+.curve-editor-current-time-line {
+    stroke: var(--ion-color-danger, #eb445a);
+    stroke-width: 2;
+    stroke-dasharray: 5 5;
+    opacity: 0.9;
+}
+
+.curve-editor-current-time-label-bg {
+    fill: var(--ion-color-danger, #eb445a);
+}
+
+.curve-editor-current-time-label {
+    fill: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}

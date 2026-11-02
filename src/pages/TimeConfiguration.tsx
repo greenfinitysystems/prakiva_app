@@ -8,7 +8,7 @@ import { refreshOutline, timeOutline } from 'ionicons/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { SavedController } from '../models/saved-controller';
 import {
-    ControllerApiError, getTimeStatus, setScheduleOffset,
+    getTimeStatus, setScheduleOffset,
     syncTimeFromNtp, syncTimeFromPhone, validateOwnerSession,
     type TimeStatus,
 } from '../services/controller-api';
@@ -24,7 +24,7 @@ function formatDate(unixSeconds: number): string {
 
 function sourceLabel(source: string): string {
     if (source === 'phone') return 'Phone';
-    if (source === 'ntp') return 'NTP server';
+    if (source === 'ntp') return 'Internet time';
     return 'Not synchronized';
 }
 
@@ -59,7 +59,8 @@ const TimeConfiguration: React.FC = () => {
             setStatus(result);
             setOffsetInput(String(result.schedule_offset_minutes));
         } catch (e) {
-            setError(e instanceof Error ? e.message : String(e));
+            console.error('[Prakiva] Could not load controller time settings:', e);
+            setError('We couldn’t load the time settings. Check the controller connection and try again.');
         } finally {
             if (showSpinner) setLoading(false);
         }
@@ -92,10 +93,11 @@ const TimeConfiguration: React.FC = () => {
             setStatus(result);
             setOffsetInput(String(result.schedule_offset_minutes));
             setNotice(action === 'phone' ? 'Controller clock synchronized from this phone.'
-                : action === 'ntp' ? 'Controller clock synchronized from an NTP server.'
+                : action === 'ntp' ? 'Controller clock synchronized using internet time.'
                 : 'Aquarium schedule offset saved.');
         } catch (e) {
-            setError(e instanceof ControllerApiError ? e.message : e instanceof Error ? e.message : String(e));
+            console.error('[Prakiva] Could not update controller time:', e);
+            setError('We couldn’t update the controller time. Check the connection and try again.');
         } finally {
             setBusy(false);
         }
@@ -120,30 +122,30 @@ const TimeConfiguration: React.FC = () => {
                         <IonItem><IonLabel><p>Current controller time</p><h2>{status?.clock_valid ? formatDate(status.unix_time) : 'Clock not synchronized'}</h2></IonLabel></IonItem>
                         <IonItem><IonLabel><p>Last synchronization source</p><h2>{sourceLabel(status?.sync_source ?? 'none')}</h2></IonLabel></IonItem>
                         <IonItem><IonLabel><p>Last successful synchronization</p><h2>{formatDate(status?.last_sync_unix ?? 0)}</h2></IonLabel></IonItem>
-                        <IonItem><IonLabel><p>DS3231 RTC</p><h2>{status?.rtc_available ? 'Detected' : 'Not detected'}</h2></IonLabel></IonItem>
+                        <IonItem><IonLabel><p>Backup clock</p><h2>{status?.rtc_available ? 'Detected' : 'Not detected'}</h2></IonLabel></IonItem>
                         <IonItem><IonLabel><p>Wi-Fi station connection</p><h2>{status?.wifi_sta_connected ? 'Connected' : 'Not connected'}</h2></IonLabel></IonItem>
                     </IonList>
-                    {!status?.rtc_available && <IonText color="warning"><p>The RTC is not detected. Phone synchronization can still set the clock, but time may be lost when the controller loses power.</p></IonText>}
+                    {!status?.rtc_available && <IonText color="warning"><p>The backup clock is unavailable. You can still set the time from your phone, but the clock may need to be set again after a power interruption.</p></IonText>}
                     {!status?.clock_valid && <IonText color="warning"><p>The controller clock is not yet valid. Synchronize it before relying on time-based schedules.</p></IonText>}
                 </IonCardContent></IonCard>
 
                 <IonCard className="prakiva-card"><IonCardContent>
                     <h2>Synchronize clock</h2>
-                    <p>Phone synchronization uses this phone’s current Unix time. NTP requires a connected Wi-Fi station network.</p>
+                    <p>You can set the controller clock using your phone or the internet. Internet time requires the controller to be connected to your home Wi-Fi.</p>
                     <IonButton expand="block" onClick={() => void perform('phone')} disabled={busy}>
                         {busy ? <IonSpinner name="crescent" /> : 'Sync from phone'}
                     </IonButton>
                     <IonButton expand="block" fill="outline" onClick={() => void perform('ntp')} disabled={busy || !status?.wifi_sta_connected}>
-                        Sync from NTP server
+                        Sync from internet
                     </IonButton>
-                    {!status?.wifi_sta_connected && <IonText color="medium"><p>NTP is available only when the controller is connected to a Wi-Fi network in STA mode.</p></IonText>}
+                    {!status?.wifi_sta_connected && <IonText color="medium"><p>Internet time is available when your controller is connected to your home Wi-Fi.</p></IonText>}
                 </IonCardContent></IonCard>
 
                 <IonCard className="prakiva-card"><IonCardContent>
                     <h2>Aquarium schedule time</h2>
-                    <p>This signed offset changes the time used by aquarium schedules only. It does not change the controller’s underlying system clock.</p>
+                    <p>Adjust the time used by your aquarium schedules without changing the controller’s main clock.</p>
                     <IonItem>
-                        <IonLabel position="stacked">Offset in minutes (-720 to +720)</IonLabel>
+                        <IonLabel position="stacked">Time adjustment in minutes (-720 to +720)</IonLabel>
                         <IonInput type="number" inputMode="numeric" value={offsetInput} onIonInput={e => setOffsetInput(e.detail.value ?? '')} />
                     </IonItem>
                     <IonText color="medium"><p>Examples: 330 = UTC+05:30, -300 = UTC−05:00.</p></IonText>

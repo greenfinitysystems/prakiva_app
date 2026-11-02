@@ -2,10 +2,10 @@ import { useCallback, useEffect, useState } from 'react';
 import {
     IonAlert, IonButton, IonCard, IonCardContent, IonContent, IonHeader,
     IonIcon, IonItem, IonLabel, IonList, IonPage, IonSpinner, IonText,
-    IonTitle, IonToolbar, useIonViewWillEnter,
+    IonTitle, IonToolbar, IonPopover, useIonViewWillEnter,
 } from '@ionic/react';
 import {
-    add, settingsOutline, leafOutline, hardwareChipOutline, trashOutline,
+    add, settingsOutline, hardwareChipOutline, trashOutline, logOutOutline,
 } from 'ionicons/icons';
 import { useNavigate } from 'react-router-dom';
 import type { SavedController } from '../models/saved-controller';
@@ -13,6 +13,9 @@ import { ControllerStore } from '../services/controller-store';
 import { getDeviceInfo, validateOwnerSession } from '../services/controller-api';
 import { ControllerSessionStore } from '../services/controller-session-store';
 import './Home.css';
+
+import { App as CapacitorApp } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 
 type AuthState = 'checking' | 'ready' | 'action';
 
@@ -30,6 +33,12 @@ const Home: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [removeTarget, setRemoveTarget] = useState<SavedController | null>(null);
     const [busyId, setBusyId] = useState<string | null>(null);
+
+    const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
+    const [settingsMenuEvent, setSettingsMenuEvent] = useState<Event | undefined>();
+    const [exitAlertOpen, setExitAlertOpen] = useState(false);
+
+    const isAndroid = Capacitor.getPlatform() === 'android';
 
     const refreshStatus = useCallback(async (saved: SavedController[]) => {
         // Status is deliberately independent from the saved list. A network outage must
@@ -70,7 +79,8 @@ const Home: React.FC = () => {
             setLoading(false);
             void refreshStatus(saved);
         } catch (err) {
-            setError(`Could not load saved controllers: ${String(err)}`);
+            console.error('[Prakiva] Could not load saved controllers:', err);
+            setError('We couldn’t load your saved controllers. Please close and reopen the app.');
             setLoading(false);
         }
     }, [refreshStatus]);
@@ -106,15 +116,36 @@ const Home: React.FC = () => {
     const remove = async () => {
         if (!removeTarget) return;
         try { await ControllerStore.remove(removeTarget.deviceId); await loadControllers(); }
-        catch (err) { setError(`Could not remove controller: ${String(err)}`); }
+        catch (err) { console.error('[Prakiva] Could not remove controller:', err); setError('We couldn’t remove this controller. Please try again.'); }
         finally { setRemoveTarget(null); }
+    };
+
+    const exitApplication = async () => {
+        if (!isAndroid) return;
+
+        try {
+            await CapacitorApp.exitApp();
+        } catch (err) {
+            console.error('[Prakiva] Could not close the app:', err);
+            setError('The app could not be closed. You can close it from your device.');
+        }
     };
 
     return (
         <IonPage>
             <IonHeader><IonToolbar>
                 <IonTitle className="prakiva-toolbar-title">Prakiva</IonTitle>
-                <IonButton slot="end" fill="clear" color="medium" aria-label="Settings" onClick={() => navigate('/settings')}>
+                <IonButton
+                    slot="end"
+                    fill="clear"
+                    color="medium"
+                    aria-label="Application menu"
+                    aria-haspopup="dialog"
+                    onClick={event => {
+                        setSettingsMenuEvent(event.nativeEvent);
+                        setSettingsMenuOpen(true);
+                    }}
+                >
                     <IonIcon icon={settingsOutline} />
                 </IonButton>
             </IonToolbar></IonHeader>
@@ -156,7 +187,7 @@ const Home: React.FC = () => {
                                     <h2>{controller.name}</h2>
                                     <p>{controller.product} · {controller.hardwareFamily}</p>
                                     <p>{controller.address}:{controller.httpPort}</p>
-                                    <p>Firmware {controller.firmwareVersion}</p>
+                                    <p>Software version {controller.firmwareVersion}</p>
                                     {busyId === controller.deviceId && <p>Connecting…</p>}
                                 </IonLabel>
                                 <IonButton slot="end" fill="clear" color="medium" aria-label={`Remove ${controller.name}`}
@@ -171,9 +202,66 @@ const Home: React.FC = () => {
                 <p className="prakiva-footer">Designed for your biotope.</p>
             </IonContent>
             <IonAlert isOpen={removeTarget !== null} header="Remove controller?"
-                message={removeTarget ? `Remove “${removeTarget.name}” from this phone? This will not reset or modify the physical controller.` : ''}
+                message={removeTarget ? `Remove “${removeTarget.name}” from this phone? Your controller and its settings will not be changed.` : ''}
                 buttons={[{ text: 'Cancel', role: 'cancel', handler: () => setRemoveTarget(null) }, { text: 'Remove', role: 'destructive', handler: () => { void remove(); } }]}
                 onDidDismiss={() => setRemoveTarget(null)} />
+
+            <IonPopover
+                isOpen={settingsMenuOpen}
+                event={settingsMenuEvent}
+                onDidDismiss={() => setSettingsMenuOpen(false)}
+            >
+                <IonList>
+                    <IonItem
+                        button
+                        detail={false}
+                        onClick={() => {
+                            setSettingsMenuOpen(false);
+                            navigate('/settings');
+                        }}
+                    >
+                        <IonIcon slot="start" icon={settingsOutline} />
+                        <IonLabel>Settings</IonLabel>
+                    </IonItem>
+
+                    {isAndroid && (
+                        <IonItem
+                            button
+                            detail={false}
+                            lines="none"
+                            color="danger"
+                            onClick={() => {
+                                setSettingsMenuOpen(false);
+                                setExitAlertOpen(true);
+                            }}
+                        >
+                            <IonIcon slot="start" icon={logOutOutline} />
+                            <IonLabel>Exit Application</IonLabel>
+                        </IonItem>
+                    )}
+                </IonList>
+            </IonPopover>
+
+            <IonAlert
+                isOpen={exitAlertOpen}
+                header="Exit Prakiva?"
+                message="Are you sure you want to exit the application?"
+                buttons={[
+                    {
+                        text: 'Cancel',
+                        role: 'cancel',
+                    },
+                    {
+                        text: 'Exit',
+                        role: 'destructive',
+                        handler: () => {
+                            void exitApplication();
+                        },
+                    },
+                ]}
+                onDidDismiss={() => setExitAlertOpen(false)}
+            />
+
         </IonPage>
     );
 };

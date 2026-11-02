@@ -1,5 +1,6 @@
 import { CapacitorHttp } from '@capacitor/core';
 import type { SavedController } from '../models/saved-controller';
+import { isControllerCapability, type ControllerCapability } from '../config/controller-capabilities';
 
 export const CONTROLLER_API_PATH = '/api/v1';
 export const CONTROLLER_PROTOCOL_VERSION = '0.1';
@@ -31,6 +32,106 @@ export class ControllerApiError extends Error {
         this.code = options.code;
         this.httpStatus = options.httpStatus;
     }
+}
+
+
+/** Exact capability document returned by the authenticated get_capabilities operation. */
+export interface ControllerCapabilitiesDocument {
+    device_id: string;
+    controller: {
+        product: string;
+        firmware_version: string;
+        hardware_family: string;
+        flash_mb: number;
+        psram_mb: number;
+        [key: string]: unknown;
+    };
+    interfaces: string[];
+    operations: Record<string, boolean>;
+    capabilities: ControllerCapability[];
+    [key: string]: unknown;
+}
+
+/** Exact configuration envelope returned by firmware get_configuration. */
+export interface ControllerConfigurationReadResult {
+    storage: string;
+    configuration_exists: boolean;
+    /** Unix UTC seconds from the controller; null when no saved configuration exists. */
+    configuration_timestamp: number | null;
+    /** Firmware-owned JSON document. Its schema is independent of the app's editor model. */
+    configuration?: Record<string, unknown> | null;
+    [key: string]: unknown;
+}
+
+export interface SetControllerConfigurationResult {
+    saved: true;
+    configuration_timestamp: number;
+    [key: string]: unknown;
+}
+
+/** Retrieve the authenticated controller capability document. */
+export async function getControllerCapabilities(
+    address: string,
+    httpPort: number,
+    sessionToken: string,
+): Promise<ControllerCapabilitiesDocument> {
+    const response = await controllerRequest<ControllerCapabilitiesDocument>(
+        address, httpPort, 'get_capabilities', { session_token: sessionToken },
+    );
+    const data = response.data;
+    if (typeof data.device_id !== 'string' ||
+        !isRecord(data.controller) ||
+        typeof data.controller.product !== 'string' ||
+        typeof data.controller.firmware_version !== 'string' ||
+        typeof data.controller.hardware_family !== 'string' ||
+        typeof data.controller.flash_mb !== 'number' ||
+        typeof data.controller.psram_mb !== 'number' ||
+        !Array.isArray(data.interfaces) || !data.interfaces.every(item => typeof item === 'string') ||
+        !isRecord(data.operations) || !Object.values(data.operations).every(item => typeof item === 'boolean') ||
+        !Array.isArray(data.capabilities) || !data.capabilities.every(isControllerCapability)) {
+        throw new ControllerApiError('Controller returned an invalid capability document.');
+    }
+    return data;
+}
+
+/** Retrieve the complete firmware-owned configuration envelope. */
+export async function getControllerConfiguration(
+    address: string,
+    httpPort: number,
+    sessionToken: string,
+): Promise<ControllerConfigurationReadResult> {
+    const response = await controllerRequest<ControllerConfigurationReadResult>(
+        address, httpPort, 'get_configuration', { session_token: sessionToken },
+    );
+    const data = response.data;
+    if (typeof data.storage !== 'string' || typeof data.configuration_exists !== 'boolean') {
+        throw new ControllerApiError('Controller configuration response is invalid.');
+    }
+    if (data.configuration_exists) {
+        if (typeof data.configuration_timestamp !== 'number' || !Number.isSafeInteger(data.configuration_timestamp) || data.configuration_timestamp <= 0 ||
+            !isRecord(data.configuration)) {
+            throw new ControllerApiError('Controller configuration or its Unix timestamp is missing or invalid.');
+        }
+    } else if (data.configuration_timestamp !== null && data.configuration_timestamp !== 0 && data.configuration_timestamp !== undefined) {
+        throw new ControllerApiError('Controller reported no saved configuration but returned a configuration timestamp.');
+    }
+    return data;
+}
+
+/** Persist a firmware-schema configuration. Mapping from the app editor model is handled separately. */
+export async function setControllerConfiguration(
+    address: string,
+    httpPort: number,
+    sessionToken: string,
+    configuration: Record<string, unknown>,
+): Promise<SetControllerConfigurationResult> {
+    const response = await controllerRequest<SetControllerConfigurationResult>(
+        address, httpPort, 'set_configuration', { session_token: sessionToken, configuration },
+    );
+    if (response.data.saved !== true || typeof response.data.configuration_timestamp !== 'number' || !Number.isSafeInteger(response.data.configuration_timestamp) || response.data.configuration_timestamp <= 0) {
+        throw new ControllerApiError('Controller did not return a valid configuration-save acknowledgement.');
+    }
+    return response.data;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -72,18 +173,38 @@ export async function controllerRequest<T extends Record<string, unknown> = Reco
     const url = `http://${address}:${httpPort}${CONTROLLER_API_PATH}`;
     const requestId = `prakiva-${Date.now()}-${++requestSequence}`;
 
+    // CapacitorHttp can handle plain object bodies differently across native
+    // platforms. In particular, nested configuration documents must be sent as
+    // an explicit JSON string so the ESP32 receives the exact JSON payload.
+    const requestPayload = {
+        request_id: requestId,
+        operation,
+        protocol_version: CONTROLLER_PROTOCOL_VERSION,
+        ...extraData,
+    };
+
+    let requestBody: string;
+    try {
+        requestBody = JSON.stringify(requestPayload);
+        if (typeof requestBody !== 'string' || !requestBody.length) {
+            throw new Error('The request body is empty.');
+        }
+    } catch (error: unknown) {
+        const detail = error instanceof Error ? error.message : String(error);
+        throw new ControllerApiError(`Could not serialize the controller request as JSON. ${detail}`);
+    }
+
     let response;
 
     try {
+        console.info(
+            `[Controller API] ${operation}: request body length = ` +
+            `${new TextEncoder().encode(requestBody).length} bytes`
+        );
         response = await CapacitorHttp.post({
             url,
             headers: { 'Content-Type': 'application/json' },
-            data: {
-                request_id: requestId,
-                operation,
-                protocol_version: CONTROLLER_PROTOCOL_VERSION,
-                ...extraData,
-            },
+            data: requestBody,
             connectTimeout: CONTROLLER_API_TIMEOUT_MS,
             readTimeout: CONTROLLER_API_TIMEOUT_MS,
         });

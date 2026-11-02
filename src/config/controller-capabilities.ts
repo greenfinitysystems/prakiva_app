@@ -1,0 +1,43 @@
+/** Capability contract published by the controller firmware. */
+export type CapabilityKind = 'actuator' | 'sensor';
+export type CapabilityValueType = 'binary' | 'analog';
+export type ControlPolicy = 'manual_binary' | 'binary_curve' | 'analog_curve' | 'threshold_rules' | 'periodic_pulse';
+
+export interface CapabilityChannel {
+    id: string;
+    label: string;
+    valueType: CapabilityValueType;
+    unit?: string;
+    min?: number;
+    max?: number;
+    supportedPolicies: ControlPolicy[];
+}
+
+export interface ControllerCapability {
+    id: string;
+    name: string;
+    kind: CapabilityKind;
+    channels: CapabilityChannel[];
+    icon: string;
+}
+
+export const channelPolicyKey = (capabilityId: string, channelId: string) => `${capabilityId}:${channelId}`;
+
+export function isControllerCapability(value: unknown): value is ControllerCapability {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+    const item = value as Record<string, unknown>;
+    if (typeof item.id !== 'string' || typeof item.name !== 'string' ||
+        (item.kind !== 'actuator' && item.kind !== 'sensor') || typeof item.icon !== 'string' ||
+        !Array.isArray(item.channels)) return false;
+    return item.channels.every((raw: unknown) => {
+        if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return false;
+        const channel = raw as Record<string, unknown>;
+        return typeof channel.id === 'string' && typeof channel.label === 'string' &&
+            (channel.valueType === 'binary' || channel.valueType === 'analog') &&
+            Array.isArray(channel.supportedPolicies) && channel.supportedPolicies.every(policy =>
+                ['manual_binary', 'binary_curve', 'analog_curve', 'threshold_rules', 'periodic_pulse'].includes(String(policy))) &&
+            (channel.unit === undefined || typeof channel.unit === 'string') &&
+            (channel.min === undefined || typeof channel.min === 'number') &&
+            (channel.max === undefined || typeof channel.max === 'number');
+    });
+}

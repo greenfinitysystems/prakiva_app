@@ -57,9 +57,8 @@ const ControllerReset: React.FC = () => {
             setSuccess(true);
             setPin('');
         } catch (e) {
-            setError(
-                `Reset could not be confirmed. The controller may have become unreachable during the operation. Reconnect and check its setup status before trying again. Details: ${e instanceof Error ? e.message : String(e)}`,
-            );
+            console.error('[Prakiva] Factory reset could not be confirmed:', e);
+            setError('We couldn’t confirm the reset. Reconnect to your controller and check its status before trying again.');
         } finally {
             setWorking(false);
             setConfirmOpen(false);

@@ -14,6 +14,7 @@ import ControllerSetup from './pages/ControllerSetup';
 import ControllerClaim from './pages/ControllerClaim';
 import ControllerLogin from './pages/ControllerLogin';
 import ControllerDashboard from './pages/ControllerDashboard';
+import ControlEditorPage from './pages/ControlEditorPage';
 
 import '@ionic/react/css/core.css';
 import '@ionic/react/css/normalize.css';
@@ -30,6 +31,7 @@ import './theme/variables.css';
 import './theme/prakiva-theme.css';
 
 import { applyAppTheme, loadAppTheme } from './services/theme-preferences';
+
 
 setupIonicReact();
 
@@ -72,6 +74,8 @@ const App: React.FC = () => {
                     <Route path="/controller-claim" element={<ControllerClaim />} />
                     <Route path="/controller-login" element={<ControllerLogin />} />
                     <Route path="/controller-dashboard" element={<ControllerDashboard />} />
+                    <Route path="/control-editor/:capabilityId" element={<ControlEditorPage />} />
+                    <Route path="/control-editor/:capabilityId/:policy" element={<ControlEditorPage />} />
                     <Route path="/" element={<Navigate to="/home" replace />} />
                     <Route path="*" element={<Navigate to="/home" replace />} />
                 </IonRouterOutlet>

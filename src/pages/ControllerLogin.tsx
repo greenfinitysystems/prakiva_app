@@ -8,6 +8,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import type { SavedController } from '../models/saved-controller';
 import { authenticateOwner, validateOwnerSession } from '../services/controller-api';
 import { ControllerSessionStore } from '../services/controller-session-store';
+import { synchronizeControllerAfterLogin } from '../services/controller-synchronization';
+import { ControlConfigurationStore, isControlConfigurationDocument } from '../services/control-configuration-store';
 import './Home.css';
 
 interface LoginState { controller?: SavedController; returnTo?: string }
@@ -21,6 +23,18 @@ const ControllerLogin: React.FC = () => {
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
+  const [pendingSessionToken, setPendingSessionToken] = useState('');
+
+  const synchronizeAndContinue = async (token: string) => {
+    if (!controller) throw new Error('Controller details are missing.');
+    const snapshot = await synchronizeControllerAfterLogin(controller, token);
+    const remoteAppConfiguration = snapshot.configuration.configuration?.app_configuration;
+    if (snapshot.configuration.configuration_exists && isControlConfigurationDocument(remoteAppConfiguration)) {
+      // The controller is authoritative for a previously applied app configuration.
+      ControlConfigurationStore.replaceWithControllerDocument(remoteAppConfiguration);
+    }
+    navigate(returnTo ?? '/controller-dashboard', { replace: true, state: { controller } });
+  };
 
   useEffect(() => {
     let active = true;
@@ -31,10 +45,17 @@ const ControllerLogin: React.FC = () => {
         if (!session) return;
         const valid = await validateOwnerSession(controller.address, controller.httpPort, session.sessionToken);
         if (!active) return;
-        if (valid) navigate(returnTo ?? '/controller-dashboard', { replace: true, state: { controller } });
-        else await ControllerSessionStore.clear(controller.deviceId);
-      } catch {
-        // A network failure is not proof that the token is invalid; leave the login form available.
+        if (!valid) {
+          await ControllerSessionStore.clear(controller.deviceId);
+          return;
+        }
+        setPendingSessionToken(session.sessionToken);
+        setBusy(true);
+        await synchronizeAndContinue(session.sessionToken);
+      } catch (error) {
+        if (active) { console.error('[Prakiva] Controller refresh failed:', error); setMessage('You’re signed in, but your controller information could not be refreshed. Check the connection and try again.'); }
+      } finally {
+        if (active) setBusy(false);
       }
     };
     void checkExisting();
@@ -56,11 +77,22 @@ const ControllerLogin: React.FC = () => {
         throw new Error('The controller returned an invalid session or unexpected device identity.');
       }
       await ControllerSessionStore.save({ deviceId: controller.deviceId, sessionToken: token, ownerUserId: userId.trim() });
+      setPendingSessionToken(token);
       setPassword('');
-      navigate(returnTo ?? '/controller-dashboard', { replace: true, state: { controller } });
+      await synchronizeAndContinue(token);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : String(error));
+      console.error('[Prakiva] Sign-in failed:', error);
+      setMessage('We couldn’t sign you in. Check your details and controller connection, then try again.');
     } finally { setBusy(false); }
+  };
+
+  const retrySynchronization = async () => {
+    if (!pendingSessionToken) return;
+    setBusy(true);
+    setMessage('');
+    try { await synchronizeAndContinue(pendingSessionToken); }
+    catch (error) { console.error('[Prakiva] Controller refresh failed:', error); setMessage('Your controller information could not be refreshed. Check the connection and try again.'); }
+    finally { setBusy(false); }
   };
 
   return <IonPage>
@@ -72,7 +104,8 @@ const ControllerLogin: React.FC = () => {
         <IonItem><IonLabel position="stacked">Owner user ID</IonLabel><IonInput value={userId} autocomplete="username" onIonInput={e => setUserId(e.detail.value ?? '')} /></IonItem>
         <IonItem><IonLabel position="stacked">Password</IonLabel><IonInput type="password" value={password} autocomplete="current-password" onIonInput={e => setPassword(e.detail.value ?? '')} onKeyDown={e => { if (e.key === 'Enter') void login(); }} /></IonItem>
         {message && <IonText color="danger"><p>{message}</p></IonText>}
-        <IonButton expand="block" disabled={busy} onClick={() => void login()}>{busy ? <><IonSpinner name="crescent" /> Signing in…</> : 'Login'}</IonButton>
+        {pendingSessionToken && !busy && <IonButton expand="block" fill="outline" onClick={() => void retrySynchronization()}>Try again</IonButton>}
+        <IonButton expand="block" disabled={busy} onClick={() => void login()}>{busy ? <><IonSpinner name="crescent" /> Synchronizing…</> : 'Login'}</IonButton>
       </IonCardContent></IonCard>
     </IonContent>
   </IonPage>;

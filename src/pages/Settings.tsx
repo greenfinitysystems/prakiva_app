@@ -20,7 +20,7 @@ const Settings: React.FC = () => {
             setTheme(value);
             applyAppTheme(value);
         }).catch(err => {
-            if (active) setError(err instanceof Error ? err.message : String(err));
+            if (active) { console.error('[Prakiva] Could not load app appearance preference:', err); setError('We couldn’t load your appearance preference.'); }
         });
         return () => { active = false; };
     }, []);
@@ -31,7 +31,8 @@ const Settings: React.FC = () => {
         try {
             await saveAppTheme(value);
         } catch (err) {
-            setError(`Could not save theme preference: ${err instanceof Error ? err.message : String(err)}`);
+            console.error('[Prakiva] Could not save app appearance preference:', err);
+            setError('We couldn’t save your appearance preference. Please try again.');
         }
     };
 

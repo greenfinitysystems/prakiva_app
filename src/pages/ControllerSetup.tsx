@@ -34,7 +34,7 @@ const ControllerSetup: React.FC = () => {
                 if (result.device_id !== controller.deviceId) throw new Error('The setup response belongs to a different controller.');
                 setStatus(result as SetupStatus);
             } catch (err: unknown) {
-                if (active) setError(err instanceof Error ? err.message : String(err));
+                if (active) { console.error('[Prakiva] Could not check controller setup:', err); setError('We couldn’t check your controller. Check the connection and try again.'); }
             } finally { if (active) setLoading(false); }
         };
         void checkStatus();
@@ -79,7 +79,7 @@ const ControllerSetup: React.FC = () => {
                     {!loading && error && <IonText color="danger"><p>{error}</p></IonText>}
                     {!loading && status?.setup_state === 'claimed' && <IonText color="success"><p>This controller is already claimed. Continue to sign-in rather than claiming it again.</p></IonText>}
                     {!loading && status?.setup_state === 'unclaimed' && status.setup_required === true && <p className="prakiva-setup-status"><IonIcon icon={checkmarkCircleOutline} /> Controller verified · Initial setup required</p>}
-                    {!loading && status && status.setup_state !== 'unclaimed' && status.setup_state !== 'claimed' && <IonText color="danger"><p>The controller returned an unrecognized setup state. Please check the firmware response before proceeding.</p></IonText>}
+                    {!loading && status && status.setup_state !== 'unclaimed' && status.setup_state !== 'claimed' && <IonText color="danger"><p>We couldn’t confirm the controller’s setup status. Please reconnect and try again.</p></IonText>}
 
                     <IonButton expand="block" onClick={beginClaim} disabled={loading || !!error || !controller || status?.setup_state !== 'unclaimed' || status.setup_required !== true}>
                         Begin owner setup

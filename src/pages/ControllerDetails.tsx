@@ -98,7 +98,7 @@ const ControllerDetails: React.FC = () => {
         }
 
         setSetupError(
-            'The controller returned an unrecognized setup state. Please check the firmware response.',
+            'We couldn’t confirm your controller’s setup status. Please reconnect and try again.',
         );
     };
 

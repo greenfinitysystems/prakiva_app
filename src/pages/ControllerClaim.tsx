@@ -147,6 +147,7 @@ const ControllerClaim: React.FC = () => {
                     </IonItem>
                     {message && (<IonText color={claimed ? 'success' : 'danger'}><p>{message}</p></IonText>)}
                     <IonButton expand="block" onClick={validate} disabled={submitting || claimed}>{submitting ? 'Claiming controller…' : claimed ? 'Controller Claimed' : 'Create Owner Account'}</IonButton>
+                    {claimed && <IonButton expand="block" onClick={() => navigate('/controller-login', { replace: true, state: { controller } })}>Continue to Login</IonButton>}
                     <IonButton expand="block" fill="clear" color="medium" onClick={() => navigate('/controller-setup', { state: { controller } })}>Back to setup</IonButton>
                     <p className="prakiva-muted prakiva-setup-footnote">Your password and reset PIN are sent to the controller to establish ownership. They are not saved by this screen. Keep the reset PIN safe: it is used to authorize a future factory reset.</p>
                 </IonCardContent></IonCard>

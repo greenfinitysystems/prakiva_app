@@ -1,0 +1,88 @@
+import { getDefaultProfilesForControl } from '../config/default-profiles';
+import type { ControlProfile, ProfileChannelDescriptor } from '../models/control-profile';
+import { ControlConfigurationStore } from './control-configuration-store';
+
+const STORAGE_PREFIX = 'prakiva.controls.profiles.control.';
+const LEGACY_CAPABILITY_PREFIX = 'prakiva.controls.profiles.';
+const LEGACY_LIGHTING_PROFILE_KEY = 'prakiva.lighting.customProfiles';
+const LEGACY_LIGHTING_CAPABILITY_ID = 'analog_channel_1';
+const storageKey = (controlId: string) => `${STORAGE_PREFIX}${controlId}`;
+
+const cloneProfile = (profile: ControlProfile): ControlProfile => ({
+    ...profile,
+    channels: profile.channels.map(channel => ({
+        ...channel, configuration: structuredCloneSafe(channel.configuration),
+    })),
+});
+const structuredCloneSafe = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
+
+const isProfile = (value: unknown): value is ControlProfile => {
+    if (!value || typeof value !== 'object') return false;
+    const profile = value as Partial<ControlProfile>;
+    return typeof profile.name === 'string' && typeof profile.controlId === 'string' &&
+        typeof profile.capabilityId === 'string' && Array.isArray(profile.channels) &&
+        profile.channels.every(channel => !!channel && typeof channel.channelId === 'string' &&
+            typeof channel.policy === 'string' && !!channel.configuration &&
+            typeof channel.configuration === 'object' && !Array.isArray(channel.configuration));
+};
+
+const legacyCurveProfiles = (
+    parsed: unknown, controlId: string, capabilityId: string, channels: ProfileChannelDescriptor[],
+): ControlProfile[] => {
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item: any) => item && typeof item.name === 'string' && Array.isArray(item.curves))
+        .map((item: any) => ({
+            profileId: `migrated:${controlId}:${item.name}`, controlId, capabilityId, name: item.name, source: 'custom' as const,
+            channels: item.curves.filter((curve: any) => curve && typeof curve.id === 'string' && Array.isArray(curve.points))
+                .filter((curve: any) => channels.some(channel => channel.id === curve.id ||
+                    ({ W: 'white', R: 'red', G: 'green', B: 'blue' } as Record<string, string>)[curve.id] === channel.id))
+                .map((curve: any) => {
+                    const id = ({ W: 'white', R: 'red', G: 'green', B: 'blue' } as Record<string, string>)[curve.id] ?? curve.id;
+                    const channel = channels.find(candidate => candidate.id === id);
+                    return { channelId: id, policy: 'analog_curve', configuration: { curve: { ...curve, id, label: channel?.label ?? curve.label, points: curve.points.map((point: any) => ({ x: point.x, y: point.y })) } } };
+                }),
+        }));
+};
+
+export const ControlProfileStore = {
+    getDefaultProfiles(controlId: string, capabilityId: string, channels: ProfileChannelDescriptor[]): ControlProfile[] {
+        return getDefaultProfilesForControl(controlId, capabilityId, channels).map(cloneProfile);
+    },
+
+    getCustomProfiles(controlId: string, capabilityId: string, channels: ProfileChannelDescriptor[] = []): ControlProfile[] {
+        const stored = ControlConfigurationStore.getProfiles(capabilityId, controlId);
+        if (ControlConfigurationStore.hasProfileCollection(capabilityId, controlId)) return stored.filter(isProfile).map(cloneProfile);
+
+        // Import legacy profile keys into the working configuration without writing storage.
+        try {
+            const current = localStorage.getItem(storageKey(controlId));
+            if (current !== null) {
+                const parsed: unknown = JSON.parse(current);
+                const profiles = Array.isArray(parsed) ? parsed.filter(isProfile).map(cloneProfile) : [];
+                if (profiles.length) ControlConfigurationStore.importProfilesAsBaseline(capabilityId, controlId, profiles);
+                return profiles;
+            }
+            const legacyRaw = localStorage.getItem(`${LEGACY_CAPABILITY_PREFIX}${capabilityId}`);
+            let migrated: ControlProfile[] = [];
+            if (legacyRaw !== null) {
+                const parsed: unknown = JSON.parse(legacyRaw);
+                migrated = Array.isArray(parsed) && parsed.every(isProfile)
+                    ? parsed.map((profile: ControlProfile) => ({ ...profile, profileId: `migrated:${controlId}:${profile.name}`, controlId, capabilityId, source: 'custom' }))
+                    : legacyCurveProfiles(parsed, controlId, capabilityId, channels);
+            } else if (capabilityId === LEGACY_LIGHTING_CAPABILITY_ID) {
+                const legacyLighting = localStorage.getItem(LEGACY_LIGHTING_PROFILE_KEY);
+                if (legacyLighting) migrated = legacyCurveProfiles(JSON.parse(legacyLighting), controlId, capabilityId, channels);
+            }
+            if (migrated.length) ControlConfigurationStore.importProfilesAsBaseline(capabilityId, controlId, migrated);
+            return migrated.map(cloneProfile);
+        } catch { return []; }
+    },
+
+    saveCustomProfiles(controlId: string, capabilityId: string, profiles: ControlProfile[]): void {
+        if (!controlId || !capabilityId) throw new Error('Control and capability IDs are required to save profiles.');
+        if (!profiles.every(profile => isProfile(profile) && profile.controlId === controlId && profile.capabilityId === capabilityId)) {
+            throw new Error('One or more profiles have an invalid structure or belong to another control.');
+        }
+        ControlConfigurationStore.saveProfiles(capabilityId, controlId, profiles.map(cloneProfile));
+    },
+};

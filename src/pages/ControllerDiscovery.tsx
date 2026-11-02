@@ -36,7 +36,7 @@ const ControllerDiscovery: React.FC = () => {
                 setDevices((current) => ({ ...current, [device.deviceId]: device }));
             }, (diagnostic) => console.debug(`[Prakiva discovery] ${diagnostic}`));
             if (foundCountRef.current === 0) setMessage('No controllers found. Connect to Prakiva Wi-Fi or the same home network as your controller, then scan again.');
-        } catch (err) { setMessage(`Network scan failed: ${String(err)}`); }
+        } catch (err) { console.error('[Prakiva] Controller search failed:', err); setMessage('We couldn’t search for controllers. Check your Wi-Fi connection and try again.'); }
         finally { scanRef.current = false; setScanning(false); }
     }, []);
 
@@ -50,7 +50,7 @@ const ControllerDiscovery: React.FC = () => {
         try {
             if (targetDeviceId && targetDeviceId !== device.deviceId) throw new Error('This is not the saved controller you are trying to reconnect to.');
             const info = await getDeviceInfo(device.address, device.httpPort);
-            if (info.device_id !== device.deviceId) throw new Error('Device identity mismatch: HTTP response does not match UDP ID.');
+            if (info.device_id !== device.deviceId) throw new Error('The controller identity could not be verified.');
             const existingControllers = await ControllerStore.loadAll();
             const existing = existingControllers.find((item) => item.deviceId === device.deviceId);
             if (targetDeviceId) {
@@ -62,7 +62,7 @@ const ControllerDiscovery: React.FC = () => {
             }
             setNamePrompt({ device, suggested: existing?.name ?? `${typeof info.product === 'string' ? info.product : 'Prakiva'} controller` });
             setMessage(null);
-        } catch (err) { setMessage(`Could not verify controller: ${String(err)}`); }
+        } catch (err) { console.error('[Prakiva] Controller verification failed:', err); setMessage('We couldn’t verify this controller. Please check the connection and try again.'); }
         finally { setConnectingId(null); }
     };
 
@@ -79,7 +79,7 @@ const ControllerDiscovery: React.FC = () => {
             const saved: SavedController = savedControllerFromDevice(pending.device, info, trimmed);
             await ControllerStore.save(saved);
             navigate('/controller-details', { state: { controller: saved, deviceInfo: info } });
-        } catch (err) { setMessage(`Could not save controller: ${String(err)}`); }
+        } catch (err) { console.error('[Prakiva] Could not save controller:', err); setMessage('We couldn’t save this controller. Please try again.'); }
         finally { setConnectingId(null); }
     };
 

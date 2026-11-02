@@ -1,0 +1,85 @@
+.capability-dashboard { --capability-tile-radius: 16px; }
+.capability-section-title {
+    margin: 22px 4px 8px;
+    font-size: 1.05rem;
+    font-weight: 650;
+}
+.capability-grid { padding: 0; margin: 0 -4px; }
+.capability-grid ion-col { padding: 6px; }
+.capability-tile {
+    margin: 0;
+    min-height: 96px;
+    height: 100%;
+    border: 1px solid var(--ion-color-step-150, var(--ion-color-light-shade));
+    border-radius: var(--capability-tile-radius);
+    box-shadow: none;
+    cursor: pointer;
+    transition: border-color 140ms ease, transform 140ms ease;
+}
+.capability-tile:active { transform: scale(0.98); }
+.capability-tile-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 94px;
+    padding: 16px 9px;
+    text-align: center;
+}
+.capability-name {
+    display: block;
+    width: 100%;
+    color: var(--ion-color-primary);
+    font-size: 0.9rem;
+    font-weight: 750;
+    letter-spacing: 0.055em;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+}
+.capability-meta {
+    display: block;
+    font-size: 0.72rem;
+    line-height: 1.2;
+    color: var(--ion-color-medium);
+}
+.capability-policy {
+    display: block;
+    max-width: 100%;
+    margin-top: 1px;
+    font-size: 0.72rem;
+    color: var(--ion-color-primary);
+}
+.capability-dashboard-note {
+    display: block;
+    margin: 14px 4px 4px;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    color: var(--ion-color-medium);
+}
+.dashboard-status { padding: 8px 4px; font-size: 0.8rem; }
+.capability-mapping { --background: var(--ion-background-color); }
+.mapping-card { margin: 12px 0; border: 1px solid var(--ion-color-step-150); border-radius: 14px; box-shadow: none; }
+.mapping-id { display: block; padding: 4px 4px 8px; font-size: 0.76rem; color: var(--ion-color-medium); overflow-wrap: anywhere; }
+.mapping-card ion-item { --padding-start: 4px; --inner-padding-end: 4px; }
+
+.configuration-status-dot {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    min-width: 7px;
+    width: 7px;
+    height: 7px;
+    padding: 0;
+    border-radius: 50%;
+    font-size: 0;
+    line-height: 0;
+}
+.configuration-sync-spinning {
+    animation: prakiva-sync-spin 1.1s linear infinite;
+}
+@keyframes prakiva-sync-spin {
+    to { transform: rotate(360deg); }
+}
+
+.configuration-menu-button { position: relative; }

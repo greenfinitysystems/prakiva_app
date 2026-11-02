@@ -56,7 +56,8 @@ const WifiConfiguration: React.FC = () => {
       setStatus(data);
       setMode('KEEP');
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      console.error('[Prakiva] Could not load Wi-Fi settings:', e);
+      setError('We couldn’t load the network settings. Check the controller connection and try again.');
     } finally {
       setBusy(false);
     }
@@ -104,7 +105,8 @@ const WifiConfiguration: React.FC = () => {
       setStatus({ wifi_type: result.wifi_type, wifi_status: result.wifi_status });
       setPassword('');
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      console.error('[Prakiva] Could not save Wi-Fi settings:', e);
+      setError('We couldn’t save the network settings. Check the connection and try again.');
     } finally {
       setBusy(false);
     }
