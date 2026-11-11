@@ -1,0 +1,23 @@
+/* Contemporary Prakiva gauge styles. Kept separate from sensor-widgets.css
+   so existing SensorHistoryChart styles and other shared widget styles remain untouched. */
+.sensor-gauge-card { background: var(--ion-card-background, #fff); border: 1px solid var(--ion-color-step-150, #e4e8e5); border-radius: var(--prakiva-card-radius, 16px); box-shadow: 0 2px 8px rgba(25, 45, 34, .06); }
+.sensor-gauge-heading-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.sensor-gauge-subtitle { color: var(--ion-color-medium); font-size: .7rem; }
+.sensor-gauge-status-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.sensor-gauge-status-online { color: var(--ion-color-success); }
+.sensor-gauge-status-warning { color: var(--ion-color-warning); }
+.sensor-gauge-status-error { color: var(--ion-color-danger); }
+.sensor-gauge-visual { width: min(100%, 390px); margin: 2px auto -4px; }
+.sensor-gauge-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.sensor-gauge-track { fill: none; stroke: var(--ion-color-step-150, #e3e8e4); stroke-width: 13; stroke-linecap: round; }
+.sensor-gauge-progress { fill: none; stroke: url(#sensor-gauge-progress); stroke-width: 13; stroke-linecap: round; transition: d 500ms ease; }
+.sensor-gauge-tick { stroke: var(--ion-color-step-400, #aeb9b1); stroke-width: 1.5; stroke-linecap: round; }
+.sensor-gauge-tick-major { stroke: var(--ion-color-medium, #68756c); stroke-width: 2.5; }
+.sensor-gauge-scale-label { fill: var(--ion-text-color, #1a211c); font-family: inherit; font-size: 13px; font-weight: 600; }
+.sensor-gauge-needle { stroke: var(--ion-text-color, #1a211c); stroke-width: 3.5; stroke-linecap: round; filter: drop-shadow(0 1px 1px rgba(0,0,0,.12)); transition: x2 650ms cubic-bezier(.18,.72,.22,1), y2 650ms cubic-bezier(.18,.72,.22,1); }
+.sensor-gauge-needle-hub { fill: var(--ion-card-background, #fff); stroke: var(--ion-color-primary); stroke-width: 3; }
+.sensor-gauge-needle-pin { fill: var(--ion-color-primary); }
+.sensor-gauge-digital-value { fill: var(--ion-text-color, #1a211c); font-family: inherit; font-size: 30px; font-weight: 700; letter-spacing: -.7px; }
+.sensor-gauge-digital-unit { fill: var(--ion-color-medium, #68756c); font-family: inherit; font-size: 12px; font-weight: 600; }
+.sensor-gauge-overrange { fill: var(--ion-color-danger); font-family: inherit; font-size: 9px; font-weight: 700; letter-spacing: .8px; }
+@media (prefers-reduced-motion: reduce) { .sensor-gauge-needle, .sensor-gauge-progress { transition: none; } }

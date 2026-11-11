@@ -35,9 +35,9 @@ const ControllerInfo: React.FC = () => {
 
     return <IonPage>
         <IonHeader><IonToolbar>
-            <IonButtons slot="start"><IonButton fill="clear" aria-label="Home" onClick={() => navigate('/home')}><IonIcon icon={homeOutline} /></IonButton></IonButtons>
+            <IonButtons slot="start"><IonButton fill="clear" aria-label="Back to controller" onClick={() => navigate('/controller-dashboard', { state: { controller } })}><IonIcon icon={arrowBackOutline} /></IonButton></IonButtons>
             <IonTitle>About your controller</IonTitle>
-            <IonButtons slot="end"><IonButton fill="clear" aria-label="Back to controller" onClick={() => navigate('/controller-dashboard', { state: { controller } })}><IonIcon icon={arrowBackOutline} /></IonButton></IonButtons>
+            <IonButtons slot="end"><IonButton fill="clear" aria-label="Home" onClick={() => navigate('/home')}><IonIcon icon={homeOutline} /></IonButton></IonButtons>
         </IonToolbar></IonHeader>
         <IonContent className="prakiva-home ion-padding">
             <IonList inset>

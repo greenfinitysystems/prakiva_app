@@ -16,5 +16,6 @@ export const POLICY_LABELS: Record<ControlPolicy, string> = {
     binary_curve: 'Periodic ON/OFF',
     analog_curve: 'Analogue curve',
     threshold_rules: 'Sensor thresholds',
-    periodic_pulse: 'Periodic pulse',
+    periodic_pulse: 'Unavailable (retired)',
+    trigger: 'Scheduled trigger',
 };

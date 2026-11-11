@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import {
   IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonContent,
-  IonHeader, IonInput, IonItem, IonLabel, IonPage, IonSpinner, IonText,
+  IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonPage, IonSpinner, IonText,
   IonTitle, IonToolbar,
 } from '@ionic/react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { eyeOutline, eyeOffOutline } from 'ionicons/icons';
 import type { SavedController } from '../models/saved-controller';
 import { authenticateOwner, validateOwnerSession } from '../services/controller-api';
 import { ControllerSessionStore } from '../services/controller-session-store';
@@ -21,6 +22,7 @@ const ControllerLogin: React.FC = () => {
   const returnTo = loginState?.returnTo;
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState('');
   const [pendingSessionToken, setPendingSessionToken] = useState('');
@@ -102,7 +104,7 @@ const ControllerLogin: React.FC = () => {
         <h1>Sign in to {controller.name}</h1>
         <p className="prakiva-muted">Owner credentials for this controller.</p>
         <IonItem><IonLabel position="stacked">Owner user ID</IonLabel><IonInput value={userId} autocomplete="username" onIonInput={e => setUserId(e.detail.value ?? '')} /></IonItem>
-        <IonItem><IonLabel position="stacked">Password</IonLabel><IonInput type="password" value={password} autocomplete="current-password" onIonInput={e => setPassword(e.detail.value ?? '')} onKeyDown={e => { if (e.key === 'Enter') void login(); }} /></IonItem>
+        <IonItem><IonLabel position="stacked">Password</IonLabel><IonInput type={showPassword ? 'text' : 'password'} value={password} autocomplete="current-password" onIonInput={e => setPassword(e.detail.value ?? '')} onKeyDown={e => { if (e.key === 'Enter') void login(); }} /><IonButton slot="end" fill="clear" size="small" type="button" aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword(value => !value)}><IonIcon icon={showPassword ? eyeOffOutline : eyeOutline} /></IonButton></IonItem>
         {message && <IonText color="danger"><p>{message}</p></IonText>}
         {pendingSessionToken && !busy && <IonButton expand="block" fill="outline" onClick={() => void retrySynchronization()}>Try again</IonButton>}
         <IonButton expand="block" disabled={busy} onClick={() => void login()}>{busy ? <><IonSpinner name="crescent" /> Synchronizing…</> : 'Login'}</IonButton>

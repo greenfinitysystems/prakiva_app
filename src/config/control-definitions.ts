@@ -53,7 +53,3 @@ export const THRESHOLD_RULES_DEFINITION: ControlDefinition = {
     definitionId: 'sensor_threshold', displayName: 'Sensor Threshold Control', description: 'Control a binary output using one sensor and low/high thresholds.',
     triggerType: 'sensor_threshold', editorType: 'threshold_rules', capabilities: ['sensor_threshold', 'hysteresis'], constraints: { ruleCount: 2, sensorCount: 1, actions: ['on', 'off'] },
 };
-export const PERIODIC_PULSE_DEFINITION: ControlDefinition = {
-    definitionId: 'periodic_pulse', displayName: 'Periodic Pulse / Activation', description: 'Initiate a bounded activation at a repeating interval.',
-    triggerType: 'time_schedule', editorType: 'periodic_pulse', capabilities: ['repeating_interval', 'bounded_activation'], constraints: { minimumIntervalSeconds: 1, minimumDurationMilliseconds: 1, waitForFirstInterval: true },
-};

@@ -47,7 +47,6 @@ export function parseDiscoveryResponse(raw: string, address: string): Discovered
  */
 export async function discoverControllers(
     onController: (controller: DiscoveredController) => void,
-    onDiagnostic?: (message: string) => void,
     durationMs = 4000,
 ): Promise<void> {
     if (!Capacitor.isNativePlatform()) {
@@ -65,16 +64,14 @@ export async function discoverControllers(
                 const text = fromBase64(event.buffer);
                 const found = parseDiscoveryResponse(text, event.remoteAddress);
                 if (found) onController(found);
-                else onDiagnostic?.(`Ignored non-Prakiva UDP packet from ${event.remoteAddress}.`);
-            } catch (error) {
-                onDiagnostic?.(`Could not decode UDP response: ${String(error)}`);
+            } catch {
+                // Ignore malformed discovery packets from other devices.
             }
         });
         await UdpSocket.setBroadcast({ socketId, enabled: true });
         const request = toBase64(DISCOVERY_REQUEST);
         await UdpSocket.send({ socketId, address: '255.255.255.255', port: DISCOVERY_PORT, buffer: request });
         await UdpSocket.send({ socketId, address: '192.168.10.255', port: DISCOVERY_PORT, buffer: request });
-        onDiagnostic?.(`UDP discovery sent from local port ${(await UdpSocket.getInfo({ socketId })).localPort ?? 'unknown'} to port ${DISCOVERY_PORT}.`);
         await new Promise<void>((resolve) => window.setTimeout(resolve, durationMs));
     } finally {
         await listener?.remove().catch(() => undefined);

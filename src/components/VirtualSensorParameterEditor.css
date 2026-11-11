@@ -1,0 +1,10 @@
+.virtual-sensor-parameter-editor ion-item {
+    --padding-start: 0;
+    --inner-padding-end: 0;
+}
+.virtual-sensor-parameter-editor ion-label p {
+    margin-top: 5px;
+    color: var(--ion-color-medium);
+    font-size: .82rem;
+    line-height: 1.4;
+}

@@ -35,6 +35,48 @@ export class ControllerApiError extends Error {
 }
 
 
+/** Numeric parameter declaration published by a virtual sensor in the Product Specification. */
+export interface VirtualSensorNumericParameter {
+    type: 'number';
+    label: string;
+    description?: string;
+    default: number;
+    minimum?: number;
+    maximum?: number;
+    step?: number;
+}
+
+export interface VirtualSensorDeclaration {
+    component_id: string;
+    driver: string;
+    capability_id: string;
+    channel_id: string;
+    parameters: Record<string, VirtualSensorNumericParameter>;
+}
+
+function isVirtualSensorDeclaration(value: unknown): value is VirtualSensorDeclaration {
+    if (!isRecord(value)) return false;
+    if (typeof value.component_id !== 'string' || !value.component_id ||
+        typeof value.driver !== 'string' || !value.driver ||
+        typeof value.capability_id !== 'string' || !value.capability_id ||
+        typeof value.channel_id !== 'string' || !value.channel_id ||
+        !isRecord(value.parameters)) return false;
+
+    return Object.values(value.parameters).every(parameter => {
+        if (!isRecord(parameter) || parameter.type !== 'number' ||
+            typeof parameter.label !== 'string' ||
+            typeof parameter.default !== 'number' || !Number.isFinite(parameter.default)) return false;
+        if (parameter.description !== undefined && typeof parameter.description !== 'string') return false;
+        if (parameter.minimum !== undefined && (typeof parameter.minimum !== 'number' || !Number.isFinite(parameter.minimum))) return false;
+        if (parameter.maximum !== undefined && (typeof parameter.maximum !== 'number' || !Number.isFinite(parameter.maximum))) return false;
+        if (parameter.step !== undefined && (typeof parameter.step !== 'number' || !Number.isFinite(parameter.step) || parameter.step <= 0)) return false;
+        if (parameter.minimum !== undefined && parameter.default < parameter.minimum) return false;
+        if (parameter.maximum !== undefined && parameter.default > parameter.maximum) return false;
+        if (parameter.minimum !== undefined && parameter.maximum !== undefined && parameter.minimum > parameter.maximum) return false;
+        return true;
+    });
+}
+
 /** Exact capability document returned by the authenticated get_capabilities operation. */
 export interface ControllerCapabilitiesDocument {
     device_id: string;
@@ -49,6 +91,8 @@ export interface ControllerCapabilitiesDocument {
     interfaces: string[];
     operations: Record<string, boolean>;
     capabilities: ControllerCapability[];
+    /** Product Specification parameter schemas for virtual sensor components. */
+    virtual_sensors?: VirtualSensorDeclaration[];
     [key: string]: unknown;
 }
 
@@ -88,7 +132,9 @@ export async function getControllerCapabilities(
         typeof data.controller.psram_mb !== 'number' ||
         !Array.isArray(data.interfaces) || !data.interfaces.every(item => typeof item === 'string') ||
         !isRecord(data.operations) || !Object.values(data.operations).every(item => typeof item === 'boolean') ||
-        !Array.isArray(data.capabilities) || !data.capabilities.every(isControllerCapability)) {
+        !Array.isArray(data.capabilities) || !data.capabilities.every(isControllerCapability) ||
+        (data.virtual_sensors !== undefined &&
+            (!Array.isArray(data.virtual_sensors) || !data.virtual_sensors.every(isVirtualSensorDeclaration)))) {
         throw new ControllerApiError('Controller returned an invalid capability document.');
     }
     return data;
@@ -116,6 +162,46 @@ export async function getControllerConfiguration(
         throw new ControllerApiError('Controller reported no saved configuration but returned a configuration timestamp.');
     }
     return data;
+}
+
+/** Invoke a firmware-declared virtual actuator operation immediately. */
+export async function invokeVirtualActuator(
+    address: string,
+    httpPort: number,
+    sessionToken: string,
+    capabilityId: string,
+    channelId: string,
+): Promise<void> {
+    const response = await controllerRequest<{ accepted: boolean }>(
+        address, httpPort, 'invoke_actuator', {
+            session_token: sessionToken,
+            capability_id: capabilityId,
+            channel_id: channelId,
+        },
+    );
+    if (response.data.accepted !== true) {
+        throw new ControllerApiError('Controller did not accept the operation.');
+    }
+}
+
+/** Read the authoritative runtime state of a virtual actuator. */
+export async function getActuatorExecutionState(
+    address: string, httpPort: number, sessionToken: string,
+    capabilityId: string, channelId: string,
+): Promise<'IDLE' | 'RUNNING'> {
+    const response = await controllerRequest<{ capability_id: string; channel_id: string; execution_state: string }>(
+        address, httpPort, 'get_actuator_execution_state', {
+            session_token: sessionToken,
+            capability_id: capabilityId,
+            channel_id: channelId,
+        },
+    );
+    const data = response.data;
+    if (data.capability_id !== capabilityId || data.channel_id !== channelId ||
+        (data.execution_state !== 'IDLE' && data.execution_state !== 'RUNNING')) {
+        throw new ControllerApiError('Controller returned an invalid actuator execution state.');
+    }
+    return data.execution_state;
 }
 
 /** Persist a firmware-schema configuration. Mapping from the app editor model is handled separately. */
@@ -197,10 +283,6 @@ export async function controllerRequest<T extends Record<string, unknown> = Reco
     let response;
 
     try {
-        console.info(
-            `[Controller API] ${operation}: request body length = ` +
-            `${new TextEncoder().encode(requestBody).length} bytes`
-        );
         response = await CapacitorHttp.post({
             url,
             headers: { 'Content-Type': 'application/json' },

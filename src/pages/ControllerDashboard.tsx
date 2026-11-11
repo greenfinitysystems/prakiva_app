@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
-    IonActionSheet, IonAlert, IonBadge, IonButton, IonButtons, IonCard, IonCardContent, IonCol, IonContent,
-    IonGrid, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonList, IonModal, IonPage, IonPopover,
-    IonRow, IonSelect, IonSelectOption, IonText, IonTitle, IonToolbar,
+    IonBadge, IonButton, IonButtons, IonContent, IonGrid, IonHeader, IonIcon,
+    IonPage, IonRow, IonText, IonTitle, IonToolbar,
 } from '@ionic/react';
 import {
-    homeOutline, logOutOutline, settingsOutline, informationCircleOutline, timeOutline, wifiOutline,
-    syncOutline, checkmarkCircleOutline, alertCircleOutline, archiveOutline, cloudUploadOutline,
+    homeOutline, settingsOutline, syncOutline, checkmarkCircleOutline, alertCircleOutline,
 } from 'ionicons/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { SavedController } from '../models/saved-controller';
@@ -14,6 +12,7 @@ import { logoutOwner, validateOwnerSession } from '../services/controller-api';
 import { applyAppConfigurationToController } from '../services/controller-configuration-adapter';
 import { ControllerSynchronizationStore } from '../services/controller-synchronization-store';
 import { ControllerSessionStore } from '../services/controller-session-store';
+import { VirtualSensorConfigurationStore } from '../services/virtual-sensor-configuration-store';
 import { ControlConfigurationStore, isControlConfigurationDocument, setControllerCapabilities } from '../services/control-configuration-store';
 import {
     getConfigurationSyncStatus, getControllerSyncRecord,
@@ -21,14 +20,22 @@ import {
     markLocalConfigurationPending, markConfigurationSynchronized,
     type ControllerSyncRecord, type ConfigurationSyncStatus, type ControllerConfigurationMetadata,
 } from '../services/configuration-apply';
-import { DEFAULT_CONTROL_POLICIES, POLICY_LABELS } from '../config/control-policies';
-import { type ControlPolicy, type ControllerCapability, channelPolicyKey } from '../config/controller-capabilities';
+import { DEFAULT_CONTROL_POLICIES } from '../config/control-policies';
+import { type ControlPolicy, type ControllerCapability, type SensorWidgetType, channelPolicyKey } from '../config/controller-capabilities';
+import ControlsConfigurationModal from '../components/controller-dashboard/ControlsConfigurationModal';
+import ActuatorTile from '../components/controller-dashboard/ActuatorTile';
+import SensorTile from '../components/controller-dashboard/SensorTile';
+import ControllerMenu from '../components/controller-dashboard/ControllerMenu';
+import DashboardDialogs from '../components/controller-dashboard/DashboardDialogs';
+import { useDashboardNavigationGuard } from '../hooks/controller-dashboard/useDashboardNavigationGuard';
 import './Home.css';
 import './ControllerDashboard.css';
 
 interface DashboardState { controller?: SavedController }
 type PolicyMap = Record<string, ControlPolicy>;
 type LabelMap = Record<string, string>;
+type SensorWidgetMap = Record<string, SensorWidgetType>;
+const sensorChannelKey = (capabilityId: string, channelId: string) => `${capabilityId}:${channelId}`;
 const ControllerDashboard: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -40,9 +47,9 @@ const ControllerDashboard: React.FC = () => {
     const [menuOpen, setMenuOpen] = useState(false);
     const [policies, setPolicies] = useState<PolicyMap>({});
     const [labels, setLabels] = useState<LabelMap>({});
+    const [sensorWidgets, setSensorWidgets] = useState<SensorWidgetMap>({});
     const [capabilities, setCapabilities] = useState<ControllerCapability[]>([]);
     const [mappingOpen, setMappingOpen] = useState(false);
-    const [sensorDetail, setSensorDetail] = useState<ControllerCapability | null>(null);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [applyRecord, setApplyRecord] = useState<ControllerSyncRecord | null>(() => controller ? getControllerSyncRecord(controller.deviceId) : null);
     const [controllerMetadata, setControllerMetadata] = useState<ControllerConfigurationMetadata | null>(null);
@@ -52,8 +59,6 @@ const ControllerDashboard: React.FC = () => {
     const [applyResultOpen, setApplyResultOpen] = useState(false);
     const [applyResultMessage, setApplyResultMessage] = useState('');
     const [saveError, setSaveError] = useState('');
-    const [leaveAlertOpen, setLeaveAlertOpen] = useState(false);
-    const [pendingLeave, setPendingLeave] = useState<(() => void) | null>(null);
 
     useEffect(() => {
         if (!capabilities.length) return;
@@ -62,6 +67,12 @@ const ControllerDashboard: React.FC = () => {
             if (controller) setApplyRecord(getControllerSyncRecord(controller.deviceId));
             setPolicies({ ...DEFAULT_CONTROL_POLICIES, ...ControlConfigurationStore.getChannelPolicies() });
             setLabels(ControlConfigurationStore.getCapabilityLabels());
+            const widgetMap: SensorWidgetMap = {};
+            for (const capability of capabilities.filter(item => item.kind === 'sensor')) {
+                const configured = ControlConfigurationStore.getControl(capability.id).sensorWidgets ?? {};
+                for (const channel of capability.channels) widgetMap[sensorChannelKey(capability.id, channel.id)] = configured[channel.id] ?? 'none';
+            }
+            setSensorWidgets(widgetMap);
         };
         refreshDraft();
         return ControlConfigurationStore.subscribe(refreshDraft);
@@ -78,69 +89,22 @@ const ControllerDashboard: React.FC = () => {
         return () => window.removeEventListener('prakiva:configuration-sync-state-changed', onSyncStateChanged);
     }, [controller?.deviceId]);
 
-    useEffect(() => {
-        const onBeforeUnload = (event: BeforeUnloadEvent) => {
-            if (!capabilities.length || !ControlConfigurationStore.hasUnsavedChanges()) return;
-            event.preventDefault();
-            event.returnValue = '';
-        };
-        window.addEventListener('beforeunload', onBeforeUnload);
-        return () => window.removeEventListener('beforeunload', onBeforeUnload);
-    }, [capabilities.length]);
 
-    // Ionic keeps previous routes mounted. Register global navigation handlers
-    // only while the Dashboard is the active route.
-    useEffect(() => {
-        if (location.pathname !== '/controller-dashboard') return;
-        const onHardwareBack = (event: Event) => {
-            const backEvent = event as CustomEvent<{ register: (priority: number, handler: () => void) => void }>;
-            backEvent.detail?.register(101, () => requestLeave(() => navigate(-1)));
-        };
-        document.addEventListener('ionBackButton', onHardwareBack);
-        return () => document.removeEventListener('ionBackButton', onHardwareBack);
-    }, [location.pathname, navigate]);
-
-    useEffect(() => {
-        if (location.pathname !== '/controller-dashboard') return;
-        const onBrowserBack = (event: PopStateEvent) => {
-            if (!ControlConfigurationStore.hasUnsavedChanges()) return;
-            event.stopImmediatePropagation();
-            window.history.pushState(window.history.state, '', `${location.pathname}${location.search}${location.hash}`);
-            // The attempted back and the protective push are both in history.
-            requestLeave(() => navigate(-2));
-        };
-        window.addEventListener('popstate', onBrowserBack, true);
-        return () => window.removeEventListener('popstate', onBrowserBack, true);
-    }, [location.pathname, location.search, location.hash, navigate]);
-
-    const saveConfiguration = () => {
-        setSaveError('');
-        try {
-            ControlConfigurationStore.save();
-            if (controller) setApplyRecord(markLocalConfigurationPending(controller.deviceId));
-            setHasUnsavedChanges(false);
-            return true;
-        } catch (e) {
-            setSaveError(e instanceof Error ? e.message : 'Could not save configuration.');
-            return false;
-        }
-    };
-
-    const requestLeave = (action: () => void) => {
-        if (!ControlConfigurationStore.hasUnsavedChanges()) { action(); return; }
-        setPendingLeave(() => action);
-        setLeaveAlertOpen(true);
-    };
-    const saveAndLeave = () => {
-        if (!saveConfiguration()) return false;
-        setLeaveAlertOpen(false); pendingLeave?.(); setPendingLeave(null);
-        return true;
-    };
-    const discardAndLeave = () => {
-        try { ControlConfigurationStore.discard(); setLeaveAlertOpen(false); pendingLeave?.(); setPendingLeave(null); }
-        catch (e) { setSaveError(e instanceof Error ? e.message : 'Could not discard changes.'); return false; }
-        return true;
-    };
+    const {
+        requestLeave,
+        leaveAlertOpen,
+        onLeaveAlertDismiss,
+        saveAndLeave,
+        discardAndLeave,
+    } = useDashboardNavigationGuard({
+        controller,
+        hasCapabilities: capabilities.length > 0,
+        navigate,
+        pathname: location.pathname,
+        search: location.search,
+        hash: location.hash,
+        onSaveError: setSaveError,
+    });
 
     const applyStatus: ConfigurationSyncStatus = applyRecord
         ? getConfigurationSyncStatus(applyRecord, controllerMetadata)
@@ -167,6 +131,12 @@ const ControllerDashboard: React.FC = () => {
         setHasUnsavedChanges(false);
         setPolicies({ ...DEFAULT_CONTROL_POLICIES, ...ControlConfigurationStore.getChannelPolicies() });
         setLabels(ControlConfigurationStore.getCapabilityLabels());
+        const widgetMap: SensorWidgetMap = {};
+        for (const capability of capabilities.filter(item => item.kind === 'sensor')) {
+            const configured = ControlConfigurationStore.getControl(capability.id).sensorWidgets ?? {};
+            for (const channel of capability.channels) widgetMap[sensorChannelKey(capability.id, channel.id)] = configured[channel.id] ?? 'none';
+        }
+        setSensorWidgets(widgetMap);
     };
 
     const beginApply = async () => {
@@ -209,7 +179,7 @@ const ControllerDashboard: React.FC = () => {
             const message = e instanceof Error ? e.message : 'Unknown error';
             setApplyRecord(markConfigurationApplyFailed(controller.deviceId, message));
             console.error('[Prakiva] Applying controller settings failed:', e);
-            setApplyResultMessage('We couldn’t send your settings to the controller. Check the connection and try again.');
+            setApplyResultMessage(`We couldn’t send your settings to the controller. Check the connection and try again. Details: ${message}`);
         } finally {
             setApplyBusy(false);
             setApplyResultOpen(true);
@@ -226,6 +196,10 @@ const ControllerDashboard: React.FC = () => {
                 throw new Error('The controller does not have a readable saved settings document.');
             }
             replaceLocalFromController(remoteDocument);
+            VirtualSensorConfigurationStore.replaceFromController(
+                controller.deviceId,
+                snapshot.configuration.configuration?.virtual_sensors,
+            );
             const timestamp = snapshot.configuration.configuration_timestamp;
             const controllerTimestamp = typeof timestamp === 'number' && timestamp > 0
                 ? new Date(timestamp * 1000).toISOString().replace(/\.\d{3}Z$/, 'Z') : null;
@@ -348,26 +322,9 @@ const ControllerDashboard: React.FC = () => {
         ControlConfigurationStore.setChannelPolicy(capability.id, channelId, policy || undefined);
     };
 
-    const openCapability = (capability: ControllerCapability) => {
-        if (capability.kind === 'sensor') { setSensorDetail(capability); return; }
-        openPolicy(capability);
-    };
-
-    const renderCapability = (capability: ControllerCapability) => {
-        const isSensor = capability.kind === 'sensor';
-        const configured = capability.channels.filter(ch => !!policies[channelPolicyKey(capability.id,ch.id)]).length;
-        return (
-            <IonCol size="6" size-sm="4" size-md="3" key={capability.id}>
-                <IonCard button className={`capability-tile ${isSensor ? 'sensor-tile' : ''}`} onClick={() => requestLeave(() => openCapability(capability))}>
-                    <IonCardContent className="capability-tile-content">
-                        <IonText className="capability-name">{displayName(capability).toLocaleUpperCase()}</IonText>
-                        <IonText className="capability-meta">
-                            {isSensor ? `Sensor · ${capability.channels.map(ch=>ch.unit).filter(Boolean).join(', ')}` : `${capability.channels.length} channel${capability.channels.length===1?'':'s'} · ${configured} configured`}
-                        </IonText>
-                    </IonCardContent>
-                </IonCard>
-            </IonCol>
-        );
+    const changeSensorWidget = (capability: ControllerCapability, channelId: string, widget: SensorWidgetType) => {
+        ControlConfigurationStore.setSensorWidget(capability.id, channelId, widget);
+        setSensorWidgets(previous => ({ ...previous, [sensorChannelKey(capability.id, channelId)]: widget }));
     };
 
     if (!controller) return <IonPage><IonContent className="ion-padding"><p>Controller context is missing.</p><IonButton onClick={() => navigate('/home', { replace: true })}>Go to Home</IonButton></IonContent></IonPage>;
@@ -384,63 +341,54 @@ const ControllerDashboard: React.FC = () => {
                 <IonButton id="controller-menu-trigger" fill="clear" aria-label="Controller settings" onClick={() => setMenuOpen(true)}><IonIcon icon={settingsOutline} /></IonButton>
             </IonButtons>
         </IonToolbar></IonHeader>
-        <IonPopover trigger="controller-menu-trigger" isOpen={menuOpen} onDidDismiss={() => setMenuOpen(false)} side="bottom" alignment="end">
-            <IonList lines="none">
-                <IonItem button onClick={() => { setMenuOpen(false); setMappingOpen(true); }}>
-                    <IonIcon slot="start" icon={settingsOutline} /><IonLabel>Controls</IonLabel>
-                </IonItem>
-                <IonItem button onClick={() => { setMenuOpen(false); requestLeave(() => navigate('/wifi-configuration', { state: { controller } })); }}>
-                    <IonIcon slot="start" icon={wifiOutline} /><IonLabel>Wi-Fi</IonLabel>
-                </IonItem>
-                <IonItem button onClick={() => { setMenuOpen(false); requestLeave(() => navigate('/time-configuration', { state: { controller } })); }}>
-                    <IonIcon slot="start" icon={timeOutline} /><IonLabel>Time</IonLabel>
-                </IonItem>
-                <IonItem button onClick={() => { setMenuOpen(false); requestLeave(() => navigate('/controller-info', { state: { controller } })); }}>
-                    <IonIcon slot="start" icon={informationCircleOutline} /><IonLabel>Controller</IonLabel>
-                </IonItem>
-                <IonItem button disabled>
-                    <IonIcon slot="start" icon={archiveOutline} /><IonLabel>
-                        <h2>Backup &amp; Restore</h2>
-                        <p>Available in the next phase</p>
-                    </IonLabel>
-                </IonItem>
-                <IonItem button disabled={applyBusy} onClick={openApplyAction}>
-                    <IonIcon slot="start" icon={cloudUploadOutline} color={applyStatusColor} />
-                    <IonLabel>
-                        <h2>Apply Configuration</h2>
-                        <p>{applyStatusLabel}</p>
-                    </IonLabel>
-                </IonItem>
-                <IonItem button disabled={loggingOut} onClick={() => requestLeave(() => { void logout(); })}>
-                    <IonIcon slot="start" icon={logOutOutline} /><IonLabel>{loggingOut ? 'Logging out…' : 'Logout'}</IonLabel>
-                </IonItem>
-            </IonList>
-        </IonPopover>
-        <IonModal isOpen={mappingOpen} onDidDismiss={() => setMappingOpen(false)}>
-            <IonHeader><IonToolbar>
-                <IonTitle>Controls</IonTitle>
-                <IonButtons slot="end"><IonButton onClick={() => setMappingOpen(false)}>Done</IonButton></IonButtons>
-            </IonToolbar></IonHeader>
-            <IonContent className="ion-padding capability-mapping">
-                <IonText color="medium"><p>The controller advertises each channel and its physical type. Name the logical control and assign a policy independently to each channel.</p></IonText>
-                {capabilities.map(capability => (
-                    <IonCard key={capability.id} className="mapping-card"><IonCardContent>
-                        <IonText className="mapping-id">Controller ID: {capability.id}</IonText>
-                        <IonItem lines="none">
-                            <IonLabel position="stacked">Control name</IonLabel>
-                            <IonInput value={labels[capability.id] ?? capability.name} onIonInput={e => saveLabel(capability.id, e.detail.value ?? '')} placeholder={capability.id} />
-                        </IonItem>
-                        {capability.channels.map(channel => <IonItem key={channel.id} lines="none">
-                            <IonLabel position="stacked">{channel.label} · {channel.valueType === 'analog' ? `Analogue${channel.unit ? ` (${channel.unit})` : ''}` : 'Binary'} </IonLabel>
-                            {capability.kind === 'actuator' ? <IonSelect value={policies[channelPolicyKey(capability.id,channel.id)] ?? ''} placeholder="Not configured" onIonChange={e => changePolicy(capability, channel.id, (e.detail.value ?? '') as ControlPolicy | '')}>
-                                <IonSelectOption value="">Not configured</IonSelectOption>
-                                {channel.supportedPolicies.map(policy => <IonSelectOption key={policy} value={policy}>{POLICY_LABELS[policy]}</IonSelectOption>)}
-                            </IonSelect> : <IonText color="medium">Monitoring channel</IonText>}
-                        </IonItem>)}
-                    </IonCardContent></IonCard>
-                ))}
-            </IonContent>
-        </IonModal>
+        <ControllerMenu
+            isOpen={menuOpen}
+            onDidDismiss={() => setMenuOpen(false)}
+            applyBusy={applyBusy}
+            applyStatusColor={applyStatusColor}
+            applyStatusLabel={applyStatusLabel}
+            loggingOut={loggingOut}
+            onControls={() => { setMenuOpen(false); setMappingOpen(true); }}
+            onWifi={() => {
+                setMenuOpen(false);
+                requestLeave(() => navigate('/wifi-configuration', { state: { controller } }));
+            }}
+            onTime={() => {
+                setMenuOpen(false);
+                requestLeave(() => navigate('/time-configuration', { state: { controller } }));
+            }}
+            onControllerInfo={() => {
+                setMenuOpen(false);
+                requestLeave(() => navigate('/controller-info', { state: { controller } }));
+            }}
+            onApply={openApplyAction}
+            onLogout={() => {
+                setMenuOpen(false);
+                requestLeave(() => { void logout(); });
+            }}
+        />
+        <ControlsConfigurationModal
+            isOpen={mappingOpen}
+            capabilities={capabilities}
+            labels={labels}
+            policies={policies}
+            sensorWidgets={sensorWidgets}
+            onDismiss={() => setMappingOpen(false)}
+            onDone={() => {
+                try {
+                    // Controls-page choices are app presentation preferences.
+                    // Commit them locally; do not mark controller configuration pending.
+                    ControlConfigurationStore.save();
+                    setHasUnsavedChanges(ControlConfigurationStore.hasUnsavedChanges());
+                    setMappingOpen(false);
+                } catch (e) {
+                    setSaveError(e instanceof Error ? e.message : 'Could not save control presentation settings.');
+                }
+            }}
+            onSaveLabel={saveLabel}
+            onChangePolicy={changePolicy}
+            onChangeSensorWidget={changeSensorWidget}
+        />
 
         <IonContent className="prakiva-home ion-padding capability-dashboard">
             {checking && <div className="dashboard-status"><IonText color="medium">Checking controller session…</IonText></div>}
@@ -448,37 +396,71 @@ const ControllerDashboard: React.FC = () => {
             {saveError && <IonText color="danger"><p>{saveError}</p></IonText>}
 
             <h2 className="capability-section-title">Actuators</h2>
-            <IonGrid className="capability-grid"><IonRow>{actuators.map(renderCapability)}</IonRow></IonGrid>
+            <IonGrid className="capability-grid">
+                <IonRow>
+                    {actuators.map(capability => (
+                        <ActuatorTile
+                            key={capability.id}
+                            capability={capability}
+                            displayName={displayName(capability)}
+                            configuredChannelCount={capability.channels.filter(
+                                channel => !!policies[channelPolicyKey(capability.id, channel.id)],
+                            ).length}
+                            onSelect={() => openPolicy(capability)}
+                        />
+                    ))}
+                </IonRow>
+            </IonGrid>
 
             <h2 className="capability-section-title">Sensors</h2>
-            <IonGrid className="capability-grid"><IonRow>{sensors.map(renderCapability)}</IonRow></IonGrid>
+            <IonGrid className="capability-grid">
+                <IonRow>
+                    {sensors.flatMap(capability => capability.channels.map(channel => {
+                        const key = sensorChannelKey(capability.id, channel.id);
+                        return (
+                            <SensorTile
+                                key={key}
+                                capability={capability}
+                                channel={channel}
+                                displayName={displayName(capability)}
+                                widget={sensorWidgets[key] ?? 'none'}
+                                onSelect={() => navigate(
+                                    `/sensor-detail/${encodeURIComponent(capability.id)}/${encodeURIComponent(channel.id)}`,
+                                    {
+                                        state: {
+                                            controller,
+                                            capability: { ...capability, name: displayName(capability) },
+                                            channel,
+                                            capabilities,
+                                        },
+                                    },
+                                )}
+                            />
+                        );
+                    }))}
+                </IonRow>
+            </IonGrid>
             <p className="capability-dashboard-note">Your controller provides the available equipment and sensor options. Save your settings, then apply them to your controller.</p>
         </IonContent>
 
-        <IonAlert isOpen={applyConfirmOpen} header="Apply Configuration" message={`Send your saved aquarium settings to ${controller.name}?`} onDidDismiss={() => setApplyConfirmOpen(false)} buttons={[
-            { text: 'Cancel', role: 'cancel' },
-            { text: 'Apply', handler: () => { void beginApply(); } },
-        ]} />
-        <IonAlert isOpen={syncConflictOpen} header="Configuration conflict" message="This phone has saved changes, and the controller has also changed since the last synchronisation. Which copy should be retained?" onDidDismiss={() => setSyncConflictOpen(false)} buttons={[
-            { text: 'Use Controller', role: 'destructive', handler: () => { void chooseControllerConfiguration(); } },
-            { text: 'Use This Phone', handler: choosePhoneConfiguration },
-            { text: 'Decide Later', role: 'cancel' },
-        ]} />
-        <IonAlert isOpen={applyResultOpen} header="Configuration status" message={applyResultMessage} onDidDismiss={() => setApplyResultOpen(false)} buttons={[{ text: 'OK', role: 'confirm' }]} />
-
-        <IonAlert isOpen={leaveAlertOpen} header="Unsaved changes" message="You have changes that have not been saved. What would you like to do?" onDidDismiss={() => { setLeaveAlertOpen(false); setPendingLeave(null); }} buttons={[
-            { text: 'Save and leave', handler: saveAndLeave },
-            { text: 'Discard and leave', role: 'destructive', handler: discardAndLeave },
-            { text: 'Stay', role: 'cancel' },
-        ]} />
-
-        <IonActionSheet
-            isOpen={!!sensorDetail}
-            header={sensorDetail?.name ?? 'Sensor'}
-            subHeader={sensorDetail ? `Advertised capability: ${sensorDetail.id} · ${sensorDetail.channels.map(ch => `${ch.label}: ${ch.valueType}${ch.unit ? ` ${ch.unit}` : ''}`).join(' · ')}` : undefined}
-            onDidDismiss={() => setSensorDetail(null)}
-            buttons={[{ text: 'Close', role: 'cancel' }]}
+        <DashboardDialogs
+            controllerName={controller.name}
+            applyConfirmOpen={applyConfirmOpen}
+            onApplyConfirmDismiss={() => setApplyConfirmOpen(false)}
+            onApplyConfirm={beginApply}
+            syncConflictOpen={syncConflictOpen}
+            onSyncConflictDismiss={() => setSyncConflictOpen(false)}
+            onChooseController={chooseControllerConfiguration}
+            onChoosePhone={choosePhoneConfiguration}
+            applyResultOpen={applyResultOpen}
+            applyResultMessage={applyResultMessage}
+            onApplyResultDismiss={() => setApplyResultOpen(false)}
+            leaveAlertOpen={leaveAlertOpen}
+            onLeaveAlertDismiss={onLeaveAlertDismiss}
+            onSaveAndLeave={saveAndLeave}
+            onDiscardAndLeave={discardAndLeave}
         />
+
     </IonPage>;
 };
 

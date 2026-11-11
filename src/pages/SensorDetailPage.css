@@ -1,0 +1,9 @@
+.virtual-sensor-configuration-notice {
+    margin: 8px 4px 14px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: var(--ion-color-success-tint);
+    color: var(--ion-color-success-contrast, var(--ion-color-success-shade));
+    font-size: .82rem;
+    line-height: 1.45;
+}

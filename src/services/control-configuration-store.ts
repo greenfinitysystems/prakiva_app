@@ -1,5 +1,5 @@
 import { CONTROL_POLICY_STORAGE_KEY, DEFAULT_CONTROL_POLICIES } from '../config/control-policies';
-import { channelPolicyKey, type ControlPolicy, type ControllerCapability } from '../config/controller-capabilities';
+import { channelPolicyKey, type ControlPolicy, type ControllerCapability, type SensorWidgetType } from '../config/controller-capabilities';
 
 /**
  * Canonical, app-local configuration document.
@@ -13,11 +13,22 @@ export const CONTROL_CONFIGURATION_SCHEMA_VERSION = 1 as const;
 export interface StoredControlConfiguration {
     capabilityId: string;
     channelPolicies: Record<string, ControlPolicy>;
+    /** Per-sensor-channel dashboard presentation; absent in older saved documents. */
+    sensorWidgets: Record<string, SensorWidgetType>;
     curves: unknown[];
     inlineConfigurations: Record<string, Record<string, unknown>>;
     workspace: Record<string, unknown> | null;
     profilesByControlId: Record<string, unknown[]>;
     savedAt?: string;
+}
+
+/**
+ * Snapshot of the configuration owned by one control editor.
+ * Unrelated pending changes elsewhere in the shared document are deliberately excluded.
+ */
+export interface ControlEditorDraftSnapshot {
+    control: StoredControlConfiguration;
+    channelColors: Record<string, string>;
 }
 
 export interface ControlConfigurationDocument {
@@ -51,7 +62,10 @@ const cloneDocument = (document: ControlConfigurationDocument): ControlConfigura
     const cloned = JSON.parse(JSON.stringify(document)) as ControlConfigurationDocument;
     // Drop the legacy local revision field when reading documents created by the previous build.
     delete (cloned as ControlConfigurationDocument & { revision?: number }).revision;
-    for (const control of Object.values(cloned.controls)) control.profilesByControlId ??= {};
+    for (const control of Object.values(cloned.controls)) {
+        control.profilesByControlId ??= {};
+        control.sensorWidgets ??= {};
+    }
     return cloned;
 };
 const contentOf = (document: ControlConfigurationDocument): string => JSON.stringify({
@@ -79,6 +93,7 @@ const parseArray = (raw: string | null): unknown[] => {
 const emptyControl = (capabilityId: string): StoredControlConfiguration => ({
     capabilityId,
     channelPolicies: {},
+    sensorWidgets: {},
     curves: [],
     inlineConfigurations: {},
     workspace: null,
@@ -108,8 +123,9 @@ const isValidDocument = (value: unknown): value is ControlConfigurationDocument 
     if (!isRecord(value.presentation.capabilityLabels) || !isRecord(value.presentation.channelColors)) return false;
     for (const [capabilityId, control] of Object.entries(value.controls)) {
         if (!isRecord(control) || control.capabilityId !== capabilityId) return false;
-        if (!isRecord(control.channelPolicies) || !Array.isArray(control.curves) ||
-            !isRecord(control.inlineConfigurations) || !(control.profilesByControlId === undefined || isRecord(control.profilesByControlId)) ||
+        if (!isRecord(control.channelPolicies) ||
+            !(control.sensorWidgets === undefined || (isRecord(control.sensorWidgets) && Object.values(control.sensorWidgets).every(value => ['none', 'text', 'gauge'].includes(String(value))))) ||
+            !Array.isArray(control.curves) || !isRecord(control.inlineConfigurations) || !(control.profilesByControlId === undefined || isRecord(control.profilesByControlId)) ||
             !(control.workspace === null || isRecord(control.workspace))) return false;
     }
     if (typeof value.migration.legacyLocalStorageImportedAt !== 'string' ||
@@ -319,12 +335,58 @@ export class ControlConfigurationStore {
         return document;
     }
 
+    /**
+     * Capture only the configuration scope owned by one actuator/control editor.
+     * This lets an editor distinguish its own edits from unrelated pending changes
+     * (for example, a sensor widget selection made on the dashboard).
+     */
+    static getControlEditorSnapshot(capabilityId: string): ControlEditorDraftSnapshot {
+        const document = this.load();
+        const prefix = `${capabilityId}:`;
+        const channelColors: Record<string, string> = {};
+        for (const [key, color] of Object.entries(document.presentation.channelColors)) {
+            if (key.startsWith(prefix)) channelColors[key] = color;
+        }
+        return {
+            control: JSON.parse(JSON.stringify(document.controls[capabilityId] ?? emptyControl(capabilityId))) as StoredControlConfiguration,
+            channelColors,
+        };
+    }
+
+    /**
+     * Restore only one editor's scope. Pending changes belonging to other
+     * capabilities, including sensor presentation selections, remain intact.
+     */
+    static restoreControlEditorSnapshot(capabilityId: string, snapshot: ControlEditorDraftSnapshot): ControlConfigurationDocument {
+        const document = this.load();
+        document.controls[capabilityId] = JSON.parse(JSON.stringify(snapshot.control)) as StoredControlConfiguration;
+
+        const prefix = `${capabilityId}:`;
+        const nextColors = { ...document.presentation.channelColors };
+        for (const key of Object.keys(nextColors)) {
+            if (key.startsWith(prefix)) delete nextColors[key];
+        }
+        Object.assign(nextColors, snapshot.channelColors);
+        document.presentation.channelColors = nextColors;
+
+        persist(document);
+        return document;
+    }
+
     static setChannelPolicy(capabilityId: string, channelId: string, policy?: ControlPolicy): ControlConfigurationDocument {
         const current = this.getControl(capabilityId);
         const channelPolicies = { ...current.channelPolicies };
         if (policy) channelPolicies[channelId] = policy;
         else delete channelPolicies[channelId];
         return this.updateControl(capabilityId, { channelPolicies });
+    }
+
+    static setSensorWidget(capabilityId: string, channelId: string, widget: SensorWidgetType): ControlConfigurationDocument {
+        const current = this.getControl(capabilityId);
+        const sensorWidgets = { ...(current.sensorWidgets ?? {}) };
+        if (widget === 'none') delete sensorWidgets[channelId];
+        else sensorWidgets[channelId] = widget;
+        return this.updateControl(capabilityId, { sensorWidgets });
     }
 
     static setCapabilityLabel(capabilityId: string, label: string): ControlConfigurationDocument {

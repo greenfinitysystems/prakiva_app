@@ -15,6 +15,7 @@ import ControllerClaim from './pages/ControllerClaim';
 import ControllerLogin from './pages/ControllerLogin';
 import ControllerDashboard from './pages/ControllerDashboard';
 import ControlEditorPage from './pages/ControlEditorPage';
+import SensorDetailPage from './pages/SensorDetailPage';
 
 import '@ionic/react/css/core.css';
 import '@ionic/react/css/normalize.css';
@@ -76,6 +77,7 @@ const App: React.FC = () => {
                     <Route path="/controller-dashboard" element={<ControllerDashboard />} />
                     <Route path="/control-editor/:capabilityId" element={<ControlEditorPage />} />
                     <Route path="/control-editor/:capabilityId/:policy" element={<ControlEditorPage />} />
+                    <Route path="/sensor-detail/:capabilityId/:channelId" element={<SensorDetailPage />} />
                     <Route path="/" element={<Navigate to="/home" replace />} />
                     <Route path="*" element={<Navigate to="/home" replace />} />
                 </IonRouterOutlet>

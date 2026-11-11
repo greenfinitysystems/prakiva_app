@@ -44,6 +44,8 @@ export interface CurveEditorProps {
     onSelectedCurveChange?: (id: string) => void;
     /** Optional accessible title above the graph. */
     title?: string;
+    /** Controller schedule time; when supplied, the NOW marker follows aquarium time. */
+    currentTime?: Date | null;
 }
 
 const SVG_WIDTH = 760;
@@ -305,6 +307,7 @@ const CurveEditor: React.FC<CurveEditorProps> = ({
     selectedCurveId,
     onSelectedCurveChange,
     title,
+    currentTime: aquariumTime,
 }) => {
     const svgRef = useRef<SVGSVGElement | null>(null);
     const [drag, setDrag] = useState<{ curveId: string; pointIndex: number } | null>(null);
@@ -317,15 +320,21 @@ const CurveEditor: React.FC<CurveEditorProps> = ({
 
     const selected = sortedCurves.find(c => c.id === selectedCurveId) ?? sortedCurves[0];
     const usesTimeOfDay = xAxis.unit === 'hours' && nearlyEqual(xAxis.min, 0) && nearlyEqual(xAxis.max, 24);
-    const [currentTime, setCurrentTime] = useState(() => new Date());
+    const [deviceTime, setDeviceTime] = useState(() => new Date());
 
     useEffect(() => {
-        if (!usesTimeOfDay) return;
-        const timer = window.setInterval(() => setCurrentTime(new Date()), 60_000);
+        if (!usesTimeOfDay || aquariumTime) return;
+        const timer = window.setInterval(() => setDeviceTime(new Date()), 15_000);
         return () => window.clearInterval(timer);
-    }, [usesTimeOfDay]);
+    }, [usesTimeOfDay, aquariumTime]);
 
-    const currentTimeValue = currentTime.getHours() + currentTime.getMinutes() / 60 + currentTime.getSeconds() / 3600;
+    const markerTime = aquariumTime ?? deviceTime;
+    // Aquarium time is already schedule-offset by the controller. Read its UTC
+    // fields to avoid applying the phone timezone a second time.
+    // The fallback device clock is unshifted, so use local fields for it.
+    const currentTimeValue = aquariumTime
+        ? markerTime.getUTCHours() + markerTime.getUTCMinutes() / 60 + markerTime.getUTCSeconds() / 3600
+        : markerTime.getHours() + markerTime.getMinutes() / 60 + markerTime.getSeconds() / 3600;
 
     const addPointPreview = useMemo(() => {
         if (readOnly || !selected || !selectedPoint || selectedPoint.curveId !== selected.id) return null;
@@ -477,14 +486,14 @@ const CurveEditor: React.FC<CurveEditorProps> = ({
                     >
                         <span aria-hidden="true">−</span> Delete selected point
                     </button>
-                    <span className="curve-editor-tool-hint">
-                        {selectedPoint?.curveId === selected.id
+                    <span className="curve-editor-tool-hint" aria-live="polite">
+                        {addPointPreview && selectedPoint?.curveId === selected.id
                             ? (() => {
                                 const point = selected.points[selectedPoint.pointIndex];
-                                if (!point) return 'Select a point on the curve';
+                                if (!point) return 'Tap an interior point to select it for adding or deleting';
                                 const xLabel = usesTimeOfDay ? formatTimeOfDay(point.x) : `${point.x.toFixed(2)}${xAxis.unit ? ` ${xAxis.unit}` : ''}`;
                                 const yLabel = mode === 'binary' ? (point.y === binaryValues[1] ? 'ON' : 'OFF') : `${point.y.toFixed(1)}${yAxis.unit ? ` ${yAxis.unit}` : ''}`;
-                                return `Selected: ${xLabel} · ${yLabel}${selectedPointIsDeletable ? '' : ' · boundary point protected'}`;
+                                return `Selected point: ${xLabel} · ${yLabel}`;
                             })()
                             : 'Tap an interior point to select it for adding or deleting'}
                     </span>

@@ -1,7 +1,10 @@
 /** Capability contract published by the controller firmware. */
 export type CapabilityKind = 'actuator' | 'sensor';
-export type CapabilityValueType = 'binary' | 'analog';
-export type ControlPolicy = 'manual_binary' | 'binary_curve' | 'analog_curve' | 'threshold_rules' | 'periodic_pulse';
+export type CapabilityValueType = 'binary' | 'analog' | 'trigger';
+export type ControlPolicy = 'manual_binary' | 'binary_curve' | 'analog_curve' | 'threshold_rules' | 'periodic_pulse' | 'trigger';
+
+/** User-selected presentation for a sensor channel in the dashboard. */
+export type SensorWidgetType = 'none' | 'text' | 'gauge';
 
 export interface CapabilityChannel {
     id: string;
@@ -33,9 +36,9 @@ export function isControllerCapability(value: unknown): value is ControllerCapab
         if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return false;
         const channel = raw as Record<string, unknown>;
         return typeof channel.id === 'string' && typeof channel.label === 'string' &&
-            (channel.valueType === 'binary' || channel.valueType === 'analog') &&
+            (channel.valueType === 'binary' || channel.valueType === 'analog' || channel.valueType === 'trigger') &&
             Array.isArray(channel.supportedPolicies) && channel.supportedPolicies.every(policy =>
-                ['manual_binary', 'binary_curve', 'analog_curve', 'threshold_rules', 'periodic_pulse'].includes(String(policy))) &&
+                ['manual_binary', 'binary_curve', 'analog_curve', 'threshold_rules', 'periodic_pulse', 'trigger'].includes(String(policy))) &&
             (channel.unit === undefined || typeof channel.unit === 'string') &&
             (channel.min === undefined || typeof channel.min === 'number') &&
             (channel.max === undefined || typeof channel.max === 'number');

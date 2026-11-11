@@ -9,6 +9,9 @@ export interface InlineChannelEditorProps {
     min?: number;
     max?: number;
     capabilities: ControllerCapability[];
+    currentTime?: Date | null;
+    onInvoke?: () => Promise<void>;
+    onReadExecutionState?: () => Promise<'IDLE' | 'RUNNING'>;
     value?: Record<string, unknown>;
     onChange: (value: Record<string, unknown>) => void;
 }

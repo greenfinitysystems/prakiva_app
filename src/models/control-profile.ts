@@ -26,4 +26,4 @@ export interface BuiltinCurveProfile {
     name: string;
     curves: ControlProfileCurve[];
 }
-export interface ProfileChannelDescriptor { id: string; label: string; valueType?: 'analog' | 'binary'; }
+export interface ProfileChannelDescriptor { id: string; label: string; valueType?: 'analog' | 'binary' | 'trigger'; }

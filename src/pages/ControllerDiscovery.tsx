@@ -34,7 +34,7 @@ const ControllerDiscovery: React.FC = () => {
             await discoverControllers((device) => {
                 foundCountRef.current += 1;
                 setDevices((current) => ({ ...current, [device.deviceId]: device }));
-            }, (diagnostic) => console.debug(`[Prakiva discovery] ${diagnostic}`));
+            });
             if (foundCountRef.current === 0) setMessage('No controllers found. Connect to Prakiva Wi-Fi or the same home network as your controller, then scan again.');
         } catch (err) { console.error('[Prakiva] Controller search failed:', err); setMessage('We couldn’t search for controllers. Check your Wi-Fi connection and try again.'); }
         finally { scanRef.current = false; setScanning(false); }

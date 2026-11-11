@@ -1,0 +1,59 @@
+/* Shared sensor widget foundations */
+.sensor-widget-card { margin: 0; border: 1px solid var(--ion-color-step-150, #dce2dd); border-radius: 14px; box-shadow: 0 2px 8px rgba(25, 40, 30, .06); background: var(--ion-card-background, #fff); }
+.sensor-widget-card ion-card-content { padding: 14px; }
+.sensor-widget-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sensor-widget-title { color: var(--ion-text-color); font-size: .95rem; font-weight: 650; }
+.sensor-widget-status { flex: 0 0 auto; font-size: .72rem; color: var(--ion-color-medium); }
+.sensor-status-valid { color: var(--ion-color-success); }
+.sensor-status-invalid, .sensor-status-unavailable, .sensor-status-error { color: var(--ion-color-danger); }
+.sensor-status-stale { color: var(--ion-color-warning-shade); }
+
+/* Contemporary 270-degree gauge. No animated arc or progress transition. */
+.sensor-gauge-card { width: 100%; }
+.sensor-contemporary-gauge { width: min(100%, 440px); margin: 2px auto 0; }
+.sensor-contemporary-gauge-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.sensor-gauge-track { fill: none; stroke: var(--ion-color-step-150, #dce3dc); stroke-width: 9; stroke-linecap: round; }
+.sensor-gauge-progress { fill: none; stroke: var(--ion-color-primary, #39765b); stroke-width: 9; stroke-linecap: round; }
+.sensor-gauge-tick { stroke: var(--ion-color-medium, #929b94); stroke-width: 1.1; }
+.sensor-gauge-tick-major { stroke: var(--ion-text-color, #202820); stroke-width: 2.1; }
+.sensor-gauge-tick-label { fill: var(--ion-text-color, #202820); font-family: inherit; font-size: 14px; font-weight: 650; }
+.sensor-gauge-brand { fill: var(--ion-text-color); font-family: inherit; font-size: 15px; font-weight: 750; letter-spacing: 2px; }
+.sensor-gauge-subtitle { fill: var(--ion-color-medium-shade, #66716a); font-family: inherit; font-size: 8px; font-weight: 650; letter-spacing: 1px; }
+.sensor-gauge-needle { stroke: var(--ion-color-primary, #39765b); stroke-width: 4.5; stroke-linecap: round; }
+.sensor-gauge-hub-outer { fill: var(--ion-background-color, #fff); stroke: var(--ion-color-medium, #89938c); stroke-width: 3; }
+.sensor-gauge-hub-inner { fill: var(--ion-color-primary, #39765b); }
+.sensor-gauge-digital-window { fill: var(--ion-color-success-tint, #e4f5e8); stroke: var(--ion-color-success-tint, #d4eedb); stroke-width: 1; }
+.sensor-gauge-digital-value { fill: #12351f !important; font-family: inherit; font-size: 22px; font-weight: 800; paint-order: stroke; stroke: rgba(255,255,255,.18); stroke-width: .35px; }
+.sensor-gauge-footer { display: flex; justify-content: center; align-items: center; gap: 7px; min-height: 18px; margin-top: -1px; color: var(--ion-color-medium); font-size: .7rem; }
+.sensor-gauge-footer strong { margin-left: 5px; color: var(--ion-color-warning-shade); font-weight: 650; }
+.sensor-gauge-status-dot { width: 7px; height: 7px; border-radius: 50%; }
+.sensor-gauge-status-online { background: var(--ion-color-success); }
+.sensor-gauge-status-warning { background: var(--ion-color-warning); }
+.sensor-gauge-status-error { background: var(--ion-color-danger); }
+
+.sensor-widget-updated { text-align: center; color: var(--ion-color-medium); font-size: .68rem; margin-top: 5px; }
+.sensor-text-reading { display: flex; align-items: baseline; gap: 7px; padding: 18px 0 10px; }
+.sensor-text-reading strong { font-size: 2rem; line-height: 1.1; font-weight: 700; color: var(--ion-text-color); }
+.sensor-text-reading span { font-size: .95rem; color: var(--ion-color-medium); }
+.sensor-text-card { background: var(--ion-card-background, var(--ion-background-color)); }
+
+/* Contemporary sensor history chart — follows the standard Prakiva/Ionic cards. */
+.sensor-history-card { margin: 16px 0 0; border: 1px solid var(--ion-color-step-150, #dce2dd); border-radius: 14px; box-shadow: 0 2px 8px rgba(25, 40, 30, .06); background: var(--ion-card-background, #fff); }
+.sensor-history-card ion-card-content { padding: 14px 12px 10px; }
+.sensor-history-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 2px 10px; }
+.sensor-history-title { display: block; color: var(--ion-text-color); font-size: .96rem; font-weight: 650; }
+.sensor-history-subtitle { margin-top: 2px; color: var(--ion-color-medium); font-size: .72rem; }
+.sensor-history-period { flex: 0 0 auto; padding: 5px 10px; border-radius: 7px; background: var(--ion-color-light, #f4f6f4); color: var(--ion-color-medium-shade, #59645d); font-size: .72rem; font-weight: 600; }
+.sensor-history-chart-wrap { width: 100%; overflow: hidden; }
+.sensor-history-chart { display: block; width: 100%; height: auto; overflow: visible; }
+.sensor-history-grid-major { stroke: var(--ion-color-step-150, #dce3dc); stroke-width: 1; }
+.sensor-history-grid-minor { stroke: var(--ion-color-step-100, #edf0ed); stroke-width: .8; }
+.sensor-history-axis { stroke: var(--ion-color-medium-shade, #69756c); stroke-width: 1.2; }
+.sensor-history-axis-label, .sensor-history-unit { fill: var(--ion-color-medium-shade, #69756c); font-family: inherit; font-size: 12px; }
+.sensor-history-unit { font-size: 11px; }
+.sensor-history-area-top { stop-color: var(--ion-color-primary, #39765b); stop-opacity: .22; }
+.sensor-history-area-bottom { stop-color: var(--ion-color-primary, #39765b); stop-opacity: .015; }
+.sensor-history-area { fill: url(#sensor-history-area); }
+.sensor-history-line { fill: none; stroke: var(--ion-color-primary, #39765b); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.sensor-history-message { margin: 18px 4px 12px; color: var(--ion-color-medium); font-size: .84rem; text-align: center; }
+.sensor-history-refreshing { margin: 4px 4px 0; color: var(--ion-color-medium); font-size: .68rem; text-align: right; }
