@@ -14,6 +14,7 @@ import type { SavedController } from '../models/saved-controller';
 import type { ControlProfile } from '../models/control-profile';
 import InlineChannelEditor from '../components/control-editors/InlineChannelEditor';
 import { validateTriggerRangeConfiguration } from '../config/trigger-validation';
+import { validateThresholdConfigurations } from '../config/threshold-validation';
 import './ControlEditorPage.css';
 interface RouteState { controller?: SavedController; capabilities?: ControllerCapability[]; capability?: ControllerCapability; policy?: ControlPolicy; channel?: { id: string; label: string; valueType: 'binary' | 'analog' | 'trigger'; unit?: string; min?: number; max?: number; supportedPolicies: ControlPolicy[] } }
 const palette = ['#d1d5db', '#ef4444', '#22c55e', '#3b82f6', '#eab308', '#a855f7', '#06b6d4', '#f97316'];
@@ -202,12 +203,8 @@ const ControlEditorPage: React.FC = () => {
     const saveCurves = (next: CurveDefinition[]) => { setCurves(next); ControlConfigurationStore.saveCurves(capability.id, next); };
     const activeAnalogChannel = analogChannels.find(c => c.id === selectedAnalogChannel) ?? analogChannels[0];
     const activeAnalogCurve = activeAnalogChannel ? curves.find(c => c.id === activeAnalogChannel.id) : undefined;
-    const builtinProfiles = ControlProfileStore.getDefaultProfiles(controlId, capability.id, capability.channels);
     const loadProfile = (value: string) => {
-        const [kind, ...parts] = value.split(':'); const profileIdOrName = parts.join(':');
-        const profile = kind === 'builtin'
-            ? builtinProfiles.find(item => item.name === profileIdOrName)
-            : customProfiles.find(item => item.profileId === value || item.name === profileIdOrName);
+        const profile = customProfiles.find(item => item.profileId === value);
         if (!profile) return;
 
         const nextCurves = [...curves];
@@ -296,6 +293,8 @@ const ControlEditorPage: React.FC = () => {
                 setLeaveError(validateTriggerRangeConfiguration(invalidTrigger[1]).message ?? 'Correct the trigger range before saving.');
                 return false;
             }
+            const thresholdError = validateThresholdConfigurations(ControlConfigurationStore.load());
+            if (thresholdError) { setLeaveError(thresholdError); return false; }
             ControlConfigurationStore.save();
             if (route?.controller?.deviceId) markLocalConfigurationPending(route.controller.deviceId);
             setLeaveAlertOpen(false);
@@ -328,8 +327,7 @@ const ControlEditorPage: React.FC = () => {
                 <h2>Profiles</h2>
                 <p>Save and reuse the complete configuration of every channel in this control.</p>
                 <IonItem><IonLabel position="stacked">Profile</IonLabel>
-                    <IonSelect interface="popover" value={selectedProfile} placeholder={builtinProfiles.length || customProfiles.length ? 'Select a profile' : 'No saved profiles'} onIonChange={e => loadProfile(String(e.detail.value ?? ''))}>
-                        {builtinProfiles.map(p => <IonSelectOption key={`builtin:${p.name}`} value={`builtin:${p.name}`}>{p.name} · built-in</IonSelectOption>)}
+                    <IonSelect interface="popover" value={selectedProfile} placeholder={customProfiles.length ? 'Select a profile' : 'No saved profiles'} onIonChange={e => loadProfile(String(e.detail.value ?? ''))}>
                         {customProfiles.map(p => <IonSelectOption key={p.profileId} value={p.profileId}>{p.name}</IonSelectOption>)}
                     </IonSelect>
                 </IonItem>

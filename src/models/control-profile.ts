@@ -21,9 +21,4 @@ export interface ControlProfile {
     channels: ControlProfileChannelState[];
     source?: 'builtin' | 'custom';
 }
-/** Source format used only to define built-in graph presets. */
-export interface BuiltinCurveProfile {
-    name: string;
-    curves: ControlProfileCurve[];
-}
 export interface ProfileChannelDescriptor { id: string; label: string; valueType?: 'analog' | 'binary' | 'trigger'; }

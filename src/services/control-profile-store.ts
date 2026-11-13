@@ -1,4 +1,4 @@
-import { getDefaultProfilesForControl } from '../config/default-profiles';
+import seedCatalog from '../assets/seed/profiles.v1.json';
 import type { ControlProfile, ProfileChannelDescriptor } from '../models/control-profile';
 import { ControlConfigurationStore } from './control-configuration-store';
 
@@ -44,11 +44,27 @@ const legacyCurveProfiles = (
         }));
 };
 
-export const ControlProfileStore = {
-    getDefaultProfiles(controlId: string, capabilityId: string, channels: ProfileChannelDescriptor[]): ControlProfile[] {
-        return getDefaultProfilesForControl(controlId, capabilityId, channels).map(cloneProfile);
-    },
+/** Optional, data-only starter catalog. Seed profiles use the ordinary user profile format.
+ * Imported as baseline (not a pending configuration edit); the user must explicitly apply.
+ * A saved empty collection is respected, so deleted seeds do not reappear.
+ */
+const seedProfiles = (controlId: string, capabilityId: string, channels: ProfileChannelDescriptor[]): ControlProfile[] => {
+    const candidates = seedCatalog.schema_version === 1 ? seedCatalog.profiles : [];
+    const profiles: ControlProfile[] = candidates
+        .filter(item => item.capabilityId === capabilityId)
+        .map(item => ({
+            profileId: `seed:${item.id}`, controlId, capabilityId, name: item.name,
+            source: 'custom' as const,
+            channels: item.channels.filter(channel => channels.some(actual => actual.id === channel.channelId))
+                .map(channel => ({ channelId: channel.channelId, policy: channel.policy,
+                    configuration: structuredCloneSafe(channel.configuration) })),
+        }))
+        .filter(profile => profile.channels.length > 0 && isProfile(profile));
+    if (profiles.length) ControlConfigurationStore.importProfilesAsBaseline(capabilityId, controlId, profiles);
+    return profiles.map(cloneProfile);
+};
 
+export const ControlProfileStore = {
     getCustomProfiles(controlId: string, capabilityId: string, channels: ProfileChannelDescriptor[] = []): ControlProfile[] {
         const stored = ControlConfigurationStore.getProfiles(capabilityId, controlId);
         if (ControlConfigurationStore.hasProfileCollection(capabilityId, controlId)) return stored.filter(isProfile).map(cloneProfile);
@@ -60,7 +76,7 @@ export const ControlProfileStore = {
                 const parsed: unknown = JSON.parse(current);
                 const profiles = Array.isArray(parsed) ? parsed.filter(isProfile).map(cloneProfile) : [];
                 if (profiles.length) ControlConfigurationStore.importProfilesAsBaseline(capabilityId, controlId, profiles);
-                return profiles;
+                return profiles.length ? profiles : seedProfiles(controlId, capabilityId, channels);
             }
             const legacyRaw = localStorage.getItem(`${LEGACY_CAPABILITY_PREFIX}${capabilityId}`);
             let migrated: ControlProfile[] = [];
@@ -74,8 +90,8 @@ export const ControlProfileStore = {
                 if (legacyLighting) migrated = legacyCurveProfiles(JSON.parse(legacyLighting), controlId, capabilityId, channels);
             }
             if (migrated.length) ControlConfigurationStore.importProfilesAsBaseline(capabilityId, controlId, migrated);
-            return migrated.map(cloneProfile);
-        } catch { return []; }
+            return migrated.length ? migrated.map(cloneProfile) : seedProfiles(controlId, capabilityId, channels);
+        } catch { return seedProfiles(controlId, capabilityId, channels); }
     },
 
     saveCustomProfiles(controlId: string, capabilityId: string, profiles: ControlProfile[]): void {

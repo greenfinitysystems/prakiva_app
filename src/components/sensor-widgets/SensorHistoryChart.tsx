@@ -39,17 +39,27 @@ const SensorHistoryChart: React.FC<SensorHistoryChartProps> = ({
 }) => {
     const chart = useMemo(() => {
         if (!points.length) return null;
-        const values = points.map(point => point.value);
+        const values = points.flatMap(point => point.value === null ? [] : [point.value]);
         const scale = makeScale(values, min, max);
         const y = (value: number) => PLOT.bottom - ((value - scale.min) / (scale.max - scale.min)) * (PLOT.bottom - PLOT.top);
         const x = (index: number) => points.length === 1
             ? (PLOT.left + PLOT.right) / 2
             : PLOT.left + (index / (points.length - 1)) * (PLOT.right - PLOT.left);
-        const line = points.map((point, index) => `${x(index).toFixed(1)},${y(point.value).toFixed(1)}`).join(' ');
-        const area = `${PLOT.left},${PLOT.bottom} ${line} ${PLOT.right},${PLOT.bottom}`;
+        // Missing measurements break the line. Never connect across a null point.
+        const segments: string[] = [];
+        let current: string[] = [];
+        points.forEach((point, index) => {
+            if (point.value === null) {
+                if (current.length) segments.push(current.join(' '));
+                current = [];
+            } else {
+                current.push(`${x(index).toFixed(1)},${y(point.value).toFixed(1)}`);
+            }
+        });
+        if (current.length) segments.push(current.join(' '));
         const yTicks = Array.from({ length: 6 }, (_, index) => scale.min + ((scale.max - scale.min) * index / 5)).reverse();
         const xIndices = Array.from(new Set([0, Math.round((points.length - 1) / 4), Math.round((points.length - 1) / 2), Math.round((points.length - 1) * 3 / 4), points.length - 1]));
-        return { line, area, yTicks, xIndices, x, y, scale };
+        return { segments, yTicks, xIndices, x, y, scale };
     }, [points, min, max]);
 
     return <IonCard className="sensor-history-card">
@@ -83,8 +93,9 @@ const SensorHistoryChart: React.FC<SensorHistoryChartProps> = ({
                         const xx = PLOT.left + (index / 8) * (PLOT.right - PLOT.left);
                         return <line key={`x-${index}`} x1={xx} y1={PLOT.top} x2={xx} y2={PLOT.bottom} className="sensor-history-grid-minor" />;
                     })}
-                    <path d={`M ${chart.area} Z`} className="sensor-history-area" />
-                    <polyline points={chart.line} className="sensor-history-line" />
+                    {chart.segments.map((segment, index) =>
+                        <polyline key={`segment-${index}`} points={segment} className="sensor-history-line" />
+                    )}
                     <line x1={PLOT.left} y1={PLOT.bottom} x2={PLOT.right} y2={PLOT.bottom} className="sensor-history-axis" />
                     {chart.xIndices.map(index => {
                         const xx = chart.x(index);

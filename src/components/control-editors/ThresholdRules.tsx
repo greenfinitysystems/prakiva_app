@@ -3,7 +3,7 @@ import { IonInput, IonItem, IonLabel, IonSelect, IonSelectOption, IonText } from
 import type { InlineChannelEditorProps } from './types';
 
 const ThresholdRules: React.FC<InlineChannelEditorProps> = ({ value = {}, onChange, capabilities }) => {
-    const [sensorId, setSensorId] = useState(String(value.sensorId ?? 'sensor_channel_1.value'));
+    const [sensorId, setSensorId] = useState(String(value.sensorId ?? 'water_temperature.value'));
     const [low, setLow] = useState(Number(value.lowThreshold ?? 28));
     const [high, setHigh] = useState(Number(value.highThreshold ?? 30));
     const [lowAction, setLowAction] = useState(String(value.lowAction ?? 'off'));
@@ -11,7 +11,7 @@ const ThresholdRules: React.FC<InlineChannelEditorProps> = ({ value = {}, onChan
 
     // A loaded profile updates the parent value; mirror every restored field here.
     useEffect(() => {
-        setSensorId(String(value.sensorId ?? 'sensor_channel_1.value'));
+        setSensorId(String(value.sensorId ?? 'water_temperature.value'));
         setLow(Number(value.lowThreshold ?? 28));
         setHigh(Number(value.highThreshold ?? 30));
         setLowAction(String(value.lowAction ?? 'off'));
@@ -27,6 +27,17 @@ const ThresholdRules: React.FC<InlineChannelEditorProps> = ({ value = {}, onChan
             }))),
         [capabilities],
     );
+
+    // A displayed default must also exist in the parent configuration document.
+    // Otherwise the editor looks configured while firmware receives sensorId="".
+    useEffect(() => {
+        if (value.sensorId) return;
+        const preferred = sensors.find(sensor => sensor.id === 'water_temperature.value');
+        const fallback = preferred ?? sensors[0];
+        if (fallback) onChange({ ...value, sensorId: fallback.id,
+            lowThreshold: value.lowThreshold ?? 28, highThreshold: value.highThreshold ?? 30,
+            lowAction: value.lowAction ?? 'off', highAction: value.highAction ?? 'on' });
+    }, [value, sensors, onChange]);
 
     const update = (patch: Record<string, unknown>) => onChange({ ...value, ...patch });
 

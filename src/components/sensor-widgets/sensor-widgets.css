@@ -57,3 +57,11 @@
 .sensor-history-line { fill: none; stroke: var(--ion-color-primary, #39765b); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
 .sensor-history-message { margin: 18px 4px 12px; color: var(--ion-color-medium); font-size: .84rem; text-align: center; }
 .sensor-history-refreshing { margin: 4px 4px 0; color: var(--ion-color-medium); font-size: .68rem; text-align: right; }
+
+/* Secondary raw sensor needle: the existing calibrated gauge remains unchanged. */
+.sensor-gauge-raw-needle { stroke: #89919b; stroke-width: 2.5; stroke-linecap: round; opacity: .66; }
+.sensor-gauge-needle-legend { display: flex; justify-content: center; gap: 18px; color: var(--ion-color-medium); font-size: 11px; margin-top: -5px; margin-bottom: 7px; }
+.sensor-gauge-needle-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.sensor-gauge-needle-legend i { width: 13px; height: 3px; display: inline-block; border-radius: 2px; }
+.sensor-gauge-legend-calibrated { background: #2fae53; }
+.sensor-gauge-legend-raw { background: #89919b; opacity: .7; }

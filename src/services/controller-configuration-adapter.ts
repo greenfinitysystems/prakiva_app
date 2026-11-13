@@ -3,6 +3,7 @@ import type { ControlConfigurationDocument } from './control-configuration-store
 import { getControllerConfiguration, setControllerConfiguration } from './controller-api';
 import { VirtualSensorConfigurationStore } from './virtual-sensor-configuration-store';
 import { validateTriggerConfigurations } from '../config/trigger-validation';
+import { validateThresholdConfigurations } from '../config/threshold-validation';
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
     typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -20,6 +21,8 @@ export async function applyAppConfigurationToController(
     if (!sessionToken) throw new Error('An authenticated controller session is required.');
     const triggerValidationError = validateTriggerConfigurations(appDocument);
     if (triggerValidationError) throw new Error(`Invalid trigger configuration: ${triggerValidationError}`);
+    const thresholdError = validateThresholdConfigurations(appDocument);
+    if (thresholdError) throw new Error(`Invalid threshold configuration: ${thresholdError}`);
 
     // Read immediately before writing so unrelated firmware-owned sections are retained.
     const current = await getControllerConfiguration(controller.address, controller.httpPort, sessionToken);

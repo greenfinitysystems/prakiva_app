@@ -5,6 +5,8 @@ import './sensor-widgets.css';
 export interface SensorDisplayProps {
     title: string;
     value?: number;
+    /** Optional raw reading from the same controller acquisition snapshot. */
+    rawValue?: number;
     unit?: string;
     min?: number;
     max?: number;
@@ -86,7 +88,7 @@ const formatTick = (value: number): string => {
 };
 
 export const SensorGauge: React.FC<SensorDisplayProps> = ({
-    title, value, unit = '', min, max, precision = 1, status, statusText, updatedAt,
+    title, value, rawValue, unit = '', min, max, precision = 1, status, statusText, updatedAt,
 }) => {
     const [adaptiveRange, setAdaptiveRange] = useState<GaugeRange | null>(() =>
         value !== undefined && Number.isFinite(value) ? makeInitialRange(value, min, max) : null,
@@ -122,6 +124,10 @@ export const SensorGauge: React.FC<SensorDisplayProps> = ({
         ? Math.max(0, Math.min(1, (value - range.min) / span)) : 0;
     const angle = START_ANGLE + normalized * SWEEP_ANGLE;
     const needleTip = pointOnCircle(83, angle);
+    const showRawNeedle = status === 'valid' && rawValue !== undefined && Number.isFinite(rawValue);
+    const rawNormalized = showRawNeedle
+        ? Math.max(0, Math.min(1, (rawValue - range.min) / span)) : 0;
+    const rawNeedleTip = pointOnCircle(83, START_ANGLE + rawNormalized * SWEEP_ANGLE);
     const displayValue = status === 'valid' && value !== undefined && Number.isFinite(value)
         ? formatValue(value, precision) : '—';
     const label = statusText || statusLabel[status];
@@ -173,6 +179,8 @@ export const SensorGauge: React.FC<SensorDisplayProps> = ({
                     </g>)}
                     <text x="180" y="104" textAnchor="middle" className="sensor-gauge-brand" style={{ fill: '#59616b', fontWeight: 600 }}>PRAKIVA</text>
                     <text x="180" y="190" textAnchor="middle" className="sensor-gauge-subtitle">{title.toUpperCase()}</text>
+                    {showRawNeedle && <line x1="180" y1="151" x2={rawNeedleTip.x} y2={rawNeedleTip.y}
+                        className="sensor-gauge-raw-needle" />}
                     <line x1="180" y1="151" x2={needleTip.x} y2={needleTip.y} className="sensor-gauge-needle" />
                     <circle cx="180" cy="151" r="12" className="sensor-gauge-hub-outer" />
                     <circle cx="180" cy="151" r="7" className="sensor-gauge-hub-inner" />
@@ -180,6 +188,10 @@ export const SensorGauge: React.FC<SensorDisplayProps> = ({
                     <text x="180" y="250" textAnchor="middle" className="sensor-gauge-digital-value">{displayValue} {unit}</text>
                 </svg>
             </div>
+            {showRawNeedle && <div className="sensor-gauge-needle-legend" aria-label="Green needle calibrated; gray needle raw">
+                <span><i className="sensor-gauge-legend-calibrated" />Calibrated</span>
+                <span><i className="sensor-gauge-legend-raw" />Raw</span>
+            </div>}
             <div className="sensor-gauge-footer">
                 <span className={`sensor-gauge-status-dot sensor-gauge-status-${statusClass}`} />
                 <span>{status === 'valid' ? 'Live measurement' : label}</span>

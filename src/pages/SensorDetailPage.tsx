@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonPage, IonText, IonTitle, IonToolbar } from '@ionic/react';
-import { arrowBack, settingsOutline } from 'ionicons/icons';
+import { arrowBack, settingsOutline, optionsOutline } from 'ionicons/icons';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import type { SavedController } from '../models/saved-controller';
 import type { ControllerCapability, CapabilityChannel, SensorWidgetType } from '../config/controller-capabilities';
@@ -15,6 +15,8 @@ import { ControllerSessionStore } from '../services/controller-session-store';
 import { getCapability, getSensorHistory, type CapabilityReadResult, type SensorHistoryPoint } from '../services/capability-operations';
 import SensorWidgetRenderer from '../components/sensor-widgets/SensorWidgetRenderer';
 import SensorHistoryChart from '../components/sensor-widgets/SensorHistoryChart';
+import SensorCalibrationEditor from '../components/SensorCalibrationEditor';
+import { getSensorCalibration } from '../services/sensor-calibration';
 
 interface SensorRouteState {
     controller?: SavedController;
@@ -54,6 +56,8 @@ const SensorDetailPage: React.FC = () => {
     const [virtualSensorParameters, setVirtualSensorParameters] = useState<VirtualSensorParameterValues>({});
     const [parameterEditorOpen, setParameterEditorOpen] = useState(false);
     const [configurationNotice, setConfigurationNotice] = useState('');
+    const [calibrationEditorOpen, setCalibrationEditorOpen] = useState(false);
+    const [calibrationReadings, setCalibrationReadings] = useState<{ raw: number; corrected: number } | null>(null);
 
     const widget: SensorWidgetType = useMemo(() => {
         if (!capability || !channel) return 'none';
@@ -165,7 +169,25 @@ const SensorDetailPage: React.FC = () => {
                     capability.id,
                     channel.id,
                 );
+                // The calibration endpoint returns raw and corrected values from the
+                // controller's acquisition snapshot. Do not infer raw from corrected.
+                // On older firmware / unsupported sensors, retain the original gauge.
+                let pair: { raw: number; corrected: number } | null = null;
+                if (capability.kind === 'sensor') {
+                    try {
+                        const calibration = await getSensorCalibration(
+                            controller.address, controller.httpPort, sessionToken,
+                            capability.id, channel.id,
+                        );
+                        if (calibration.rawValue !== undefined && calibration.calibratedValue !== undefined) {
+                            pair = { raw: calibration.rawValue, corrected: calibration.calibratedValue };
+                        }
+                    } catch {
+                        // Calibration is optional; never break normal sensor polling.
+                    }
+                }
                 if (active) {
+                    setCalibrationReadings(pair);
                     setReading({ result, receivedAt: Date.now() });
                     setPageError('');
                 }
@@ -181,6 +203,7 @@ const SensorDetailPage: React.FC = () => {
         };
 
         setReading(null);
+        setCalibrationReadings(null);
         void poll();
         const timer = window.setInterval(() => { void poll(); }, POLL_INTERVAL_MS);
         return () => {
@@ -244,8 +267,8 @@ const SensorDetailPage: React.FC = () => {
         </IonPage>;
     }
 
-    const rawValue = reading?.result?.value ? Number(reading.result.value.numericValue) : undefined;
-    const numericValue = rawValue !== undefined && Number.isFinite(rawValue) ? rawValue : undefined;
+    const capabilityValue = reading?.result?.value ? Number(reading.result.value.numericValue) : undefined;
+    const numericValue = capabilityValue !== undefined && Number.isFinite(capabilityValue) ? capabilityValue : undefined;
     const available = reading?.result?.available === true;
     const measurementValid = reading?.result?.measurementValid === true && numericValue !== undefined;
     const timestamp = reading?.result?.timestamp && reading.result.timestamp > 0
@@ -267,11 +290,16 @@ const SensorDetailPage: React.FC = () => {
         <IonHeader><IonToolbar>
             <IonButtons slot="start"><IonButton fill="clear" onClick={() => navigate(-1)} aria-label="Back to dashboard"><IonIcon slot="icon-only" icon={arrowBack} /></IonButton></IonButtons>
             <IonTitle>{displayName}{capability.channels.length > 1 ? ` · ${channel.label}` : ''}</IonTitle>
-            {virtualSensorDeclaration && <IonButtons slot="end">
+            <IonButtons slot="end">
+                {capability.kind === 'sensor' && <IonButton fill="clear" aria-label="Calibrate sensor" onClick={() => setCalibrationEditorOpen(true)} disabled={!sessionToken}>
+                    <IonIcon icon={optionsOutline} />
+                </IonButton>}
+                {virtualSensorDeclaration && <>
                 <IonButton fill="clear" aria-label="Configure virtual sensor" onClick={() => setParameterEditorOpen(true)}>
                     <IonIcon icon={settingsOutline} />
                 </IonButton>
-            </IonButtons>}
+                </>}
+            </IonButtons>
         </IonToolbar></IonHeader>
         <IonContent className="ion-padding sensor-detail-page">
             {pageError && <IonText color="danger"><p>{pageError}</p></IonText>}
@@ -279,7 +307,8 @@ const SensorDetailPage: React.FC = () => {
             <SensorWidgetRenderer
                 widget={widget}
                 title={`${displayName}${capability.channels.length > 1 ? ` · ${channel.label}` : ''}`}
-                value={measurementValid && !stale ? numericValue : undefined}
+                value={measurementValid && !stale ? (calibrationReadings?.corrected ?? numericValue) : undefined}
+                rawValue={measurementValid && !stale && calibrationReadings ? calibrationReadings.raw : undefined}
                 unit={channel.unit ?? reading?.result?.unit ?? ''}
                 min={channel.min}
                 max={channel.max}
@@ -297,6 +326,17 @@ const SensorDetailPage: React.FC = () => {
                 min={channel.min}
                 max={channel.max}
             />}
+            <SensorCalibrationEditor
+                isOpen={calibrationEditorOpen}
+                onDismiss={() => setCalibrationEditorOpen(false)}
+                address={controller.address}
+                port={controller.httpPort}
+                token={sessionToken}
+                capabilityId={capability.id}
+                channelId={channel.id}
+                title={displayName}
+                unit={channel.unit}
+            />
             {virtualSensorDeclaration && <VirtualSensorParameterEditor
                 isOpen={parameterEditorOpen}
                 declaration={virtualSensorDeclaration}

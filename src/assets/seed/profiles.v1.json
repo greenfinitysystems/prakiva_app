@@ -1,0 +1,1950 @@
+{
+  "schema_version": 1,
+  "profiles": [
+    {
+      "id": "lighting:equatorial-day",
+      "capabilityId": "lighting",
+      "name": "Equatorial Day",
+      "channels": [
+        {
+          "channelId": "white",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "white",
+              "label": "White",
+              "color": "#d1d5db",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 7,
+                  "y": 0
+                },
+                {
+                  "x": 8.5,
+                  "y": 60.0
+                },
+                {
+                  "x": 13.0,
+                  "y": 75
+                },
+                {
+                  "x": 17.5,
+                  "y": 48.8
+                },
+                {
+                  "x": 19,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "red",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "red",
+              "label": "Red",
+              "color": "#ef4444",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 7,
+                  "y": 0
+                },
+                {
+                  "x": 8.5,
+                  "y": 27.0
+                },
+                {
+                  "x": 13.0,
+                  "y": 33.8
+                },
+                {
+                  "x": 17.5,
+                  "y": 21.9
+                },
+                {
+                  "x": 19,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "green",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "green",
+              "label": "Green",
+              "color": "#22c55e",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 7,
+                  "y": 0
+                },
+                {
+                  "x": 8.5,
+                  "y": 39.0
+                },
+                {
+                  "x": 13.0,
+                  "y": 48.8
+                },
+                {
+                  "x": 17.5,
+                  "y": 31.7
+                },
+                {
+                  "x": 19,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "blue",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "blue",
+              "label": "Blue",
+              "color": "#3b82f6",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 7,
+                  "y": 0
+                },
+                {
+                  "x": 8.5,
+                  "y": 39.0
+                },
+                {
+                  "x": 13.0,
+                  "y": 48.8
+                },
+                {
+                  "x": 17.5,
+                  "y": 31.7
+                },
+                {
+                  "x": 19,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "lighting:equatorial-day-+-gentle-moonlight",
+      "capabilityId": "lighting",
+      "name": "Equatorial Day + Gentle Moonlight",
+      "channels": [
+        {
+          "channelId": "white",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "white",
+              "label": "White",
+              "color": "#d1d5db",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 7,
+                  "y": 0
+                },
+                {
+                  "x": 8.5,
+                  "y": 60.0
+                },
+                {
+                  "x": 13.0,
+                  "y": 75
+                },
+                {
+                  "x": 17.5,
+                  "y": 48.8
+                },
+                {
+                  "x": 19,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "red",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "red",
+              "label": "Red",
+              "color": "#ef4444",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 7,
+                  "y": 0
+                },
+                {
+                  "x": 8.5,
+                  "y": 27.0
+                },
+                {
+                  "x": 13.0,
+                  "y": 33.8
+                },
+                {
+                  "x": 17.5,
+                  "y": 21.9
+                },
+                {
+                  "x": 19,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "green",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "green",
+              "label": "Green",
+              "color": "#22c55e",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 7,
+                  "y": 0
+                },
+                {
+                  "x": 8.5,
+                  "y": 39.0
+                },
+                {
+                  "x": 13.0,
+                  "y": 48.8
+                },
+                {
+                  "x": 17.5,
+                  "y": 31.7
+                },
+                {
+                  "x": 19,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "blue",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "blue",
+              "label": "Blue",
+              "color": "#3b82f6",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 7,
+                  "y": 0
+                },
+                {
+                  "x": 8.5,
+                  "y": 39.0
+                },
+                {
+                  "x": 13.0,
+                  "y": 48.8
+                },
+                {
+                  "x": 17.5,
+                  "y": 31.7
+                },
+                {
+                  "x": 19,
+                  "y": 0
+                },
+                {
+                  "x": 20,
+                  "y": 0
+                },
+                {
+                  "x": 20.05,
+                  "y": 1
+                },
+                {
+                  "x": 21,
+                  "y": 1
+                },
+                {
+                  "x": 21.05,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "lighting:tropical-sunrise-and-sunset",
+      "capabilityId": "lighting",
+      "name": "Tropical Sunrise and Sunset",
+      "channels": [
+        {
+          "channelId": "white",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "white",
+              "label": "White",
+              "color": "#d1d5db",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 7,
+                  "y": 0
+                },
+                {
+                  "x": 8.5,
+                  "y": 48.0
+                },
+                {
+                  "x": 13.0,
+                  "y": 60
+                },
+                {
+                  "x": 17.5,
+                  "y": 39.0
+                },
+                {
+                  "x": 19,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "red",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "red",
+              "label": "Red",
+              "color": "#ef4444",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 7,
+                  "y": 0
+                },
+                {
+                  "x": 8.5,
+                  "y": 21.6
+                },
+                {
+                  "x": 13.0,
+                  "y": 27.0
+                },
+                {
+                  "x": 17.5,
+                  "y": 17.6
+                },
+                {
+                  "x": 19,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "green",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "green",
+              "label": "Green",
+              "color": "#22c55e",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 7,
+                  "y": 0
+                },
+                {
+                  "x": 8.5,
+                  "y": 31.2
+                },
+                {
+                  "x": 13.0,
+                  "y": 39.0
+                },
+                {
+                  "x": 17.5,
+                  "y": 25.4
+                },
+                {
+                  "x": 19,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "blue",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "blue",
+              "label": "Blue",
+              "color": "#3b82f6",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 7,
+                  "y": 0
+                },
+                {
+                  "x": 8.5,
+                  "y": 31.2
+                },
+                {
+                  "x": 13.0,
+                  "y": 39.0
+                },
+                {
+                  "x": 17.5,
+                  "y": 25.4
+                },
+                {
+                  "x": 19,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "lighting:tropical-sunset-+-gentle-moonlight",
+      "capabilityId": "lighting",
+      "name": "Tropical Sunset + Gentle Moonlight",
+      "channels": [
+        {
+          "channelId": "white",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "white",
+              "label": "White",
+              "color": "#d1d5db",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 7,
+                  "y": 0
+                },
+                {
+                  "x": 8.5,
+                  "y": 48.0
+                },
+                {
+                  "x": 13.0,
+                  "y": 60
+                },
+                {
+                  "x": 17.5,
+                  "y": 39.0
+                },
+                {
+                  "x": 19,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "red",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "red",
+              "label": "Red",
+              "color": "#ef4444",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 7,
+                  "y": 0
+                },
+                {
+                  "x": 8.5,
+                  "y": 21.6
+                },
+                {
+                  "x": 13.0,
+                  "y": 27.0
+                },
+                {
+                  "x": 17.5,
+                  "y": 17.6
+                },
+                {
+                  "x": 19,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "green",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "green",
+              "label": "Green",
+              "color": "#22c55e",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 7,
+                  "y": 0
+                },
+                {
+                  "x": 8.5,
+                  "y": 31.2
+                },
+                {
+                  "x": 13.0,
+                  "y": 39.0
+                },
+                {
+                  "x": 17.5,
+                  "y": 25.4
+                },
+                {
+                  "x": 19,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "blue",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "blue",
+              "label": "Blue",
+              "color": "#3b82f6",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 7,
+                  "y": 0
+                },
+                {
+                  "x": 8.5,
+                  "y": 31.2
+                },
+                {
+                  "x": 13.0,
+                  "y": 39.0
+                },
+                {
+                  "x": 17.5,
+                  "y": 25.4
+                },
+                {
+                  "x": 19,
+                  "y": 0
+                },
+                {
+                  "x": 20,
+                  "y": 0
+                },
+                {
+                  "x": 20.05,
+                  "y": 1
+                },
+                {
+                  "x": 21,
+                  "y": 1
+                },
+                {
+                  "x": 21.05,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "lighting:low-light-planted-tank",
+      "capabilityId": "lighting",
+      "name": "Low-Light Planted Tank",
+      "channels": [
+        {
+          "channelId": "white",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "white",
+              "label": "White",
+              "color": "#d1d5db",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 9,
+                  "y": 0
+                },
+                {
+                  "x": 10.5,
+                  "y": 28.0
+                },
+                {
+                  "x": 13.0,
+                  "y": 35
+                },
+                {
+                  "x": 15.5,
+                  "y": 22.8
+                },
+                {
+                  "x": 17,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "red",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "red",
+              "label": "Red",
+              "color": "#ef4444",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 9,
+                  "y": 0
+                },
+                {
+                  "x": 10.5,
+                  "y": 12.6
+                },
+                {
+                  "x": 13.0,
+                  "y": 15.8
+                },
+                {
+                  "x": 15.5,
+                  "y": 10.2
+                },
+                {
+                  "x": 17,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "green",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "green",
+              "label": "Green",
+              "color": "#22c55e",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 9,
+                  "y": 0
+                },
+                {
+                  "x": 10.5,
+                  "y": 18.2
+                },
+                {
+                  "x": 13.0,
+                  "y": 22.8
+                },
+                {
+                  "x": 15.5,
+                  "y": 14.8
+                },
+                {
+                  "x": 17,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "blue",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "blue",
+              "label": "Blue",
+              "color": "#3b82f6",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 9,
+                  "y": 0
+                },
+                {
+                  "x": 10.5,
+                  "y": 18.2
+                },
+                {
+                  "x": 13.0,
+                  "y": 22.8
+                },
+                {
+                  "x": 15.5,
+                  "y": 14.8
+                },
+                {
+                  "x": 17,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "lighting:subtropical-winter-day",
+      "capabilityId": "lighting",
+      "name": "Subtropical Winter Day",
+      "channels": [
+        {
+          "channelId": "white",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "white",
+              "label": "White",
+              "color": "#d1d5db",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 8,
+                  "y": 0
+                },
+                {
+                  "x": 9.5,
+                  "y": 44.0
+                },
+                {
+                  "x": 13.0,
+                  "y": 55
+                },
+                {
+                  "x": 16.5,
+                  "y": 35.8
+                },
+                {
+                  "x": 18,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "red",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "red",
+              "label": "Red",
+              "color": "#ef4444",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 8,
+                  "y": 0
+                },
+                {
+                  "x": 9.5,
+                  "y": 19.8
+                },
+                {
+                  "x": 13.0,
+                  "y": 24.8
+                },
+                {
+                  "x": 16.5,
+                  "y": 16.1
+                },
+                {
+                  "x": 18,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "green",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "green",
+              "label": "Green",
+              "color": "#22c55e",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 8,
+                  "y": 0
+                },
+                {
+                  "x": 9.5,
+                  "y": 28.6
+                },
+                {
+                  "x": 13.0,
+                  "y": 35.8
+                },
+                {
+                  "x": 16.5,
+                  "y": 23.2
+                },
+                {
+                  "x": 18,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "blue",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "blue",
+              "label": "Blue",
+              "color": "#3b82f6",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 8,
+                  "y": 0
+                },
+                {
+                  "x": 9.5,
+                  "y": 28.6
+                },
+                {
+                  "x": 13.0,
+                  "y": 35.8
+                },
+                {
+                  "x": 16.5,
+                  "y": 23.2
+                },
+                {
+                  "x": 18,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "lighting:conservative-new-aquarium",
+      "capabilityId": "lighting",
+      "name": "Conservative New Aquarium",
+      "channels": [
+        {
+          "channelId": "white",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "white",
+              "label": "White",
+              "color": "#d1d5db",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 10,
+                  "y": 0
+                },
+                {
+                  "x": 11.5,
+                  "y": 24.0
+                },
+                {
+                  "x": 13.0,
+                  "y": 30
+                },
+                {
+                  "x": 14.5,
+                  "y": 19.5
+                },
+                {
+                  "x": 16,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "red",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "red",
+              "label": "Red",
+              "color": "#ef4444",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 10,
+                  "y": 0
+                },
+                {
+                  "x": 11.5,
+                  "y": 10.8
+                },
+                {
+                  "x": 13.0,
+                  "y": 13.5
+                },
+                {
+                  "x": 14.5,
+                  "y": 8.8
+                },
+                {
+                  "x": 16,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "green",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "green",
+              "label": "Green",
+              "color": "#22c55e",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 10,
+                  "y": 0
+                },
+                {
+                  "x": 11.5,
+                  "y": 15.6
+                },
+                {
+                  "x": 13.0,
+                  "y": 19.5
+                },
+                {
+                  "x": 14.5,
+                  "y": 12.7
+                },
+                {
+                  "x": 16,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "blue",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "blue",
+              "label": "Blue",
+              "color": "#3b82f6",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 10,
+                  "y": 0
+                },
+                {
+                  "x": 11.5,
+                  "y": 15.6
+                },
+                {
+                  "x": 13.0,
+                  "y": 19.5
+                },
+                {
+                  "x": 14.5,
+                  "y": 12.7
+                },
+                {
+                  "x": 16,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "lighting:evening-viewing",
+      "capabilityId": "lighting",
+      "name": "Evening Viewing",
+      "channels": [
+        {
+          "channelId": "white",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "white",
+              "label": "White",
+              "color": "#d1d5db",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 13,
+                  "y": 0
+                },
+                {
+                  "x": 14.5,
+                  "y": 36.0
+                },
+                {
+                  "x": 17.0,
+                  "y": 45
+                },
+                {
+                  "x": 19.5,
+                  "y": 29.2
+                },
+                {
+                  "x": 21,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "red",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "red",
+              "label": "Red",
+              "color": "#ef4444",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 13,
+                  "y": 0
+                },
+                {
+                  "x": 14.5,
+                  "y": 16.2
+                },
+                {
+                  "x": 17.0,
+                  "y": 20.2
+                },
+                {
+                  "x": 19.5,
+                  "y": 13.2
+                },
+                {
+                  "x": 21,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "green",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "green",
+              "label": "Green",
+              "color": "#22c55e",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 13,
+                  "y": 0
+                },
+                {
+                  "x": 14.5,
+                  "y": 23.4
+                },
+                {
+                  "x": 17.0,
+                  "y": 29.2
+                },
+                {
+                  "x": 19.5,
+                  "y": 19.0
+                },
+                {
+                  "x": 21,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "blue",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "blue",
+              "label": "Blue",
+              "color": "#3b82f6",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 13,
+                  "y": 0
+                },
+                {
+                  "x": 14.5,
+                  "y": 23.4
+                },
+                {
+                  "x": 17.0,
+                  "y": 29.2
+                },
+                {
+                  "x": 19.5,
+                  "y": 19.0
+                },
+                {
+                  "x": 21,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "lighting:gentle-moonlight-only",
+      "capabilityId": "lighting",
+      "name": "Gentle Moonlight Only",
+      "channels": [
+        {
+          "channelId": "white",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "white",
+              "label": "White",
+              "color": "#d1d5db",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 19,
+                  "y": 0
+                },
+                {
+                  "x": 20.5,
+                  "y": 1.6
+                },
+                {
+                  "x": 20.0,
+                  "y": 2
+                },
+                {
+                  "x": 19.5,
+                  "y": 1.3
+                },
+                {
+                  "x": 21,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "red",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "red",
+              "label": "Red",
+              "color": "#ef4444",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 19,
+                  "y": 0
+                },
+                {
+                  "x": 20.5,
+                  "y": 0.7
+                },
+                {
+                  "x": 20.0,
+                  "y": 0.9
+                },
+                {
+                  "x": 19.5,
+                  "y": 0.6
+                },
+                {
+                  "x": 21,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "green",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "green",
+              "label": "Green",
+              "color": "#22c55e",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 19,
+                  "y": 0
+                },
+                {
+                  "x": 20.5,
+                  "y": 1.0
+                },
+                {
+                  "x": 20.0,
+                  "y": 1.3
+                },
+                {
+                  "x": 19.5,
+                  "y": 0.8
+                },
+                {
+                  "x": 21,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        },
+        {
+          "channelId": "blue",
+          "policy": "analog_curve",
+          "configuration": {
+            "curve": {
+              "id": "blue",
+              "label": "Blue",
+              "color": "#3b82f6",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 19,
+                  "y": 0
+                },
+                {
+                  "x": 20.5,
+                  "y": 1.0
+                },
+                {
+                  "x": 20.0,
+                  "y": 1.3
+                },
+                {
+                  "x": 19.5,
+                  "y": 0.8
+                },
+                {
+                  "x": 21,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "co2:equatorial-day-co2---90-min-lead",
+      "capabilityId": "co2",
+      "name": "Equatorial Day CO2 - 90 min lead",
+      "channels": [
+        {
+          "channelId": "output",
+          "policy": "binary_curve",
+          "configuration": {
+            "curve": {
+              "id": "output",
+              "label": "CO₂ Solenoid",
+              "color": "#22c55e",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 5.49,
+                  "y": 0
+                },
+                {
+                  "x": 5.5,
+                  "y": 1
+                },
+                {
+                  "x": 17.99,
+                  "y": 1
+                },
+                {
+                  "x": 18,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "co2:low-light-planted-co2---90-min-lead",
+      "capabilityId": "co2",
+      "name": "Low-Light Planted CO2 - 90 min lead",
+      "channels": [
+        {
+          "channelId": "output",
+          "policy": "binary_curve",
+          "configuration": {
+            "curve": {
+              "id": "output",
+              "label": "CO₂ Solenoid",
+              "color": "#22c55e",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 7.49,
+                  "y": 0
+                },
+                {
+                  "x": 7.5,
+                  "y": 1
+                },
+                {
+                  "x": 15.99,
+                  "y": 1
+                },
+                {
+                  "x": 16,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "co2:conservative-daytime-co2",
+      "capabilityId": "co2",
+      "name": "Conservative Daytime CO2",
+      "channels": [
+        {
+          "channelId": "output",
+          "policy": "binary_curve",
+          "configuration": {
+            "curve": {
+              "id": "output",
+              "label": "CO₂ Solenoid",
+              "color": "#22c55e",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 7.99,
+                  "y": 0
+                },
+                {
+                  "x": 8,
+                  "y": 1
+                },
+                {
+                  "x": 15.99,
+                  "y": 1
+                },
+                {
+                  "x": 16,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "co2:evening-viewing-co2",
+      "capabilityId": "co2",
+      "name": "Evening Viewing CO2",
+      "channels": [
+        {
+          "channelId": "output",
+          "policy": "binary_curve",
+          "configuration": {
+            "curve": {
+              "id": "output",
+              "label": "CO₂ Solenoid",
+              "color": "#22c55e",
+              "points": [
+                {
+                  "x": 0,
+                  "y": 0
+                },
+                {
+                  "x": 11.49,
+                  "y": 0
+                },
+                {
+                  "x": 11.5,
+                  "y": 1
+                },
+                {
+                  "x": 19.99,
+                  "y": 1
+                },
+                {
+                  "x": 20,
+                  "y": 0
+                },
+                {
+                  "x": 24,
+                  "y": 0
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "heater:tropical-community",
+      "capabilityId": "heater",
+      "name": "Tropical Community",
+      "channels": [
+        {
+          "channelId": "output",
+          "policy": "threshold_rules",
+          "configuration": {
+            "sensorId": "water_temperature.value",
+            "lowThreshold": 25,
+            "highThreshold": 26,
+            "lowAction": "on",
+            "highAction": "off"
+          }
+        }
+      ]
+    },
+    {
+      "id": "heater:discus-warm-water",
+      "capabilityId": "heater",
+      "name": "Discus Warm Water",
+      "channels": [
+        {
+          "channelId": "output",
+          "policy": "threshold_rules",
+          "configuration": {
+            "sensorId": "water_temperature.value",
+            "lowThreshold": 28,
+            "highThreshold": 29,
+            "lowAction": "on",
+            "highAction": "off"
+          }
+        }
+      ]
+    },
+    {
+      "id": "heater:goldfish-cool-water",
+      "capabilityId": "heater",
+      "name": "Goldfish Cool Water",
+      "channels": [
+        {
+          "channelId": "output",
+          "policy": "threshold_rules",
+          "configuration": {
+            "sensorId": "water_temperature.value",
+            "lowThreshold": 18,
+            "highThreshold": 19,
+            "lowAction": "on",
+            "highAction": "off"
+          }
+        }
+      ]
+    },
+    {
+      "id": "heater:warm-climate-tropical",
+      "capabilityId": "heater",
+      "name": "Warm Climate Tropical",
+      "channels": [
+        {
+          "channelId": "output",
+          "policy": "threshold_rules",
+          "configuration": {
+            "sensorId": "water_temperature.value",
+            "lowThreshold": 26,
+            "highThreshold": 27,
+            "lowAction": "on",
+            "highAction": "off"
+          }
+        }
+      ]
+    },
+    {
+      "id": "chiller:tropical-community",
+      "capabilityId": "chiller",
+      "name": "Tropical Community",
+      "channels": [
+        {
+          "channelId": "output",
+          "policy": "threshold_rules",
+          "configuration": {
+            "sensorId": "water_temperature.value",
+            "lowThreshold": 27,
+            "highThreshold": 28,
+            "lowAction": "off",
+            "highAction": "on"
+          }
+        }
+      ]
+    },
+    {
+      "id": "chiller:discus-warm-water",
+      "capabilityId": "chiller",
+      "name": "Discus Warm Water",
+      "channels": [
+        {
+          "channelId": "output",
+          "policy": "threshold_rules",
+          "configuration": {
+            "sensorId": "water_temperature.value",
+            "lowThreshold": 30,
+            "highThreshold": 31,
+            "lowAction": "off",
+            "highAction": "on"
+          }
+        }
+      ]
+    },
+    {
+      "id": "chiller:goldfish-cool-water",
+      "capabilityId": "chiller",
+      "name": "Goldfish Cool Water",
+      "channels": [
+        {
+          "channelId": "output",
+          "policy": "threshold_rules",
+          "configuration": {
+            "sensorId": "water_temperature.value",
+            "lowThreshold": 23,
+            "highThreshold": 24,
+            "lowAction": "off",
+            "highAction": "on"
+          }
+        }
+      ]
+    },
+    {
+      "id": "chiller:warm-climate-tropical",
+      "capabilityId": "chiller",
+      "name": "Warm Climate Tropical",
+      "channels": [
+        {
+          "channelId": "output",
+          "policy": "threshold_rules",
+          "configuration": {
+            "sensorId": "water_temperature.value",
+            "lowThreshold": 29,
+            "highThreshold": 30,
+            "lowAction": "off",
+            "highAction": "on"
+          }
+        }
+      ]
+    },
+    {
+      "id": "fan:gentle-ventilation",
+      "capabilityId": "fan",
+      "name": "Gentle Ventilation",
+      "channels": [
+        {
+          "channelId": "output",
+          "policy": "threshold_rules",
+          "configuration": {
+            "sensorId": "ambient_temperature.value",
+            "lowThreshold": 28,
+            "highThreshold": 30,
+            "lowAction": "off",
+            "highAction": "on"
+          }
+        }
+      ]
+    },
+    {
+      "id": "fan:summer-ventilation",
+      "capabilityId": "fan",
+      "name": "Summer Ventilation",
+      "channels": [
+        {
+          "channelId": "output",
+          "policy": "threshold_rules",
+          "configuration": {
+            "sensorId": "ambient_temperature.value",
+            "lowThreshold": 29,
+            "highThreshold": 32,
+            "lowAction": "off",
+            "highAction": "on"
+          }
+        }
+      ]
+    },
+    {
+      "id": "fan:warm-equipment-cabinet",
+      "capabilityId": "fan",
+      "name": "Warm Equipment Cabinet",
+      "channels": [
+        {
+          "channelId": "output",
+          "policy": "threshold_rules",
+          "configuration": {
+            "sensorId": "ambient_temperature.value",
+            "lowThreshold": 32,
+            "highThreshold": 35,
+            "lowAction": "off",
+            "highAction": "on"
+          }
+        }
+      ]
+    }
+  ]
+}

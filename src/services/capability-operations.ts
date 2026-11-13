@@ -149,7 +149,7 @@ export async function getCapability(
 
 export interface SensorHistoryPoint {
     timestamp: number;
-    value: number;
+    value: number | null;
 }
 
 export interface SensorHistoryResult {
@@ -194,7 +194,7 @@ export async function getSensorHistory(
     for (const rawPoint of data.points) {
         if (!isRecord(rawPoint) || typeof rawPoint.timestamp !== 'number' ||
             !Number.isFinite(rawPoint.timestamp) || rawPoint.timestamp <= 0 ||
-            typeof rawPoint.value !== 'number' || !Number.isFinite(rawPoint.value)) {
+            (rawPoint.value !== null && (typeof rawPoint.value !== 'number' || !Number.isFinite(rawPoint.value)))) {
             throw new ControllerApiError('Controller returned an invalid point in sensor history.');
         }
         points.push({ timestamp: rawPoint.timestamp, value: rawPoint.value });
