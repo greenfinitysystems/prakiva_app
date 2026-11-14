@@ -65,3 +65,8 @@
 .sensor-gauge-needle-legend i { width: 13px; height: 3px; display: inline-block; border-radius: 2px; }
 .sensor-gauge-legend-calibrated { background: #2fae53; }
 .sensor-gauge-legend-raw { background: #89919b; opacity: .7; }
+
+/* History time-range selector (local filtering of controller-returned samples). */
+.sensor-history-range-control { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
+.sensor-history-range-label { font-size: .72rem; color: var(--ion-color-medium-shade, #59645d); }
+.sensor-history-range-control select { max-width: 135px; padding: 5px 7px; border: 1px solid var(--ion-color-medium-tint, #bfc4bf); border-radius: 7px; background: var(--ion-background-color, #fff); color: var(--ion-text-color, #222); font-size: .75rem; }

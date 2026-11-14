@@ -13,7 +13,7 @@ import {
     type TimeStatus,
 } from '../services/controller-api';
 import { ControllerSessionStore } from '../services/controller-session-store';
-import './Home.css';
+import '../theme/skins/default/styles/pages/Home.css';
 
 interface PageState { controller?: SavedController }
 
@@ -64,7 +64,7 @@ const TimeConfiguration: React.FC = () => {
         } finally {
             if (showSpinner) setLoading(false);
         }
-    }, [controller?.deviceId, controller?.address, controller?.httpPort, navigate]);
+    }, [controller, navigate]);
 
     useEffect(() => { void loadStatus(); }, [loadStatus]);
 

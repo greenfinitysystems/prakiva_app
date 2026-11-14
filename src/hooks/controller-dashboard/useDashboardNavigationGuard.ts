@@ -50,19 +50,21 @@ export const useDashboardNavigationGuard = ({
         setLeaveAlertOpen(true);
     }, []);
 
+    const controllerDeviceId = controller?.deviceId;
+
     const saveConfiguration = useCallback(() => {
         onSaveError('');
         try {
             ControlConfigurationStore.save();
-            if (controller) {
-                markLocalConfigurationPending(controller.deviceId);
+            if (controllerDeviceId) {
+                markLocalConfigurationPending(controllerDeviceId);
             }
             return true;
         } catch (error) {
             onSaveError(error instanceof Error ? error.message : 'Could not save configuration.');
             return false;
         }
-    }, [controller?.deviceId, onSaveError]);
+    }, [controllerDeviceId, onSaveError]);
 
     const saveAndLeave = useCallback(() => {
         if (!saveConfiguration()) return false;

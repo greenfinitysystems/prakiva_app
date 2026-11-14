@@ -10,7 +10,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import type { SavedController } from '../models/saved-controller';
 import { getWifiStatus, setWifiConfig, type WifiStatus } from '../services/controller-api';
 import { ControllerSessionStore } from '../services/controller-session-store';
-import './Home.css';
+import '../theme/skins/default/styles/pages/Home.css';
 
 type Mode = 'KEEP' | 'AP' | 'STA';
 interface PageState { controller?: SavedController }
@@ -30,7 +30,6 @@ const WifiConfiguration: React.FC = () => {
   const navigate = useNavigate();
   const controller = (location.state as PageState | null)?.controller ?? null;
 
-  const [sessionToken, setSessionToken] = useState('');
   const [status, setStatus] = useState<WifiStatus | null>(null);
   const [mode, setMode] = useState<Mode>('KEEP');
   const [ssid, setSsid] = useState('');
@@ -51,7 +50,6 @@ const WifiConfiguration: React.FC = () => {
         navigate('/controller-login', { state: { controller: target, returnTo: '/wifi-configuration' } });
         return;
       }
-      setSessionToken(session.sessionToken);
       const data = await getWifiStatus(target.address, target.httpPort, session.sessionToken);
       setStatus(data);
       setMode('KEEP');
@@ -94,7 +92,6 @@ const WifiConfiguration: React.FC = () => {
         navigate('/controller-login', { state: { controller, returnTo: '/wifi-configuration' } });
         return;
       }
-      setSessionToken(session.sessionToken);
       const result = await setWifiConfig(
         controller.address, controller.httpPort, session.sessionToken,
         mode, ssid, password,

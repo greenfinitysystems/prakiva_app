@@ -1,6 +1,6 @@
 /*
  * App-wide appearance overrides for Prakiva.
- * Ionic's dark.class.css is used so the app can choose Light, Dark, or System.
+ * Default skin retains its system-responsive palette; skin selection is independent.
  * Keep component colors based on Ionic variables wherever possible.
  */
 html,

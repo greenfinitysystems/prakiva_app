@@ -26,20 +26,34 @@ const isProfile = (value: unknown): value is ControlProfile => {
             typeof channel.configuration === 'object' && !Array.isArray(channel.configuration));
 };
 
+type LegacyCurvePoint = { x: number; y: number };
+type LegacyCurve = { id: string; label?: string; points: LegacyCurvePoint[]; [key: string]: unknown };
+type LegacyCurveProfile = { name: string; curves: LegacyCurve[] };
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+    value !== null && typeof value === 'object' && !Array.isArray(value);
+
+const isLegacyCurve = (value: unknown): value is LegacyCurve =>
+    isRecord(value) && typeof value.id === 'string' && Array.isArray(value.points) &&
+    value.points.every(point => isRecord(point) && typeof point.x === 'number' && typeof point.y === 'number');
+
+const isLegacyCurveProfile = (value: unknown): value is LegacyCurveProfile =>
+    isRecord(value) && typeof value.name === 'string' && Array.isArray(value.curves);
+
 const legacyCurveProfiles = (
     parsed: unknown, controlId: string, capabilityId: string, channels: ProfileChannelDescriptor[],
 ): ControlProfile[] => {
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter((item: any) => item && typeof item.name === 'string' && Array.isArray(item.curves))
-        .map((item: any) => ({
+    const aliases: Record<string, string> = { W: 'white', R: 'red', G: 'green', B: 'blue' };
+    return parsed.filter(isLegacyCurveProfile)
+        .map(item => ({
             profileId: `migrated:${controlId}:${item.name}`, controlId, capabilityId, name: item.name, source: 'custom' as const,
-            channels: item.curves.filter((curve: any) => curve && typeof curve.id === 'string' && Array.isArray(curve.points))
-                .filter((curve: any) => channels.some(channel => channel.id === curve.id ||
-                    ({ W: 'white', R: 'red', G: 'green', B: 'blue' } as Record<string, string>)[curve.id] === channel.id))
-                .map((curve: any) => {
-                    const id = ({ W: 'white', R: 'red', G: 'green', B: 'blue' } as Record<string, string>)[curve.id] ?? curve.id;
+            channels: item.curves.filter(isLegacyCurve)
+                .filter(curve => channels.some(channel => channel.id === curve.id || aliases[curve.id] === channel.id))
+                .map(curve => {
+                    const id = aliases[curve.id] ?? curve.id;
                     const channel = channels.find(candidate => candidate.id === id);
-                    return { channelId: id, policy: 'analog_curve', configuration: { curve: { ...curve, id, label: channel?.label ?? curve.label, points: curve.points.map((point: any) => ({ x: point.x, y: point.y })) } } };
+                    return { channelId: id, policy: 'analog_curve', configuration: { curve: { ...curve, id, label: channel?.label ?? curve.label, points: curve.points.map(point => ({ x: point.x, y: point.y })) } } };
                 }),
         }));
 };

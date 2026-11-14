@@ -4,8 +4,7 @@ import {
     IonCol,
     IonText,
 } from '@ionic/react';
-import type { ControllerCapability } from '../../config/controller-capabilities';
-import type { SensorWidgetType } from '../../config/controller-capabilities';
+import type { ControllerCapability, SensorWidgetType } from '../../config/controller-capabilities';
 
 type SensorChannel = ControllerCapability['channels'][number];
 
@@ -38,7 +37,7 @@ const SensorTile: React.FC<SensorTileProps> = ({
             <IonCard button className="capability-tile sensor-tile" onClick={onSelect}>
                 <IonCardContent className="capability-tile-content">
                     <IonText className="capability-name">{title.toLocaleUpperCase()}</IonText>
-                    <IonText className="capability-meta">{widgetLabel} · Tap to open</IonText>
+                    <IonText className="capability-meta">{widgetLabel}</IonText>
                 </IonCardContent>
             </IonCard>
         </IonCol>

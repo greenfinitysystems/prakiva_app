@@ -11,17 +11,18 @@ const ControllerInfo: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const controller = (location.state as InfoState | null)?.controller;
+    const deviceId = controller?.deviceId;
     const [snapshot, setSnapshot] = useState<ControllerSynchronizationSnapshot | null>(null);
 
     useEffect(() => {
         let active = true;
-        if (controller) {
-            void ControllerSynchronizationStore.load(controller.deviceId).then(value => {
+        if (deviceId) {
+            void ControllerSynchronizationStore.load(deviceId).then(value => {
                 if (active) setSnapshot(value);
             }).catch(error => console.error('[Prakiva] Could not load controller information:', error));
         }
         return () => { active = false; };
-    }, [controller?.deviceId]);
+    }, [deviceId]);
 
     if (!controller) return <IonPage><IonContent className="ion-padding"><p>Controller details are unavailable. Return to Home and select your controller again.</p><IonButton onClick={() => navigate('/home', { replace: true })}>Go to Home</IonButton></IonContent></IonPage>;
 

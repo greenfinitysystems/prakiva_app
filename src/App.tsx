@@ -28,8 +28,8 @@ import '@ionic/react/css/text-transformation.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 import '@ionic/react/css/palettes/dark.class.css';
-import './theme/variables.css';
-import './theme/prakiva-theme.css';
+import './theme/skins/default/variables.css';
+import './theme/skins/default/prakiva-theme.css';
 
 import { applyAppTheme, loadAppTheme } from './services/theme-preferences';
 
@@ -39,24 +39,16 @@ setupIonicReact();
 const App: React.FC = () => {
     useEffect(() => {
         let active = true;
-        let theme: 'system' | 'light' | 'dark' = 'system';
-
-        const apply = () => applyAppTheme(theme);
-        void loadAppTheme().then(saved => {
-            if (!active) return;
-            theme = saved;
-            apply();
-        }).catch(() => apply());
+        const apply = () => applyAppTheme('default');
+        void loadAppTheme().then(skin => {
+            if (active) applyAppTheme(skin);
+        }).catch(apply);
 
         const media = window.matchMedia?.('(prefers-color-scheme: dark)');
-        const onSystemChange = () => {
-            if (theme === 'system') apply();
-        };
-        media?.addEventListener?.('change', onSystemChange);
-
+        media?.addEventListener?.('change', apply);
         return () => {
             active = false;
-            media?.removeEventListener?.('change', onSystemChange);
+            media?.removeEventListener?.('change', apply);
         };
     }, []);
 

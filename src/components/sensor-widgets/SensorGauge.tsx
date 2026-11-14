@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { IonCard, IonCardContent, IonText } from '@ionic/react';
-import './sensor-widgets.css';
+import '../../theme/skins/default/styles/components/sensor-widgets/sensor-widgets.css';
 
 export interface SensorDisplayProps {
     title: string;
@@ -143,7 +143,7 @@ export const SensorGauge: React.FC<SensorDisplayProps> = ({
         const labelPoint = pointOnCircle(88, tickAngle);
         const tickValue = range.min + (index / 50) * span;
         return { index, major, outer, inner, labelPoint, tickValue };
-    }), [range.min, range.max, span]);
+    }), [range.min, span]);
 
     const statusClass = status === 'valid' ? 'online' : status === 'stale' || status === 'loading' ? 'warning' : 'error';
 

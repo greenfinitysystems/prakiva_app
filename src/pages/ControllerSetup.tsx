@@ -8,7 +8,7 @@ import { checkmarkCircleOutline, hardwareChipOutline, shieldCheckmarkOutline, wi
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { SavedController } from '../models/saved-controller';
 import { getSetupStatus } from '../services/controller-api';
-import './Home.css';
+import '../theme/skins/default/styles/pages/Home.css';
 
 interface SetupLocationState { controller?: SavedController }
 interface SetupStatus { device_id?: string; setup_state?: string; setup_required?: boolean }

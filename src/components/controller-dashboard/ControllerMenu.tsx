@@ -21,13 +21,13 @@ interface ControllerMenuProps {
     onDidDismiss: () => void;
     applyBusy: boolean;
     applyStatusColor: string;
-    applyStatusLabel: string;
     loggingOut: boolean;
     onControls: () => void;
     onWifi: () => void;
     onTime: () => void;
     onControllerInfo: () => void;
     onApply: () => void;
+    onBackupRestore: () => void;
     onLogout: () => void;
 }
 
@@ -40,13 +40,13 @@ const ControllerMenu: FC<ControllerMenuProps> = ({
     onDidDismiss,
     applyBusy,
     applyStatusColor,
-    applyStatusLabel,
     loggingOut,
     onControls,
     onWifi,
     onTime,
     onControllerInfo,
     onApply,
+    onBackupRestore,
     onLogout,
 }) => (
     <IonPopover
@@ -73,19 +73,13 @@ const ControllerMenu: FC<ControllerMenuProps> = ({
                 <IonIcon slot="start" icon={informationCircleOutline} />
                 <IonLabel>Controller</IonLabel>
             </IonItem>
-            <IonItem button disabled>
+            <IonItem button onClick={onBackupRestore}>
                 <IonIcon slot="start" icon={archiveOutline} />
-                <IonLabel>
-                    <h2>Backup &amp; Restore</h2>
-                    <p>Available in the next phase</p>
-                </IonLabel>
+                <IonLabel>Backup &amp; Restore</IonLabel>
             </IonItem>
             <IonItem button disabled={applyBusy} onClick={onApply}>
                 <IonIcon slot="start" icon={cloudUploadOutline} color={applyStatusColor} />
-                <IonLabel>
-                    <h2>Apply Configuration</h2>
-                    <p>{applyStatusLabel}</p>
-                </IonLabel>
+                <IonLabel>Apply Configuration</IonLabel>
             </IonItem>
             <IonItem button disabled={loggingOut} onClick={onLogout}>
                 <IonIcon slot="start" icon={logOutOutline} />

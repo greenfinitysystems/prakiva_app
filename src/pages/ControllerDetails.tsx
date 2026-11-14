@@ -8,7 +8,7 @@ import { checkmarkCircleOutline, hardwareChipOutline } from 'ionicons/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { SavedController } from '../models/saved-controller';
 import { getSetupStatus } from '../services/controller-api';
-import './Home.css';
+import '../theme/skins/default/styles/pages/Home.css';
 
 interface DetailsState {
     controller?: SavedController;
@@ -26,6 +26,9 @@ const ControllerDetails: React.FC = () => {
     const location = useLocation();
     const state = (location.state as DetailsState | null) ?? {};
     const controller = state.controller;
+    const deviceId = controller?.deviceId;
+    const address = controller?.address;
+    const httpPort = controller?.httpPort;
     const info = state.deviceInfo ?? {};
 
     const [setupStatus, setSetupStatus] = useState<SetupStatus | null>(null);
@@ -36,7 +39,7 @@ const ControllerDetails: React.FC = () => {
         let active = true;
 
         const checkSetupStatus = async () => {
-            if (!controller) {
+            if (!deviceId || !address || httpPort == null) {
                 setSetupLoading(false);
                 return;
             }
@@ -47,13 +50,13 @@ const ControllerDetails: React.FC = () => {
 
             try {
                 const result = await getSetupStatus(
-                    controller.address,
-                    controller.httpPort,
+                    address,
+                    httpPort,
                 );
 
                 if (!active) return;
 
-                if (result.device_id !== controller.deviceId) {
+                if (result.device_id !== deviceId) {
                     throw new Error(
                         'The setup response belongs to a different controller.',
                     );
@@ -76,7 +79,7 @@ const ControllerDetails: React.FC = () => {
         return () => {
             active = false;
         };
-    }, [controller?.deviceId, controller?.address, controller?.httpPort]);
+    }, [deviceId, address, httpPort]);
 
     const openNextStep = () => {
         if (!controller || !setupStatus) return;

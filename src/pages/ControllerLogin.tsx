@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonContent,
   IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonPage, IonSpinner, IonText,
@@ -11,7 +11,7 @@ import { authenticateOwner, validateOwnerSession } from '../services/controller-
 import { ControllerSessionStore } from '../services/controller-session-store';
 import { synchronizeControllerAfterLogin } from '../services/controller-synchronization';
 import { ControlConfigurationStore, isControlConfigurationDocument } from '../services/control-configuration-store';
-import './Home.css';
+import '../theme/skins/default/styles/pages/Home.css';
 
 interface LoginState { controller?: SavedController; returnTo?: string }
 const ControllerLogin: React.FC = () => {
@@ -27,7 +27,7 @@ const ControllerLogin: React.FC = () => {
   const [message, setMessage] = useState('');
   const [pendingSessionToken, setPendingSessionToken] = useState('');
 
-  const synchronizeAndContinue = async (token: string) => {
+  const synchronizeAndContinue = useCallback(async (token: string) => {
     if (!controller) throw new Error('Controller details are missing.');
     const snapshot = await synchronizeControllerAfterLogin(controller, token);
     const remoteAppConfiguration = snapshot.configuration.configuration?.app_configuration;
@@ -36,7 +36,7 @@ const ControllerLogin: React.FC = () => {
       ControlConfigurationStore.replaceWithControllerDocument(remoteAppConfiguration);
     }
     navigate(returnTo ?? '/controller-dashboard', { replace: true, state: { controller } });
-  };
+  }, [controller, navigate, returnTo]);
 
   useEffect(() => {
     let active = true;
@@ -62,7 +62,7 @@ const ControllerLogin: React.FC = () => {
     };
     void checkExisting();
     return () => { active = false; };
-  }, [controller?.deviceId, controller?.address, controller?.httpPort, navigate]);
+  }, [controller, synchronizeAndContinue]);
 
   if (!controller) {
     return <IonPage><IonHeader><IonToolbar><IonButtons slot="start"><IonBackButton defaultHref="/home" /></IonButtons><IonTitle>Controller login</IonTitle></IonToolbar></IonHeader><IonContent className="ion-padding"><p>Controller details were not supplied. Return to Home and select the controller again.</p><IonButton expand="block" onClick={() => navigate('/home', { replace: true })}>Go to Home</IonButton></IonContent></IonPage>;

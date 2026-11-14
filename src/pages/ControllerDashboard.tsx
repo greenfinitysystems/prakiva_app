@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
     IonBadge, IonButton, IonButtons, IonContent, IonGrid, IonHeader, IonIcon,
-    IonPage, IonRow, IonText, IonTitle, IonToolbar,
+    IonPage, IonRow, IonText, IonTitle, IonToolbar, IonAlert, IonLoading,
 } from '@ionic/react';
 import {
     homeOutline, settingsOutline, syncOutline, checkmarkCircleOutline, alertCircleOutline,
@@ -28,8 +28,10 @@ import SensorTile from '../components/controller-dashboard/SensorTile';
 import ControllerMenu from '../components/controller-dashboard/ControllerMenu';
 import DashboardDialogs from '../components/controller-dashboard/DashboardDialogs';
 import { useDashboardNavigationGuard } from '../hooks/controller-dashboard/useDashboardNavigationGuard';
-import './Home.css';
-import './ControllerDashboard.css';
+import { captureSystemBackup, decodeBackup, encodeBackup, restoreSystemBackup, type BackupDocument } from '../services/system-backup';
+import { saveBackupDocument, openBackupDocument } from '../services/android-document-save';
+import '../theme/skins/default/styles/pages/Home.css';
+import '../theme/skins/default/styles/pages/ControllerDashboard.css';
 
 interface DashboardState { controller?: SavedController }
 type PolicyMap = Record<string, ControlPolicy>;
@@ -39,7 +41,12 @@ const sensorChannelKey = (capabilityId: string, channelId: string) => `${capabil
 const ControllerDashboard: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const controller = (location.state as DashboardState | null)?.controller;
+    // Keep the controller reference stable across ordinary dashboard renders.
+    // A new router state still supplies a new controller when navigation changes.
+    const controller = useMemo(
+        () => (location.state as DashboardState | null)?.controller,
+        [location.state],
+    );
     const [checking, setChecking] = useState(true);
     const [error, setError] = useState('');
     const [sessionToken, setSessionToken] = useState('');
@@ -59,6 +66,11 @@ const ControllerDashboard: React.FC = () => {
     const [applyResultOpen, setApplyResultOpen] = useState(false);
     const [applyResultMessage, setApplyResultMessage] = useState('');
     const [saveError, setSaveError] = useState('');
+    const [backupBusy, setBackupBusy] = useState(false);
+    const [restoreCandidate, setRestoreCandidate] = useState<BackupDocument | null>(null);
+    const [backupMessage, setBackupMessage] = useState('');
+    const [backupPrompt, setBackupPrompt] = useState<'backup' | 'restore' | null>(null);
+
 
     useEffect(() => {
         if (!capabilities.length) return;
@@ -76,7 +88,7 @@ const ControllerDashboard: React.FC = () => {
         };
         refreshDraft();
         return ControlConfigurationStore.subscribe(refreshDraft);
-    }, [controller?.deviceId, capabilities]);
+    }, [controller, capabilities]);
 
     useEffect(() => {
         const onSyncStateChanged = (event: Event) => {
@@ -87,7 +99,7 @@ const ControllerDashboard: React.FC = () => {
         };
         window.addEventListener('prakiva:configuration-sync-state-changed', onSyncStateChanged);
         return () => window.removeEventListener('prakiva:configuration-sync-state-changed', onSyncStateChanged);
-    }, [controller?.deviceId]);
+    }, [controller]);
 
 
     const {
@@ -281,7 +293,7 @@ const ControllerDashboard: React.FC = () => {
         };
         void load();
         return () => { active = false; };
-    }, [location.pathname, controller?.deviceId, controller?.address, controller?.httpPort, navigate]);
+    }, [location.pathname, controller, navigate]);
 
     // Only expose actuators after the user has assigned a compatible control policy.
     const actuators = useMemo(() => capabilities.filter(item => item.kind === 'actuator' && item.channels.some(ch => !!policies[channelPolicyKey(item.id,ch.id)])), [capabilities, policies]);
@@ -300,6 +312,62 @@ const ControllerDashboard: React.FC = () => {
             navigate('/home', { replace: true });
             setLoggingOut(false);
         }
+    };
+
+    const backupSystem = async () => {
+        if (!controller || !sessionToken) return;
+        setBackupBusy(true);
+        try {
+            const backupDocument = await captureSystemBackup(controller, sessionToken);
+            const blob = await encodeBackup(backupDocument);
+            const filename = `Prakiva-${controller.name.replace(/[^a-z0-9_-]/gi, '_')}-${new Date().toISOString().slice(0, 10)}.prakiva`;
+            const saved = await saveBackupDocument(blob, filename);
+            if (saved) {
+                setBackupMessage(`Backup saved successfully (${new Date(backupDocument.configuration_timestamp * 1000).toLocaleString()} applied configuration).`);
+            } else {
+                setBackupMessage('Backup cancelled. No file was saved.');
+            }
+        } catch (err) {
+            setBackupMessage(`Backup unsuccessful: ${err instanceof Error ? err.message : String(err)}`);
+        } finally { setBackupBusy(false); }
+    };
+
+    // Selection and decoding do not modify the controller.
+    const inspectBackup = async () => {
+        setRestoreCandidate(null);
+        setBackupBusy(true);
+        try {
+            const file = await openBackupDocument();
+            if (!file) return;
+            const backup = await decodeBackup(file);
+            setRestoreCandidate(backup);
+        } catch (err) {
+            setBackupMessage(`Cannot open backup: ${err instanceof Error ? err.message : String(err)}`);
+        } finally { setBackupBusy(false); }
+    };
+
+    const applyRestoredBackup = async (backup: BackupDocument) => {
+        if (!controller || !sessionToken) {
+            setBackupMessage('Restore requires an authenticated controller session.');
+            return;
+        }
+        setBackupBusy(true);
+        try {
+            await restoreSystemBackup(controller, sessionToken, backup);
+            // The restore service marks synchronization using the verified controller
+            // read-back timestamp. Refresh both inputs used by the Apply indicator.
+            const synchronizedRecord = getControllerSyncRecord(controller.deviceId);
+            setApplyRecord(synchronizedRecord);
+            setControllerMetadata({
+                configuration_exists: true,
+                configuration_updated_at: synchronizedRecord.lastSyncedControllerAt,
+                clock_valid: true,
+            });
+            setHasUnsavedChanges(ControlConfigurationStore.hasUnsavedChanges());
+            setBackupMessage('Restore successful. Controller configuration was written and verified by read-back.');
+        } catch (err) {
+            setBackupMessage(`Restore result: ${err instanceof Error ? err.message : String(err)}`);
+        } finally { setBackupBusy(false); }
     };
 
     const openPolicy = (capability: ControllerCapability) => {
@@ -346,7 +414,6 @@ const ControllerDashboard: React.FC = () => {
             onDidDismiss={() => setMenuOpen(false)}
             applyBusy={applyBusy}
             applyStatusColor={applyStatusColor}
-            applyStatusLabel={applyStatusLabel}
             loggingOut={loggingOut}
             onControls={() => { setMenuOpen(false); setMappingOpen(true); }}
             onWifi={() => {
@@ -361,6 +428,7 @@ const ControllerDashboard: React.FC = () => {
                 setMenuOpen(false);
                 requestLeave(() => navigate('/controller-info', { state: { controller } }));
             }}
+            onBackupRestore={() => { setMenuOpen(false); setBackupPrompt('backup'); }}
             onApply={openApplyAction}
             onLogout={() => {
                 setMenuOpen(false);
@@ -440,9 +508,27 @@ const ControllerDashboard: React.FC = () => {
                     }))}
                 </IonRow>
             </IonGrid>
-            <p className="capability-dashboard-note">Your controller provides the available equipment and sensor options. Save your settings, then apply them to your controller.</p>
         </IonContent>
 
+        <IonLoading isOpen={backupBusy} message="Processing system backup…" />
+        <IonAlert isOpen={backupPrompt !== null} onDidDismiss={() => setBackupPrompt(null)}
+            header="Backup & Restore" message="Backups contain only the controller's successfully applied configuration. Unapplied changes are excluded."
+            buttons={[
+                { text: 'Cancel', role: 'cancel' },
+                { text: 'Back Up System', handler: () => { void backupSystem(); } },
+                { text: 'Restore System', handler: () => { void inspectBackup(); } },
+            ]} />
+        <IonAlert isOpen={restoreCandidate !== null}
+            onDidDismiss={() => setRestoreCandidate(null)}
+            header="Confirm System Restore"
+            message={restoreCandidate ?
+                `Validated backup\nProduct: ${restoreCandidate.product}\nFirmware: ${restoreCandidate.firmware_version}\nHardware: ${restoreCandidate.hardware_family}\nSource: ${restoreCandidate.source_device_id}\nCreated: ${restoreCandidate.created_at}\n\nThis will replace the controller's applied configuration and discard local drafts. The current controller configuration will be held in memory for rollback if verification fails. Continue?` : ''}
+            buttons={[
+                { text: 'Cancel', role: 'cancel' },
+                { text: 'Restore and Verify', role: 'confirm', handler: () => { if (restoreCandidate) void applyRestoredBackup(restoreCandidate); } },
+            ]} />
+        <IonAlert isOpen={!!backupMessage} onDidDismiss={() => setBackupMessage('')}
+            header="System Backup & Restore" message={backupMessage} buttons={['OK']} />
         <DashboardDialogs
             controllerName={controller.name}
             applyConfirmOpen={applyConfirmOpen}

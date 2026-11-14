@@ -10,7 +10,7 @@ import { markLocalConfigurationPending } from '../services/configuration-apply';
 import type { VirtualSensorDeclaration } from '../services/controller-api';
 import { VirtualSensorConfigurationStore, type VirtualSensorParameterValues } from '../services/virtual-sensor-configuration-store';
 import VirtualSensorParameterEditor from '../components/VirtualSensorParameterEditor';
-import './SensorDetailPage.css';
+import '../theme/skins/default/styles/pages/SensorDetailPage.css';
 import { ControllerSessionStore } from '../services/controller-session-store';
 import { getCapability, getSensorHistory, type CapabilityReadResult, type SensorHistoryPoint } from '../services/capability-operations';
 import SensorWidgetRenderer from '../components/sensor-widgets/SensorWidgetRenderer';
@@ -43,9 +43,17 @@ const SensorDetailPage: React.FC = () => {
     const route = location.state as SensorRouteState | null;
     const expectedPath = `/sensor-detail/${encodeURIComponent(capabilityId)}/${encodeURIComponent(channelId)}`;
     const isActiveSensorRoute = location.pathname === expectedPath;
-    const controller = route?.controller;
-    const capability = route?.capability ?? route?.capabilities?.find(item => item.id === capabilityId);
-    const channel = route?.channel ?? capability?.channels.find(item => item.id === channelId);
+    // Router state is stable during ordinary sensor updates; retain the
+    // associated objects rather than recreating references on each render.
+    const controller = useMemo(() => route?.controller, [route?.controller]);
+    const capability = useMemo(
+        () => route?.capability ?? route?.capabilities?.find(item => item.id === capabilityId),
+        [route?.capability, route?.capabilities, capabilityId],
+    );
+    const channel = useMemo(
+        () => route?.channel ?? capability?.channels.find(item => item.id === channelId),
+        [route?.channel, capability, channelId],
+    );
     const [sessionToken, setSessionToken] = useState('');
     const [reading, setReading] = useState<SensorReadingState | null>(null);
     const [historyPoints, setHistoryPoints] = useState<SensorHistoryPoint[]>([]);
@@ -62,7 +70,7 @@ const SensorDetailPage: React.FC = () => {
     const widget: SensorWidgetType = useMemo(() => {
         if (!capability || !channel) return 'none';
         return ControlConfigurationStore.getControl(capability.id).sensorWidgets?.[channel.id] ?? 'none';
-    }, [capability?.id, channel?.id]);
+    }, [capability, channel]);
 
     const displayName = useMemo(() => {
         if (!capability) return 'Sensor';
@@ -92,7 +100,7 @@ const SensorDetailPage: React.FC = () => {
         };
         void loadSession();
         return () => { active = false; };
-    }, [location.pathname, controller?.deviceId]);
+    }, [location.pathname, controller]);
 
     useEffect(() => {
         if (!controller || !capability || !channel) return;
@@ -139,7 +147,7 @@ const SensorDetailPage: React.FC = () => {
         };
         void loadVirtualSensorDefinition();
         return () => { active = false; };
-    }, [controller?.deviceId, capability?.id, channel?.id]);
+    }, [controller, capability, channel]);
 
     const saveVirtualSensorParameters = (values: VirtualSensorParameterValues) => {
         if (!controller || !virtualSensorDeclaration) return;
@@ -210,7 +218,7 @@ const SensorDetailPage: React.FC = () => {
             active = false;
             window.clearInterval(timer);
         };
-    }, [location.pathname, capabilityId, channelId, controller?.deviceId, controller?.address, controller?.httpPort, capability?.id, channel?.id, sessionToken, widget]);
+    }, [location.pathname, capabilityId, channelId, controller, capability, channel, sessionToken, widget]);
 
     useEffect(() => {
         if (location.pathname !== `/sensor-detail/${encodeURIComponent(capabilityId)}/${encodeURIComponent(channelId)}` ||
@@ -251,7 +259,7 @@ const SensorDetailPage: React.FC = () => {
             active = false;
             window.clearInterval(timer);
         };
-    }, [location.pathname, capabilityId, channelId, controller?.deviceId, controller?.address, controller?.httpPort, capability?.id, channel?.id, sessionToken, widget]);
+    }, [location.pathname, capabilityId, channelId, controller, capability, channel, sessionToken, widget]);
 
     // IonRouterOutlet retains inactive pages during transitions. Do not render
     // a missing-context error when this page is no longer the active route.

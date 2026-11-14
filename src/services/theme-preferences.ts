@@ -1,23 +1,21 @@
 import { Preferences } from '@capacitor/preferences';
+import { isSkinId, type SkinId } from '../theme/skin-registry';
 
-export type AppTheme = 'system' | 'light' | 'dark';
-const THEME_KEY = 'prakiva.app_theme.v1';
+const SKIN_KEY = 'prakiva.skin.v1';
 
-export async function loadAppTheme(): Promise<AppTheme> {
-    const result = await Preferences.get({ key: THEME_KEY });
-    if (result.value === 'light' || result.value === 'dark' || result.value === 'system') {
-        return result.value;
-    }
-    return 'system';
+export async function loadAppTheme(): Promise<SkinId> {
+    const { value } = await Preferences.get({ key: SKIN_KEY });
+    return isSkinId(value) ? value : 'default';
 }
 
-export function applyAppTheme(theme: AppTheme): void {
+export function applyAppTheme(skin: SkinId): void {
+    document.documentElement.dataset.prakivaSkin = skin;
+    // The Default skin retains its existing system-responsive light/dark palette.
     const systemDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
-    const useDark = theme === 'dark' || (theme === 'system' && systemDark);
-    document.documentElement.classList.toggle('ion-palette-dark', useDark);
+    document.documentElement.classList.toggle('ion-palette-dark', systemDark);
 }
 
-export async function saveAppTheme(theme: AppTheme): Promise<void> {
-    await Preferences.set({ key: THEME_KEY, value: theme });
-    applyAppTheme(theme);
+export async function saveAppTheme(skin: SkinId): Promise<void> {
+    await Preferences.set({ key: SKIN_KEY, value: skin });
+    applyAppTheme(skin);
 }

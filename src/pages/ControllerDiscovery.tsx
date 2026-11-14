@@ -10,7 +10,7 @@ import type { SavedController } from '../models/saved-controller';
 import { ControllerStore } from '../services/controller-store';
 import { getDeviceInfo, savedControllerFromDevice } from '../services/controller-api';
 import { discoverControllers, type DiscoveredController } from '../services/controller-discovery';
-import './Home.css';
+import '../theme/skins/default/styles/pages/Home.css';
 
 interface RouteState { targetDeviceId?: string }
 const ControllerDiscovery: React.FC = () => {

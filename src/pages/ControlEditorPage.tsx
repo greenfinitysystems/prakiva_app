@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { arrowBack } from 'ionicons/icons';
 import { IonAlert, IonButton, IonButtons, IonCard, IonCardContent, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonNote, IonPage, IonSelect, IonSelectOption, IonText, IonTitle, IonToolbar } from '@ionic/react';
@@ -15,16 +15,18 @@ import type { ControlProfile } from '../models/control-profile';
 import InlineChannelEditor from '../components/control-editors/InlineChannelEditor';
 import { validateTriggerRangeConfiguration } from '../config/trigger-validation';
 import { validateThresholdConfigurations } from '../config/threshold-validation';
-import './ControlEditorPage.css';
+import '../theme/skins/default/styles/pages/ControlEditorPage.css';
 interface RouteState { controller?: SavedController; capabilities?: ControllerCapability[]; capability?: ControllerCapability; policy?: ControlPolicy; channel?: { id: string; label: string; valueType: 'binary' | 'analog' | 'trigger'; unit?: string; min?: number; max?: number; supportedPolicies: ControlPolicy[] } }
 const palette = ['#d1d5db', '#ef4444', '#22c55e', '#3b82f6', '#eab308', '#a855f7', '#06b6d4', '#f97316'];
-const cloneCurves = (items: CurveDefinition[]) => items.map(curve => ({ ...curve, points: curve.points.map(point => ({ ...point })) }));
 const BINARY_AXIS: CurveAxis = { label: 'Output state', min: 0, max: 1, ticks: [0, 1], formatTick: value => value >= 0.5 ? 'ON' : 'OFF' };
 const X_AXIS: CurveAxis = { label: 'Time of day', min: 0, max: 24, unit: 'hours', ticks: [0, 3, 6, 9, 12, 15, 18, 21, 24], formatTick: v => `${String(v === 24 ? 0 : v).padStart(2, '0')}:00` };
 const ControlEditorPage: React.FC = () => {
     const { capabilityId } = useParams<{ capabilityId: string }>(); const location = useLocation(); const navigate = useNavigate(); const [search] = useSearchParams();
     const route = location.state as RouteState | null;
     const controller = route?.controller;
+    const controllerDeviceId = controller?.deviceId;
+    const controllerAddress = controller?.address;
+    const controllerHttpPort = controller?.httpPort;
     const [aquariumTime, setAquariumTime] = useState<Date | null>(null);
 
     // Use the controller's schedule-adjusted clock for the curve NOW marker.
@@ -34,11 +36,11 @@ const ControlEditorPage: React.FC = () => {
         let baseScheduleUnix = 0;
         let basePhoneMillis = 0;
         const refresh = async () => {
-            if (!controller) { setAquariumTime(null); return; }
+            if (!controllerDeviceId || !controllerAddress || controllerHttpPort == null) { setAquariumTime(null); return; }
             try {
-                const session = await ControllerSessionStore.load(controller.deviceId);
+                const session = await ControllerSessionStore.load(controllerDeviceId);
                 if (!session) return;
-                const status = await getTimeStatus(controller.address, controller.httpPort, session.sessionToken);
+                const status = await getTimeStatus(controllerAddress, controllerHttpPort, session.sessionToken);
                 if (!active || !status.clock_valid) return;
                 baseScheduleUnix = status.schedule_unix_time;
                 basePhoneMillis = Date.now();
@@ -54,7 +56,7 @@ const ControlEditorPage: React.FC = () => {
             setAquariumTime(new Date((baseScheduleUnix + (Date.now() - basePhoneMillis) / 1000) * 1000));
         }, 5_000);
         return () => { active = false; window.clearInterval(refreshTimer); window.clearInterval(tickTimer); };
-    }, [controller?.deviceId, controller?.address, controller?.httpPort]);
+    }, [controllerDeviceId, controllerAddress, controllerHttpPort]);
     const invokeManualOperation = async (capabilityId: string, channelId: string) => {
         if (!controller) throw new Error('Controller connection is unavailable.');
         const session = await ControllerSessionStore.load(controller.deviceId);
@@ -71,19 +73,21 @@ const ControlEditorPage: React.FC = () => {
     const parent = availableCapabilities.find(c => c.id === capabilityId);
     const channelId = search.get('channel');
     const selectedChannel = route?.channel ?? parent?.channels.find(c => c.id === channelId);
-    const capability = channelId && parent && selectedChannel
+    const capability = useMemo(() => channelId && parent && selectedChannel
         ? { ...parent, id: `${parent.id}.${selectedChannel.id}`, name: selectedChannel.label, channels: [selectedChannel] }
-        : (route && route.capability?.id === capabilityId ? route.capability : parent);
+        : (route && route.capability?.id === capabilityId ? route.capability : parent),
+    [channelId, parent, selectedChannel, route, capabilityId]);
     // Snapshot this editor's own configuration when its route becomes active.
     // Other pending changes (such as sensor widget selections) are outside this scope.
     const editorBaseline = useMemo(
         () => capability ? ControlConfigurationStore.getControlEditorSnapshot(capability.id) : null,
-        [capability?.id, location.pathname],
+        [capability],
     );
-    const hasEditorChanges = () => {
-        if (!capability || !editorBaseline) return false;
-        return JSON.stringify(ControlConfigurationStore.getControlEditorSnapshot(capability.id)) !== JSON.stringify(editorBaseline);
-    };
+    const editorCapabilityId = capability?.id;
+    const hasEditorChanges = useCallback(() => {
+        if (!editorCapabilityId || !editorBaseline) return false;
+        return JSON.stringify(ControlConfigurationStore.getControlEditorSnapshot(editorCapabilityId)) !== JSON.stringify(editorBaseline);
+    }, [editorCapabilityId, editorBaseline]);
     const [policies, setPolicies] = useState<Record<string, ControlPolicy>>(() => ({ ...DEFAULT_CONTROL_POLICIES, ...ControlConfigurationStore.getChannelPolicies() }));
     const [colors, setColors] = useState<Record<string, string>>(() => ControlConfigurationStore.getChannelColors());
     const [curves, setCurves] = useState<CurveDefinition[]>(() => {
@@ -116,7 +120,7 @@ const ControlEditorPage: React.FC = () => {
         };
         window.addEventListener('beforeunload', onBeforeUnload);
         return () => window.removeEventListener('beforeunload', onBeforeUnload);
-    }, []);
+    }, [hasEditorChanges]);
 
     // IonRouterOutlet keeps inactive pages mounted. Only the page currently
     // visible may register global back-navigation handlers.
@@ -134,7 +138,7 @@ const ControlEditorPage: React.FC = () => {
         };
         document.addEventListener('ionBackButton', onHardwareBack);
         return () => document.removeEventListener('ionBackButton', onHardwareBack);
-    }, [location.pathname, navigate]);
+    }, [location.pathname, navigate, hasEditorChanges]);
 
     useEffect(() => {
         if (!location.pathname.startsWith('/control-editor/')) return;
@@ -149,7 +153,7 @@ const ControlEditorPage: React.FC = () => {
         };
         window.addEventListener('popstate', onBrowserBack, true);
         return () => window.removeEventListener('popstate', onBrowserBack, true);
-    }, [location.pathname, location.search, location.hash, navigate]);
+    }, [location.pathname, location.search, location.hash, navigate, hasEditorChanges]);
 
     const displayName = useMemo(() => {
         try {

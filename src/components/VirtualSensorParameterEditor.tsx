@@ -28,7 +28,7 @@ const VirtualSensorParameterEditor: React.FC<VirtualSensorParameterEditorProps> 
             setValues({ ...defaultsFor(declaration), ...initialValues });
             setError('');
         }
-    }, [isOpen, declaration.component_id, initialValues]);
+    }, [isOpen, declaration, initialValues]);
 
     const updateValue = (parameterId: string, raw: string) => {
         setValues(previous => ({

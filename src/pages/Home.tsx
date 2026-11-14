@@ -12,7 +12,7 @@ import type { SavedController } from '../models/saved-controller';
 import { ControllerStore } from '../services/controller-store';
 import { getDeviceInfo, validateOwnerSession } from '../services/controller-api';
 import { ControllerSessionStore } from '../services/controller-session-store';
-import './Home.css';
+import '../theme/skins/default/styles/pages/Home.css';
 
 import { App as CapacitorApp } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
@@ -157,7 +157,7 @@ const Home: React.FC = () => {
                         className="prakiva-home-logo"
                     />
                     <h1>Your world, in balance.</h1>
-                    <p>Connect with nature through intelligent control.</p>
+                    <p>Connect with your world through intelligent control.</p>
                 </section>
                 <p className="prakiva-controller-summary">Controllers · {controllers.length} saved</p>
 

@@ -9,7 +9,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import type { SavedController } from '../models/saved-controller';
 import { getSetupStatus, resetController } from '../services/controller-api';
 import { ControllerSessionStore } from '../services/controller-session-store';
-import './Home.css';
+import '../theme/skins/default/styles/pages/Home.css';
 
 interface ResetLocationState { controller?: SavedController }
 

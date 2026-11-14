@@ -2,7 +2,7 @@ import { IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonConte
 import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { SavedController } from '../models/saved-controller';
-import './Home.css';
+import '../theme/skins/default/styles/pages/Home.css';
 import { claimController } from '../services/controller-api';
 
 interface ClaimLocationState { controller?: SavedController }
