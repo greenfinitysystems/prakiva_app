@@ -1,0 +1,905 @@
+/* PRAKIVA Instrument skin — scoped, reversible, no controller logic. */
+html[data-prakiva-skin="instrument"] {
+  color-scheme: light;
+  --ion-background-color: #f0e2c2;
+  --ion-background-color-rgb: 240,226,194;
+  --ion-text-color: #30271a;
+  --ion-text-color-rgb: 48,39,26;
+  --ion-card-background: #f8edd2;
+  --ion-item-background: #f8edd2;
+  --ion-toolbar-background: #ead7ab;
+  --ion-color-primary: #705020;
+  --ion-color-primary-rgb: 112,80,32;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255,255,255;
+  --ion-color-primary-shade: #62461c;
+  --ion-color-primary-tint: #7e6236;
+  --ion-color-medium: #6b5a42;
+  --ion-color-medium-rgb: 107,90,66;
+  --prakiva-page-bg: #f0e2c2;
+  --prakiva-card-bg: #f8edd2;
+  --prakiva-muted: #75664e;
+  --prakiva-card-radius: 18px;
+}
+html[data-prakiva-skin="instrument"] body,
+html[data-prakiva-skin="instrument"] ion-app,
+html[data-prakiva-skin="instrument"] ion-content {
+  --background: #f0e2c2;
+  background: #f0e2c2;
+  color: #30271a;
+}
+html[data-prakiva-skin="instrument"] ion-toolbar {
+  --background: linear-gradient(180deg, #fff4d8, #e5cfa1);
+  --color: #32271a;
+  --border-color: #a7803e;
+  --border-width: 0 0 2px 0;
+}
+html[data-prakiva-skin="instrument"] ion-card,
+html[data-prakiva-skin="instrument"] .prakiva-card,
+html[data-prakiva-skin="instrument"] .capability-tile {
+  --background: #f8edd2;
+  background: linear-gradient(145deg, #fff7e2 0%, #f2e1ba 68%, #e5cc99 100%);
+  color: #30271a;
+  border: 2px solid #b18b4b;
+  border-radius: 18px;
+  box-shadow: inset 0 2px 2px rgba(255,255,255,.85), inset 0 -2px 3px rgba(101,70,28,.17), 0 4px 9px rgba(58,41,19,.22);
+}
+html[data-prakiva-skin="instrument"] .capability-name,
+html[data-prakiva-skin="instrument"] .capability-policy {
+  color: #65441d;
+}
+html[data-prakiva-skin="instrument"] ion-button:not([fill="clear"]):not([fill="outline"]) {
+  --background: linear-gradient(180deg, #cda85f, #8d652d);
+  --color: #21180d;
+  --border-radius: 12px;
+  --box-shadow: inset 0 1px 1px #fff1c4, 0 2px 4px rgba(47,30,9,.3);
+}
+html[data-prakiva-skin="instrument"] ion-item {
+  --background: transparent;
+  --color: #30271a;
+  --border-color: #c9ae78;
+}
+/* Preserve Ionic semantic warning, danger, and success indicators. */
+@media (prefers-reduced-motion: reduce) {
+  html[data-prakiva-skin="instrument"] * { scroll-behavior: auto; }
+}
+
+
+/* Batch 02 — dashboard console treatment.
+   Entirely scoped to Instrument; no component or controller logic changes. */
+html[data-prakiva-skin="instrument"] .capability-dashboard {
+  --capability-tile-radius: 14px;
+  --background: #eee0bd;
+  background-image: repeating-linear-gradient(90deg, transparent 0 5px, rgba(95, 70, 35, .012) 5px 6px);
+}
+
+
+
+html[data-prakiva-skin="instrument"] .capability-dashboard .capability-grid ion-col {
+  padding: 6px;
+}
+html[data-prakiva-skin="instrument"] .capability-dashboard .capability-tile {
+  min-height: 104px;
+  border: 2px solid #89662f;
+  border-radius: 12px;
+  background: linear-gradient(155deg, #fff6de, #f1dfb8 55%, #ddbf84);
+  box-shadow: inset 0 2px 1px rgba(255,255,255,.94), inset 0 -3px 4px rgba(95,62,22,.16), 0 3px 5px rgba(50,34,14,.24);
+  transition: transform 130ms ease, box-shadow 130ms ease;
+}
+html[data-prakiva-skin="instrument"] .capability-dashboard .capability-tile:active {
+  transform: translateY(2px) scale(.99);
+  box-shadow: inset 0 2px 6px rgba(71,48,20,.25), 0 1px 2px rgba(50,34,14,.15);
+}
+html[data-prakiva-skin="instrument"] .capability-dashboard .capability-tile:focus-visible {
+  outline: 3px solid #356f46;
+  outline-offset: 2px;
+}
+html[data-prakiva-skin="instrument"] .capability-dashboard .capability-tile-content {
+  min-height: 100px;
+  padding: 14px 8px;
+}
+html[data-prakiva-skin="instrument"] .capability-dashboard .capability-name {
+  color: #3b2c18;
+  font-family: "Arial Narrow", "Roboto Condensed", Arial, sans-serif;
+  font-size: .84rem;
+  font-weight: 800;
+  letter-spacing: .075em;
+  text-shadow: 0 1px rgba(255,255,255,.65);
+}
+html[data-prakiva-skin="instrument"] .capability-dashboard .capability-meta {
+  color: #685234;
+  font-size: .7rem;
+}
+html[data-prakiva-skin="instrument"] .capability-dashboard .dashboard-status {
+  margin: 4px 0 12px;
+  padding: 10px 12px;
+  border: 1px solid #b59661;
+  border-radius: 9px;
+  background: #f6e9ca;
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-prakiva-skin="instrument"] .capability-dashboard .capability-tile { transition: none; }
+}
+
+/* Batch 03 — instrument-style sensor displays and phosphor history.
+   Existing SVG geometry, calibration, polling and history remain unchanged. */
+html[data-prakiva-skin="instrument"] .sensor-gauge-card,
+html[data-prakiva-skin="instrument"] .sensor-history-card {
+  border: 2px solid #a78348;
+  border-radius: 18px;
+  background: radial-gradient(ellipse at 45% 30%, #fff7e5 0%, #f3e5c6 64%, #d9ba80 100%);
+  box-shadow: inset 0 0 0 3px rgba(255,249,224,.68), inset 0 0 0 5px rgba(135,97,39,.16), 0 5px 12px rgba(66,43,17,.25);
+}
+html[data-prakiva-skin="instrument"] .sensor-gauge-card ion-card-content { padding: 18px 14px 16px; }
+html[data-prakiva-skin="instrument"] .sensor-history-heading { padding: 2px 4px 10px; border-bottom: 1px solid #b89b68; }
+
+html[data-prakiva-skin="instrument"] .sensor-history-period,
+html[data-prakiva-skin="instrument"] .sensor-history-range-control select { color: #3b2b16; background: #f5e6c2; border: 1px solid #a8844c; }
+
+
+
+
+html[data-prakiva-skin="instrument"] .sensor-history-axis-label,
+html[data-prakiva-skin="instrument"] .sensor-history-unit {  font-family: "Courier New", monospace; }
+html[data-prakiva-skin="instrument"] .sensor-history-area-top { stop-color: #64fa51; stop-opacity: .18; }
+html[data-prakiva-skin="instrument"] .sensor-history-area-bottom { stop-color: #64fa51; stop-opacity: 0; }
+
+html[data-prakiva-skin="instrument"] .sensor-history-message { color: #c1ecae; }
+@media (max-width: 540px) {
+  html[data-prakiva-skin="instrument"] .sensor-gauge-card ion-card-content { padding: 12px 9px; }
+
+  html[data-prakiva-skin="instrument"] .sensor-history-chart-wrap { padding: 8px 3px 5px; }
+}
+
+/* Batch 04 — original square vintage gauge, independent of Default. */
+html[data-prakiva-skin="instrument"] .prakiva-vintage-gauge .prakiva-instrument { width: min(100%, 480px); }
+html[data-prakiva-skin="instrument"] .prakiva-instrument-shell { width: 100%; margin: 0; padding: 0; background: transparent; border: 0; box-shadow: none; }
+html[data-prakiva-skin="instrument"] .prakiva-instrument { width: min(100%, 440px); margin: 0 auto; }
+html[data-prakiva-skin="instrument"] .prakiva-instrument-bezel { position: relative;  border-radius: 50%;   }
+html[data-prakiva-skin="instrument"] .prakiva-instrument-rim { position: relative;  border-radius: 50%;   }
+html[data-prakiva-skin="instrument"] .prakiva-instrument-dial { display: block; width: 100%; height: auto; overflow: visible; border-radius: 50%; }
+html[data-prakiva-skin="instrument"] .prakiva-dial-shadow { fill: #171612; stroke: #6d624e; stroke-width: 2; }
+html[data-prakiva-skin="instrument"] .prakiva-dial-face { stroke: #b4a88b; stroke-width: 1.5; }
+html[data-prakiva-skin="instrument"] .prakiva-dial-inner-ring { fill: none; stroke: #c2b697; stroke-width: 1; opacity: .8; }
+html[data-prakiva-skin="instrument"] .prakiva-dial-index { fill: #a52e24; }
+html[data-prakiva-skin="instrument"] .prakiva-dial-tick { stroke: #25241f; stroke-linecap: square; }
+html[data-prakiva-skin="instrument"] .prakiva-dial-tick-warning { stroke: #a62f24; }
+html[data-prakiva-skin="instrument"] .prakiva-dial-number { fill: #292820; font-family: "Arial Narrow", "Roboto Condensed", Arial, sans-serif; font-size: 15px; font-weight: 700; }
+html[data-prakiva-skin="instrument"] .prakiva-dial-brand-wordmark { fill: #514c40; font-family: Arial, sans-serif; font-size: 16px; font-weight: 800; letter-spacing: 1.7px; }
+html[data-prakiva-skin="instrument"] .prakiva-dial-measurement-label { fill: #292820; font-family: Arial, sans-serif; font-size: 8px; font-weight: 700; letter-spacing: 1.05px; }
+html[data-prakiva-skin="instrument"] .prakiva-dial-unit-label { fill: #5b5548; font-family: Georgia, serif; font-size: 11px; font-style: italic; font-weight: 700; letter-spacing: .4px; }
+html[data-prakiva-skin="instrument"] .prakiva-instrument-needle { stroke-width: 5; stroke-linecap: round; filter: drop-shadow(1px 1.5px 1px rgba(0,0,0,.45)); }
+html[data-prakiva-skin="instrument"] .prakiva-needle-hub-outer { fill: #24221b; stroke: #080807; stroke-width: 2; }
+html[data-prakiva-skin="instrument"] .prakiva-needle-hub-brass { fill: url(#prakiva-brass-hub); stroke: #8c682d; stroke-width: 1; }
+html[data-prakiva-skin="instrument"] .prakiva-needle-hub-pin { fill: #4d3516; }
+html[data-prakiva-skin="instrument"] .prakiva-digital-window { fill: #10170f; stroke: #302f27; stroke-width: 2; filter: drop-shadow(0 1px 1px rgba(0,0,0,.4)); }
+html[data-prakiva-skin="instrument"] .prakiva-digital-reading { fill: #c9f4a0; font-family: "Courier New", monospace; font-size: 19px; font-weight: 700; letter-spacing: -0.6px; filter: drop-shadow(0 0 2px rgba(185,255,139,.38)); }
+html[data-prakiva-skin="instrument"] .prakiva-status-lamp { stroke-width: 1.5; }
+html[data-prakiva-skin="instrument"] .prakiva-status-lamp-online { fill: #71d72c; stroke: #397b20; filter: drop-shadow(0 0 3px rgba(91,220,38,.65)); }
+html[data-prakiva-skin="instrument"] .prakiva-status-lamp-warning { fill: #d5a13a; stroke: #8c6424; }
+html[data-prakiva-skin="instrument"] .prakiva-status-lamp-error { fill: #b74735; stroke: #76271e; }
+html[data-prakiva-skin="instrument"] .prakiva-overrange-caption { fill: #9b3026; font-family: Arial, sans-serif; font-size: 5px; font-weight: 700; letter-spacing: .7px; }
+html[data-prakiva-skin="instrument"] .prakiva-bezel-screw { position: absolute; z-index: 2; width: 4.2%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 34% 28%, #d2b77a, #94713a 58%, #382b17 100%); border: 1px solid #574326; box-shadow: inset 0 1px 1px rgba(255,255,255,.35), 0 1px 2px rgba(0,0,0,.65); }
+html[data-prakiva-skin="instrument"] .prakiva-bezel-screw::after { content: ""; position: absolute; left: 16%; right: 16%; top: 47%; height: 1px; background: #332719; transform: rotate(-42deg); box-shadow: 0 1px rgba(255,255,255,.2); }
+html[data-prakiva-skin="instrument"] .prakiva-screw-top { top: 1.2%; left: 50%; transform: translateX(-50%); }
+html[data-prakiva-skin="instrument"] .prakiva-screw-left { left: 1.2%; top: 50%; transform: translateY(-50%); }
+html[data-prakiva-skin="instrument"] .prakiva-screw-right { right: 1.2%; top: 50%; transform: translateY(-50%); }
+html[data-prakiva-skin="instrument"] .prakiva-screw-bottom { bottom: 1.2%; left: 50%; transform: translateX(-50%); }
+
+html[data-prakiva-skin="instrument"] .prakiva-instrument-raw-needle {
+  stroke: #929aa1; stroke-width: 2.7; stroke-linecap: round; opacity: .72;
+}
+@media (prefers-reduced-motion: reduce) {
+ html[data-prakiva-skin="instrument"] .prakiva-instrument-needle { transition: none; }
+}
+
+
+
+/* Batch 05H: single source of truth for the integrated sensor instrument.
+   All selectors are scoped to Instrument; Default keeps its original cards. */
+.sensor-instrument-enclosure { display: contents; }
+.sensor-instrument-enclosure > .instrument-panel-screw,
+.instrument-history-selector,
+.instrument-history-pulse,
+.instrument-rotary-scale { display: none; }
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  isolation: isolate;
+  gap: 0;
+  padding: 16px 24px 58px;
+  border: 2px solid #a77d3d;
+  border-radius: 22px;
+  background: radial-gradient(ellipse at 45% 18%, #fff9eb 0%, #f6e8c9 74%, #e6cfa0 100%);
+  box-shadow: inset 0 0 0 2px #fff9e8, inset 0 0 0 4px rgba(125,86,32,.38),
+              inset 0 8px 18px rgba(255,255,255,.3), 0 4px 6px rgba(70,45,16,.28),
+              0 10px 17px rgba(70,45,16,.14);
+}
+
+
+
+
+
+
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .prakiva-vintage-gauge { width: 100%; min-width: 0; }
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-history-card {
+  margin: 0; border: 0; border-radius: 0; padding: 0; background: transparent; box-shadow: none;
+  overflow: visible;
+}
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-history-card ion-card-content { padding: 0; }
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-history-heading {
+  display: flex; align-items: center; 
+  gap: 8px;   
+    
+}
+html[data-prakiva-skin="instrument"] .sensor-history-title,
+html[data-prakiva-skin="instrument"] .sensor-history-subtitle,
+html[data-prakiva-skin="instrument"] .sensor-history-range-control,
+html[data-prakiva-skin="instrument"] .instrument-history-selector-label { display: none; }
+html[data-prakiva-skin="instrument"] .sensor-history-caption { flex: 1 1 auto; min-width: 30px; }
+html[data-prakiva-skin="instrument"] .instrument-history-pulse {
+  display: block; width: 58px; height: 32px;   color: #28251e;
+}
+html[data-prakiva-skin="instrument"] .instrument-history-selector {
+  display: flex; flex: 0 0 230px; width: 230px; height: 160px;
+  align-items: center; justify-content: center; margin: -20px 0 0;
+}
+html[data-prakiva-skin="instrument"] .instrument-rotary-station {
+  position: relative; flex: none; width: 230px; height: 160px;
+  overflow: visible; isolation: isolate;
+}
+html[data-prakiva-skin="instrument"] .instrument-rotary-scale {
+  display: block; position: absolute; inset: 0; width: 230px; height: 160px;
+  overflow: visible; color: #a78548; pointer-events: none; z-index: 0;
+}
+html[data-prakiva-skin="instrument"] .instrument-rotary-choice {
+  position: absolute; z-index: 2; display: grid; place-items: center;
+  min-width: 35px; height: 29px; padding: 2px; border: 0; background: transparent;
+  color: #312b1f; font: 800 12px "Arial Narrow", Arial, sans-serif;
+  text-shadow: 0 1px rgba(255,255,255,.6); cursor: pointer;
+}
+html[data-prakiva-skin="instrument"] .instrument-rotary-choice.is-selected { color: #166c38; }
+html[data-prakiva-skin="instrument"] .instrument-rotary-choice-1h { top: 99px; left: 18px; }
+html[data-prakiva-skin="instrument"] .instrument-rotary-choice-6h { top: 45px; left: 42px; }
+html[data-prakiva-skin="instrument"] .instrument-rotary-choice-24h { top: 45px; right: 42px; }
+html[data-prakiva-skin="instrument"] .instrument-rotary-choice-all { top: 99px; right: 18px; }
+html[data-prakiva-skin="instrument"] .instrument-rotary-knob {
+  position: absolute; z-index: 1; top: 67px; left: 69px;
+  width: 92px; height: 92px; padding: 7px; border: 4px solid #242019; border-radius: 50%;
+  background: repeating-conic-gradient(#141411 0deg 4deg, #6c5838 4deg 6deg, #141411 6deg 10deg);
+  box-shadow: 0 7px 10px rgba(49,31,10,.4), inset 0 0 0 2px #b89656; cursor: pointer;
+}
+html[data-prakiva-skin="instrument"] .instrument-rotary-knob-face {
+  display: block; position: relative; width: 100%; height: 100%; border-radius: 50%;
+  background: conic-gradient(from 38deg, #ad7a2e, #ffe7a2 56deg, #e9c478 100deg, #a9742d 173deg, #f9d88c 235deg, #c28b3a 310deg, #ad7a2e);
+  box-shadow: inset 0 2px 5px rgba(255,255,221,.95), inset 0 -3px 5px rgba(66,37,10,.5), 0 0 0 1px rgba(255,238,177,.8);
+  transition: transform 180ms ease;
+}
+html[data-prakiva-skin="instrument"] .instrument-rotary-pointer {
+  position: absolute; left: calc(50% - 3.5px); top: 5px; width: 7px; height: 30px;
+  border-radius: 3px; background: linear-gradient(90deg, #0d0c0a, #3e3525, #0d0c0a);
+}
+html[data-prakiva-skin="instrument"] .instrument-rotary-knob:focus-visible,
+html[data-prakiva-skin="instrument"] .instrument-rotary-choice:focus-visible { outline: 3px solid #167a47; outline-offset: 2px; }
+html[data-prakiva-skin="instrument"] .sensor-history-chart-wrap {
+  position: relative; z-index: 0; padding: 12px 8px 7px; margin: 4px 0 0;
+  border: 3px solid #a8833e; border-radius: 13px;
+  background: radial-gradient(ellipse at center, #092f15 0%, #04180b 72%, #020c06 100%);
+  box-shadow: inset 0 0 0 2px #173c1d, inset 0 0 16px rgba(0,0,0,.65), 0 2px 4px rgba(60,39,15,.25);
+}
+html[data-prakiva-skin="instrument"] .sensor-history-axis-label,
+html[data-prakiva-skin="instrument"] .sensor-history-unit {
+  fill: #d5ffae; font: 750 15px "Arial Narrow", Arial, sans-serif; letter-spacing: .2px;
+}
+html[data-prakiva-skin="instrument"] .sensor-history-grid-major { stroke: #3c9e47; stroke-width: 1.4; }
+html[data-prakiva-skin="instrument"] .sensor-history-grid-minor { stroke: #286d33; stroke-width: 1.1; }
+html[data-prakiva-skin="instrument"] .sensor-history-axis { stroke: #b2ff85; stroke-width: 1.6; }
+html[data-prakiva-skin="instrument"] .sensor-history-line {
+  stroke: #9dff72; stroke-width: 3.1; filter: drop-shadow(0 0 4px rgba(113,255,79,.92));
+}
+
+@media (max-width: 600px) {
+  html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure { padding: 12px 18px 48px; border-radius: 18px; }
+
+
+
+
+
+  html[data-prakiva-skin="instrument"] .instrument-history-selector { transform: scale(.83); transform-origin: right center; margin-left: -36px; }
+  html[data-prakiva-skin="instrument"] .instrument-history-pulse { width: 38px; margin-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-prakiva-skin="instrument"] .instrument-rotary-knob-face { transition: none; }
+}
+
+/* Batch 05J — move history rotary into its own footer below the oscilloscope.
+   This is Instrument-only; Default uses the original select control. */
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-history-heading {
+    
+  justify-content: flex-start;
+}
+html[data-prakiva-skin="instrument"] .instrument-history-pulse {
+  transform: none; margin-left: 18px;
+}
+.instrument-history-footer { display: none; }
+
+html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-history-selector {
+  display: flex;    height: 170px;
+  
+}
+html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-rotary-station {
+  width: 230px; height: 170px;
+}
+html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-rotary-scale {
+  width: 230px; height: 160px; top: 0;
+}
+html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-rotary-knob {
+  top: 67px; left: 69px;
+}
+
+
+
+
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure { padding-bottom: 48px; }
+@media (max-width: 600px) {
+  html[data-prakiva-skin="instrument"] .instrument-history-footer { padding-right: 0; }
+  html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-history-selector {
+    transform: scale(.83); transform-origin: right center; margin-left: -36px;
+  }
+}
+
+/* Batch 05K: precision rotary scale and smooth charcoal-metal bezel.
+   The knob centre is (115,113) in the 230x160 station. Four detents are
+   -65, -22, +22, +65 degrees, matching ROTARY_ANGLES exactly. */
+
+html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-rotary-choice-1h { top: 72px; left: 16px; }
+html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-rotary-choice-6h { top: 22px; left: 69px; }
+html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-rotary-choice-24h { top: 22px; right: 69px; }
+html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-rotary-choice-all { top: 72px; right: 16px; }
+
+/* Batch 05L — restore machined charcoal bezel, heartbeat proportions, and
+   relocate the sensor pilot lamp from the dial to the enclosure footer. */
+html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-rotary-knob {
+  background: linear-gradient(135deg, #585955 0%, #292b29 15%, #111311 40%, #282b29 72%, #0a0b0a 100%);
+  border: 4px solid #151715;
+  box-shadow: 0 6px 9px rgba(31,25,14,.42), inset 0 0 0 1px #8b8169,
+              inset 0 0 0 4px #202321, inset 0 0 0 5px #4c4b42,
+              inset 0 2px 3px rgba(255,255,255,.18);
+}
+html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-rotary-knob-face {
+  background: conic-gradient(from 35deg, #ac792c 0deg, #ffecb2 55deg, #e3b965 110deg,
+              #a87327 170deg, #f7d68b 235deg, #bb8331 315deg, #ac792c 360deg);
+}
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .instrument-history-pulse {
+  display: block; width: 58px; min-width: 58px; height: 32px; min-height: 32px;
+  flex: none; margin: 0 0 0 18px; transform: none; overflow: visible;
+}
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-history-caption {
+    flex: 0 0 auto; min-width: 70px;
+}
+
+
+
+
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure > .instrument-panel-status-lamp-stale,
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure > .instrument-panel-status-lamp-loading {
+  background: radial-gradient(circle at 35% 30%, #fff2ae, #d59b2c 60%, #8e601c);
+}
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure > .instrument-panel-status-lamp-error,
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure > .instrument-panel-status-lamp-invalid,
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure > .instrument-panel-status-lamp-unavailable {
+  background: radial-gradient(circle at 35% 30%, #ffb19c, #c93c28 60%, #76221a);
+}
+@media (max-width: 600px) {
+  html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .instrument-history-pulse {
+    width: 58px; min-width: 58px; height: 32px; margin-left: 14px;
+  }
+
+}
+
+/* Batch 05M: self-contained lower instrument control panel. */
+
+html[data-prakiva-skin="instrument"] .instrument-manufacturer-plate {
+  position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center;
+  min-width: 0;   
+  
+  
+  
+   
+  font-family: Georgia, serif; text-align: center; line-height: 1.2;
+}
+html[data-prakiva-skin="instrument"] .instrument-manufacturer-plate::before,
+html[data-prakiva-skin="instrument"] .instrument-manufacturer-plate::after {
+  content: ""; position: absolute; width: 5px; height: 5px; border-radius: 50%; top: 5px;
+  background: radial-gradient(circle at 30% 25%,#f8e2a6,#6b461d 80%); box-shadow: 0 1px 1px #3b2819;
+}
+html[data-prakiva-skin="instrument"] .instrument-manufacturer-plate::before { left: 5px; }
+html[data-prakiva-skin="instrument"] .instrument-manufacturer-plate::after { right: 5px; }
+
+
+
+html[data-prakiva-skin="instrument"] .instrument-pilot-assembly {
+  display: flex; flex-direction: column; align-items: center; gap: 7px;
+  color: #413624; font: 700 9px Arial,sans-serif; letter-spacing: .4px;
+}
+html[data-prakiva-skin="instrument"] .instrument-pilot-lens {
+  width: 14px; height: 14px; border: 2px solid #776139; border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%,#fff1ac,#d69c32 60%,#785019);
+  box-shadow: 0 0 0 2px #cfb47d, 0 2px 4px #503c2488;
+}
+html[data-prakiva-skin="instrument"] .instrument-pilot-lens-valid { background: radial-gradient(circle at 30% 25%,#d7ffad,#48e42b 55%,#187c16); box-shadow: 0 0 0 2px #cfb47d,0 0 8px #52e53188; }
+html[data-prakiva-skin="instrument"] .instrument-pilot-lens-error,
+html[data-prakiva-skin="instrument"] .instrument-pilot-lens-invalid,
+html[data-prakiva-skin="instrument"] .instrument-pilot-lens-unavailable { background: radial-gradient(circle at 30% 25%,#ffc6a2,#e34d32 60%,#772a1a); }
+html[data-prakiva-skin="instrument"] .instrument-pushbutton-bank { display: flex;  align-items: center; justify-content: center; }
+html[data-prakiva-skin="instrument"] .instrument-pushbutton-unit { display: flex; flex-direction: column; align-items: center; gap: 7px; font: 700 9px Arial,sans-serif; color: #433824; letter-spacing: .4px; }
+html[data-prakiva-skin="instrument"] .instrument-pushbutton {
+      cursor: pointer;
+  
+  
+  transition: transform 80ms ease,box-shadow 80ms ease;
+}
+
+html[data-prakiva-skin="instrument"] .instrument-pushbutton:focus-visible { outline: 3px solid #167a47; outline-offset: 3px; }
+html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-history-selector { width: 170px;  transform: scale(.74); transform-origin: center; margin: 0 -30px; }
+html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-rotary-pointer {
+  top: -5px; height: 30px; width: 8px; left: calc(50% - 4px);
+  border-radius: 2px 2px 1px 1px;
+  background: linear-gradient(90deg,#080908,#36342c 35%,#11120f 75%,#050605);
+  box-shadow: 0 1px 2px #0009;
+}
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-history-heading {
+     overflow: visible;
+}
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-history-caption {
+  display: flex; align-items: center; height: 44px; min-height: 44px; overflow: visible;
+}
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure svg.instrument-history-pulse {
+  display: block; width: 64px; height: 32px; min-width: 64px; min-height: 32px;
+  overflow: visible; flex-shrink: 0; margin-left: 14px; 
+}
+@media(max-width:600px) {
+  html[data-prakiva-skin="instrument"] .instrument-history-footer {
+    grid-template-columns: minmax(82px,1fr) 35px minmax(40px,.65fr) 135px;
+    gap: 4px; padding: 4px 2px 0; height: 140px; min-height: 140px;
+  }
+  html[data-prakiva-skin="instrument"] .instrument-manufacturer-plate strong { font-size: 12px; }
+  html[data-prakiva-skin="instrument"] .instrument-plate-overline { font-size: 6px; }
+  html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-history-selector {
+    transform: scale(.62); transform-origin: center; margin: 0 -44px;
+  }
+  html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure svg.instrument-history-pulse { width: 64px; height: 32px; margin-left: 10px; }
+}
+
+/* Batch 05N — coherent vintage lower instrument assembly.
+   Restore the pilot indicator to its original dial position, keep the working
+   history selector untouched, and use compact round momentary buttons. */
+html[data-prakiva-skin="instrument"] .prakiva-instrument-dial .prakiva-status-lamp {
+  display: initial;
+}
+html[data-prakiva-skin="instrument"] .instrument-history-footer {
+  grid-template-columns: minmax(115px, 1fr) auto 170px;
+  column-gap: 20px;
+}
+html[data-prakiva-skin="instrument"] .instrument-manufacturer-plate {
+  min-height: 62px;
+  border-radius: 3px;
+  border: 2px ridge #6e4b24;
+  background: linear-gradient(160deg,#cda45c 0%,#b48743 20%,#94662f 55%,#b98c4a 85%,#d7b36e 100%);
+  box-shadow: inset 0 0 0 2px #d8b877, inset 0 0 0 4px #855b2e,
+              inset 0 1px 8px #e9ce8b77, 0 3px 4px #4a351b66;
+  color: #382714;
+  text-shadow: 0 1px 0 #f0d18a88, 0 -1px 0 #4b321b66;
+  padding: 10px 12px;
+}
+html[data-prakiva-skin="instrument"] .instrument-manufacturer-plate strong {
+  font-family: Georgia,serif; font-size: 17px; letter-spacing: 1.7px;
+}
+html[data-prakiva-skin="instrument"] .instrument-plate-overline {
+  font-size: 8px; letter-spacing: .45px;
+}
+html[data-prakiva-skin="instrument"] .instrument-plate-underline {
+  font-size: 9px; letter-spacing: 1px;
+}
+html[data-prakiva-skin="instrument"] .instrument-pushbutton-bank {
+  gap: 13px;
+}
+html[data-prakiva-skin="instrument"] .instrument-pushbutton {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 2px solid #252724;
+  background: radial-gradient(circle at 32% 24%, #64645e 0%,#373936 22%,#1c1e1c 60%,#090b0a 100%);
+  box-shadow: inset 0 2px 2px #a4a49a66, inset 0 -3px 3px #000a,
+              0 3px 0 #101210, 0 5px 5px #49371c66;
+}
+html[data-prakiva-skin="instrument"] .instrument-pushbutton:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 3px 5px #000c, 0 1px 0 #101210;
+}
+@media(max-width:600px) {
+  html[data-prakiva-skin="instrument"] .instrument-history-footer {
+    grid-template-columns: minmax(110px,1fr) auto 135px;
+    gap: 8px;
+  }
+  html[data-prakiva-skin="instrument"] .instrument-manufacturer-plate {
+    padding: 8px 6px;
+  }
+  html[data-prakiva-skin="instrument"] .instrument-manufacturer-plate strong { font-size: 13px; }
+  html[data-prakiva-skin="instrument"] .instrument-plate-overline { font-size: 6px; }
+  html[data-prakiva-skin="instrument"] .instrument-plate-underline { font-size: 7px; }
+  html[data-prakiva-skin="instrument"] .instrument-pushbutton { width: 30px; height: 30px; }
+}
+
+/* Batch 05O — minimal lower instrument controls, instrument skin only.
+   Remove plate; pair momentary button(s) with the existing range knob.
+   Preserve rotary geometry, dial lamp, oscilloscope, and bottom screw clearance. */
+html[data-prakiva-skin="instrument"] .instrument-history-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 22px;
+  
+  
+  padding: 0 14px 0;
+  
+}
+html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-pushbutton-bank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  flex: 0 0 auto;
+}
+html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-pushbutton-unit {
+  justify-content: center;
+  gap: 7px;
+}
+html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-pushbutton {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  border: 3px solid #22251f;
+  background: radial-gradient(circle at 32% 24%,#6c6c63 0%,#41433f 23%,#202320 61%,#080a09 100%);
+  box-shadow: inset 0 2px 3px #a4a49a66, inset 0 -4px 5px #000a,
+              0 3px 0 #101210, 0 6px 6px #49371c66;
+}
+html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-pushbutton:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 4px 6px #000c,0 1px 0 #101210;
+}
+html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-history-selector {
+  flex: 0 0 170px;
+}
+@media (max-width: 600px) {
+  html[data-prakiva-skin="instrument"] .instrument-history-footer {
+    gap: 9px;
+    height: 108px;
+    min-height: 108px;
+    padding: 0 6px;
+    margin-top: -8px;
+  }
+  html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-pushbutton-bank { gap: 8px; }
+  html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-pushbutton {
+    width: 57px;
+    height: 57px;
+  }
+  html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-history-selector {
+    flex: 0 0 135px;
+  }
+}
+
+/* Batch 05P — align the CAL/PARAM pushbutton centres with the
+   rotary knob centre, without moving the selector scale or chart. */
+
+@media (max-width: 600px) {
+  html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-pushbutton-bank {
+    transform: translateY(28px);
+  }
+}
+
+/* Batch 05Q — final lower-control alignment and label clearance. */
+
+
+html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-pushbutton-unit {
+  position: relative;
+  overflow: visible;
+}
+html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-pushbutton-unit > span {
+  position: absolute;
+  
+  
+  
+  white-space: nowrap;
+  
+}
+@media (max-width: 600px) {
+  html[data-prakiva-skin="instrument"] .instrument-history-footer {
+    margin-top: -16px;
+  }
+  html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-pushbutton-bank {
+    transform: translateY(33px);
+  }
+}
+
+/* Batch 05R: correct only the CAL/PARAM bank vertical alignment.
+   Keep the rotary and entire panel at the 05Q positions. */
+html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-pushbutton-bank {
+  transform: translateY(24px);
+}
+
+@media (max-width: 600px) {
+  html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-pushbutton-bank {
+    transform: translateY(28px);
+  }
+}
+
+/* Batch 05S: align the complete rotary station with the CAL pushbutton.
+   Offset the selector as a unit so its arc, labels and knob stay registered.
+   The CAL legend is positioned above the button, not beneath it. */
+html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-history-selector {
+  position: relative;
+  top: 8px;
+}
+html[data-prakiva-skin="instrument"] .instrument-history-footer .instrument-pushbutton-unit > span {
+  top: -17px;
+  left: 50%;
+  transform: translateX(-50%);
+  line-height: 12px;
+  display: block;
+  visibility: visible;
+}
+
+/* Batch 05T — lift the complete lower control assembly as one unit.
+   Both controls and rotary markings retain their mutual alignment; moving
+   the parent avoids clipping at the bottom of the control row. */
+html[data-prakiva-skin="instrument"] .instrument-history-footer {
+  position: relative;
+  
+}
+
+/* Batch 05U — allocate real vertical space for the complete control assembly.
+   Avoid moving the footer over the oscilloscope: the 05T top offset clipped
+   the upper arc and CAL legend. Retain the 05S relative control alignment. */
+html[data-prakiva-skin="instrument"] .instrument-history-footer {
+  top: 0;
+  height: 166px;
+  min-height: 166px;
+  margin-top: -8px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+@media (max-width: 600px) {
+  html[data-prakiva-skin="instrument"] .instrument-history-footer {
+    top: 0;
+    height: 156px;
+    min-height: 156px;
+    margin-top: -8px;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+/* Batch 05V — extend the instrument enclosure to the bottom of the usable
+   viewport when its content is shorter. Natural content height still wins.
+   Ionic's header occupies 56px plus the platform top safe-area; IonContent
+   has 16px padding on each side from ion-padding. */
+html[data-prakiva-skin="instrument"] ion-content.sensor-detail-page .sensor-instrument-enclosure {
+  box-sizing: border-box;
+  min-height: calc(100vh - 56px - var(--ion-safe-area-top, 0px) - var(--ion-safe-area-bottom, 0px) - 32px);
+  min-height: calc(100dvh - 56px - var(--ion-safe-area-top, 0px) - var(--ion-safe-area-bottom, 0px) - 32px);
+}
+
+/* Stage 3: separate controls DOM card, visually integrated into the antique enclosure.
+   Existing rotary and pushbutton geometry remains unchanged. */
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-controls-card {
+  margin: 0; padding: 0; border: 0; border-radius: 0;
+  background: transparent; box-shadow: none; overflow: visible;
+}
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-controls-card ion-card-content {
+  padding: 0; overflow: visible;
+}
+
+/* Three independent ivory enamel instrument plates, no enclosing chassis. */
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure,
+html[data-prakiva-skin="instrument"] ion-content.sensor-detail-page .sensor-instrument-enclosure {
+  display: flex; flex-direction: column; gap: 16px; min-height: 0;
+  padding: 0; border: 0; border-radius: 0; background: none; box-shadow: none;
+}
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-widget-card,
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-history-card,
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-controls-card {
+  position: relative; margin: 0; padding: 12px 18px; border: 1px solid #a88147;
+  border-radius: 15px; background: linear-gradient(145deg,#fff9e9 0%,#f2e4c5 70%,#e9d4a7 100%);
+  box-shadow: inset 0 1px 1px #fffdf3, 0 3px 8px rgba(63,42,18,.22); overflow: visible;
+}
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-widget-card ion-card-content,
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-history-card ion-card-content,
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-controls-card ion-card-content { padding: 10px 12px; }
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-fastened-panel,
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .prakiva-vintage-gauge.sensor-widget-card {
+  --panel-screw-edge: #71501e;
+  --panel-screw-face: radial-gradient(circle at 30% 24%, #fff4bb 0%,#dfb75d 35%,#a87932 75%,#62401c 100%);
+  --panel-screw-shadow: inset 0 1px 1px #fff6d1, inset 0 -2px 2px #6a431c, 0 1px 2px #866538;
+}
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-history-heading {
+  height: auto; min-height: 36px; margin: 0; padding: 0 0 0 32px; border: 0;
+}
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure svg.instrument-history-pulse {
+  margin: 0; transform: none;
+}
+
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-controls-card .instrument-history-selector {
+   transform: scale(.76); transform-origin: center; flex: 0 0 175px; width: 175px;
+}
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-history-chart-wrap { margin: 0; }
+
+
+/* Stage 9: true panel-mounted fasteners and matched controls geometry. */
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-panel-fastener {
+  --panel-screw-edge: #71501e;
+  --panel-screw-face: radial-gradient(circle at 30% 24%,#fff4bb 0%,#dfb75d 35%,#a87932 75%,#62401c 100%);
+  --panel-screw-shadow: inset 0 1px 1px #fff6d1,inset 0 -2px 2px #6a431c,0 1px 2px #866538;
+}
+
+
+@media (max-width: 390px) {
+ html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-controls-card .instrument-pushbutton-bank { gap: 25px; }
+}
+
+/* Stage 10 — restrained meter finish and common instrument proportions. */
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-panel-fastener {
+  --panel-screw-slot: #4c3519;
+  --panel-screw-slot-highlight: rgba(255,247,208,.6);
+}
+/* The history panel must have a real bottom margin for its mounting screws. */
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-history-card {
+  padding-bottom: 25px;
+}
+/* Shorter control plate; align the complete assembly to its vertical centre. */
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-controls-card {
+  padding-top: 4px; padding-bottom: 4px;
+}
+
+/* Use one physical dial diameter across Default and Vintage. */
+html[data-prakiva-skin="instrument"] .prakiva-vintage-gauge .prakiva-instrument,
+html[data-prakiva-skin="instrument"] .prakiva-instrument {
+  width: min(100%, 420px);
+}
+/* Flat charcoal metal mounting ring, rather than a deep 3D bezel. */
+html[data-prakiva-skin="instrument"] .prakiva-instrument-bezel {
+  padding: 1.5%;
+  background: linear-gradient(135deg,#454844 0%,#242826 48%,#353935 100%);
+  box-shadow: inset 0 0 0 1px #141715, 0 1px 2px rgba(35,29,19,.22);
+}
+html[data-prakiva-skin="instrument"] .prakiva-instrument-rim {
+  padding: .8%;
+  background: #333735;
+  box-shadow: inset 0 0 0 1px #171a18;
+}
+html[data-prakiva-skin="instrument"] .prakiva-bezel-screw { display: none; }
+/* The linear meter uses a thin charcoal frame and milky white enamel face. */
+html[data-prakiva-skin="instrument"] .sensor-linear-face {
+  fill: #fcfbf5;
+  stroke: #303431;
+  stroke-width: 1.8;
+}
+html[data-prakiva-skin="instrument"] .sensor-linear-brand,
+html[data-prakiva-skin="instrument"] .sensor-linear-label { fill: #242824; }
+html[data-prakiva-skin="instrument"] .sensor-linear-tick-major,
+html[data-prakiva-skin="instrument"] .sensor-linear-tick { stroke: #262b28; }
+html[data-prakiva-skin="instrument"] .sensor-linear-reading { fill: #514021; }
+
+/* Stage 11: use the same centred control-row mathematics as Default.
+   Retire accumulated legacy offsets from the earlier integrated enclosure. */
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-controls-card .instrument-history-footer {
+  position: relative; top: 0; margin: 0; padding: 0 24px;
+  width: 100%; height: 132px; min-height: 132px;
+  display: flex; justify-content: center; align-items: center; gap: 12px;
+  box-sizing: border-box;
+}
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-controls-card .instrument-pushbutton-bank {
+  transform: none; margin: 0; align-self: center; gap: 35px;
+}
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-controls-card .instrument-history-selector {
+  position: relative;  margin: 0; align-self: center;
+}
+@media (max-width: 390px) {
+  html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-controls-card .instrument-pushbutton-bank { gap: 25px; }
+}
+
+/* Stage 12 — align rotary knob centre with the pushbutton centre.
+   The rotary's 230x160 SVG station has its knob below its own midpoint;
+   moving the whole selector (rather than the knob alone) preserves the
+   detent arc, labels and pointer registration. The controls row and button
+   positions remain shared with Default. */
+html[data-prakiva-skin="instrument"] .sensor-instrument-enclosure .sensor-controls-card .instrument-history-selector {
+  top: -22px;
+}
+
+/* Dashboard navigation: recessed black momentary pushbuttons with pilot-lamp lettering.
+   Actuator = warm ruby, sensor = green phosphor. No operational state implied. */
+
+
+
+html[data-prakiva-skin="instrument"] .capability-dashboard .capability-tile {
+  --background: #171a19;
+  background: linear-gradient(160deg, #3a3d3a 0%, #171918 19%, #0b0d0d 78%, #242725 100%);
+  border: 3px solid #282a27;
+  border-radius: 7px;
+  box-shadow: inset 0 2px 3px rgba(255,255,255,.12), inset 0 -4px 7px #050606,
+              0 0 0 2px #7d6a4a, 0 4px 6px rgba(34,24,11,.35);
+  min-height: 96px;
+}
+html[data-prakiva-skin="instrument"] .capability-dashboard .capability-tile-content {
+  min-height: 90px;
+  padding: 12px 9px;
+}
+html[data-prakiva-skin="instrument"] .capability-dashboard .capability-name {
+  color: #f2675d;
+  font-family: "Arial Narrow", "Roboto Condensed", Arial, sans-serif;
+  font-size: .91rem;
+  font-weight: 700;
+  letter-spacing: .075em;
+  line-height: 1.35;
+  text-shadow: 0 0 3px rgba(255,67,45,.8), 0 0 11px rgba(238,49,35,.48);
+}
+html[data-prakiva-skin="instrument"] .capability-dashboard .sensor-tile .capability-name {
+  color: #87e99b;
+  text-shadow: 0 0 3px rgba(78,239,116,.8), 0 0 11px rgba(47,203,87,.48);
+}
+html[data-prakiva-skin="instrument"] .capability-dashboard .capability-tile:active {
+  transform: translateY(3px) scale(.99);
+  box-shadow: inset 0 5px 12px #050606, 0 0 0 2px #7d6a4a, 0 1px 2px rgba(34,24,11,.25);
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-prakiva-skin="instrument"] .capability-dashboard .capability-tile { transition: none; }
+}
+
+/* Stage 19: open console dashboard. The buttons sit directly on the ivory chassis;
+   headings are engraved-style category symbols, not raised bars. */
+html[data-prakiva-skin="instrument"] .capability-dashboard .capability-grid {
+  margin: 0 0 18px;
+  padding: 2px 0 6px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+html[data-prakiva-skin="instrument"] .capability-dashboard .capability-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 32px;
+  margin: 16px 6px 9px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #785e35;
+  text-shadow: 0 1px 0 rgba(255,247,225,.85);
+}
+html[data-prakiva-skin="instrument"] .capability-dashboard .capability-section-title::before,
+html[data-prakiva-skin="instrument"] .capability-dashboard .capability-section-title::after {
+  content: "";
+  display: block;
+  position: static;
+  flex: 1 1 0;
+  width: auto;
+  height: 1px;
+  border: 0;
+  border-radius: 0;
+  transform: none;
+  background: linear-gradient(90deg, transparent, rgba(120,91,47,.5));
+  box-shadow: 0 1px 0 rgba(255,248,225,.75);
+}
+html[data-prakiva-skin="instrument"] .capability-dashboard .capability-section-title::after {
+  background: linear-gradient(90deg, rgba(120,91,47,.5), transparent);
+}
+html[data-prakiva-skin="instrument"] .capability-dashboard .capability-section-title ion-icon {
+  flex: 0 0 auto;
+  font-size: 1.35rem;
+  color: #705631;
+  filter: none;
+}

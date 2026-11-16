@@ -1,49 +1,33 @@
 /* Shared sensor widget foundations */
 .sensor-widget-card { margin: 0; border: 1px solid var(--ion-color-step-150, #dce2dd); border-radius: 14px; box-shadow: 0 2px 8px rgba(25, 40, 30, .06); background: var(--ion-card-background, #fff); }
 .sensor-widget-card ion-card-content { padding: 14px; }
-.sensor-widget-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+
 .sensor-widget-title { color: var(--ion-text-color); font-size: .95rem; font-weight: 650; }
-.sensor-widget-status { flex: 0 0 auto; font-size: .72rem; color: var(--ion-color-medium); }
+
 .sensor-status-valid { color: var(--ion-color-success); }
 .sensor-status-invalid, .sensor-status-unavailable, .sensor-status-error { color: var(--ion-color-danger); }
 .sensor-status-stale { color: var(--ion-color-warning-shade); }
 
 /* Contemporary 270-degree gauge. No animated arc or progress transition. */
 .sensor-gauge-card { width: 100%; }
-.sensor-contemporary-gauge { width: min(100%, 440px); margin: 2px auto 0; }
-.sensor-contemporary-gauge-svg { display: block; width: 100%; height: auto; overflow: visible; }
-.sensor-gauge-track { fill: none; stroke: var(--ion-color-step-150, #dce3dc); stroke-width: 9; stroke-linecap: round; }
-.sensor-gauge-progress { fill: none; stroke: var(--ion-color-primary, #39765b); stroke-width: 9; stroke-linecap: round; }
-.sensor-gauge-tick { stroke: var(--ion-color-medium, #929b94); stroke-width: 1.1; }
-.sensor-gauge-tick-major { stroke: var(--ion-text-color, #202820); stroke-width: 2.1; }
-.sensor-gauge-tick-label { fill: var(--ion-text-color, #202820); font-family: inherit; font-size: 14px; font-weight: 650; }
-.sensor-gauge-brand { fill: var(--ion-text-color); font-family: inherit; font-size: 15px; font-weight: 750; letter-spacing: 2px; }
-.sensor-gauge-subtitle { fill: var(--ion-color-medium-shade, #66716a); font-family: inherit; font-size: 8px; font-weight: 650; letter-spacing: 1px; }
-.sensor-gauge-needle { stroke: var(--ion-color-primary, #39765b); stroke-width: 4.5; stroke-linecap: round; }
-.sensor-gauge-hub-outer { fill: var(--ion-background-color, #fff); stroke: var(--ion-color-medium, #89938c); stroke-width: 3; }
-.sensor-gauge-hub-inner { fill: var(--ion-color-primary, #39765b); }
-.sensor-gauge-digital-window { fill: var(--ion-color-success-tint, #e4f5e8); stroke: var(--ion-color-success-tint, #d4eedb); stroke-width: 1; }
-.sensor-gauge-digital-value { fill: #12351f !important; font-family: inherit; font-size: 22px; font-weight: 800; paint-order: stroke; stroke: rgba(255,255,255,.18); stroke-width: .35px; }
-.sensor-gauge-footer { display: flex; justify-content: center; align-items: center; gap: 7px; min-height: 18px; margin-top: -1px; color: var(--ion-color-medium); font-size: .7rem; }
-.sensor-gauge-footer strong { margin-left: 5px; color: var(--ion-color-warning-shade); font-weight: 650; }
-.sensor-gauge-status-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+
 .sensor-gauge-status-online { background: var(--ion-color-success); }
 .sensor-gauge-status-warning { background: var(--ion-color-warning); }
 .sensor-gauge-status-error { background: var(--ion-color-danger); }
 
-.sensor-widget-updated { text-align: center; color: var(--ion-color-medium); font-size: .68rem; margin-top: 5px; }
-.sensor-text-reading { display: flex; align-items: baseline; gap: 7px; padding: 18px 0 10px; }
-.sensor-text-reading strong { font-size: 2rem; line-height: 1.1; font-weight: 700; color: var(--ion-text-color); }
-.sensor-text-reading span { font-size: .95rem; color: var(--ion-color-medium); }
-.sensor-text-card { background: var(--ion-card-background, var(--ion-background-color)); }
+
+
+
+
 
 /* Contemporary sensor history chart — follows the standard Prakiva/Ionic cards. */
 .sensor-history-card { margin: 16px 0 0; border: 1px solid var(--ion-color-step-150, #dce2dd); border-radius: 14px; box-shadow: 0 2px 8px rgba(25, 40, 30, .06); background: var(--ion-card-background, #fff); }
 .sensor-history-card ion-card-content { padding: 14px 12px 10px; }
 .sensor-history-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 2px 10px; }
-.sensor-history-title { display: block; color: var(--ion-text-color); font-size: .96rem; font-weight: 650; }
-.sensor-history-subtitle { margin-top: 2px; color: var(--ion-color-medium); font-size: .72rem; }
-.sensor-history-period { flex: 0 0 auto; padding: 5px 10px; border-radius: 7px; background: var(--ion-color-light, #f4f6f4); color: var(--ion-color-medium-shade, #59645d); font-size: .72rem; font-weight: 600; }
+
+
+
 .sensor-history-chart-wrap { width: 100%; overflow: hidden; }
 .sensor-history-chart { display: block; width: 100%; height: auto; overflow: visible; }
 .sensor-history-grid-major { stroke: var(--ion-color-step-150, #dce3dc); stroke-width: 1; }
@@ -56,17 +40,263 @@
 .sensor-history-area { fill: url(#sensor-history-area); }
 .sensor-history-line { fill: none; stroke: var(--ion-color-primary, #39765b); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
 .sensor-history-message { margin: 18px 4px 12px; color: var(--ion-color-medium); font-size: .84rem; text-align: center; }
-.sensor-history-refreshing { margin: 4px 4px 0; color: var(--ion-color-medium); font-size: .68rem; text-align: right; }
+
 
 /* Secondary raw sensor needle: the existing calibrated gauge remains unchanged. */
-.sensor-gauge-raw-needle { stroke: #89919b; stroke-width: 2.5; stroke-linecap: round; opacity: .66; }
-.sensor-gauge-needle-legend { display: flex; justify-content: center; gap: 18px; color: var(--ion-color-medium); font-size: 11px; margin-top: -5px; margin-bottom: 7px; }
-.sensor-gauge-needle-legend span { display: inline-flex; align-items: center; gap: 5px; }
-.sensor-gauge-needle-legend i { width: 13px; height: 3px; display: inline-block; border-radius: 2px; }
-.sensor-gauge-legend-calibrated { background: #2fae53; }
-.sensor-gauge-legend-raw { background: #89919b; opacity: .7; }
 
 /* History time-range selector (local filtering of controller-returned samples). */
 .sensor-history-range-control { display: flex; align-items: center; gap: 6px; flex: 0 0 auto; }
 .sensor-history-range-label { font-size: .72rem; color: var(--ion-color-medium-shade, #59645d); }
 .sensor-history-range-control select { max-width: 135px; padding: 5px 7px; border: 1px solid var(--ion-color-medium-tint, #bfc4bf); border-radius: 7px; background: var(--ion-background-color, #fff); color: var(--ion-text-color, #222); font-size: .75rem; }
+
+/* Default skin: horizontally translating analogue pointer. */
+.sensor-linear-card { width: 100%; }
+.sensor-linear-svg { display:block; width:min(100%, 560px); height:auto; margin:10px auto 0; }
+.sensor-linear-face { fill:var(--ion-card-background, #fff); stroke:var(--ion-color-step-150, #dce3dc); stroke-width:1.4; }
+.sensor-linear-brand { fill:var(--ion-text-color, #202820); font-size:11px; font-weight:750; letter-spacing:2px; }
+.sensor-linear-tick { stroke:var(--ion-color-medium, #929b94); stroke-width:1; }
+.sensor-linear-tick-major { stroke:var(--ion-text-color, #202820); stroke-width:2; }
+.sensor-linear-label { fill:var(--ion-text-color, #202820); font-size:9px; font-weight:650; }
+.sensor-linear-pointer { stroke:var(--ion-color-primary, #39765b); stroke-width:3.5; stroke-linecap:round; }
+.sensor-linear-raw { stroke:#8d9b9d; stroke-width:2; opacity:.7; }
+.sensor-linear-reading { fill:var(--ion-color-primary, #39765b); font-size:12px; font-weight:750; }
+
+/* Stage 2: same history controls and geometry as Instrument, modern flat finish.
+   Deliberately scoped to Default; Instrument CSS and control logic are untouched. */
+html[data-prakiva-skin="default"] .sensor-history-range-control { display: none; }
+html[data-prakiva-skin="default"] .instrument-history-footer {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; width: 100%; min-height: 150px;
+  padding: 0 6px; box-sizing: border-box;
+}
+html[data-prakiva-skin="default"] .instrument-pushbutton-bank {
+  display: flex; align-items: center; justify-content: center; gap: 14px;
+  flex: 0 0 auto;
+}
+html[data-prakiva-skin="default"] .instrument-pushbutton-unit {
+  display: flex; flex-direction: column-reverse; align-items: center;
+  gap: 8px; color: var(--ion-color-medium-shade, #52675c);
+  font: 700 10px Arial, sans-serif; letter-spacing: .7px;
+}
+html[data-prakiva-skin="default"] .instrument-pushbutton {
+  appearance: none; width: 66px; height: 66px; padding: 0;
+  border: 2px solid var(--ion-color-primary-shade, #2b644b); border-radius: 50%;
+  background: var(--ion-color-primary-shade, #2b644b); cursor: pointer;
+  box-shadow: 0 2px 4px rgba(25, 50, 35, .12);
+  transition: transform 100ms ease, background 100ms ease;
+}
+html[data-prakiva-skin="default"] .instrument-pushbutton:active {
+  transform: translateY(2px); background: var(--ion-color-primary-tint, #73a18a);
+}
+html[data-prakiva-skin="default"] .instrument-history-selector {
+  display: block; position: relative; flex: 0 0 116px;
+  width: 116px; height: 130px;
+}
+html[data-prakiva-skin="default"] .instrument-history-selector-label {
+  display: none;
+}
+html[data-prakiva-skin="default"] .instrument-rotary-station {
+  position: absolute; width: 230px; height: 160px; left: 50%; top: calc(50% - 14px);
+  transform: translate(-50%, -50%) scale(.72); transform-origin: center;
+}
+html[data-prakiva-skin="default"] .instrument-rotary-scale {
+  display: block; position: absolute; inset: 0; width: 230px; height: 160px;
+  color: var(--ion-color-primary, #39765b); pointer-events: none;
+}
+html[data-prakiva-skin="default"] .instrument-rotary-choice {
+  position: absolute; display: grid; place-items: center;
+  min-width: 35px; height: 28px; padding: 0; border: 0;
+  background: transparent; color: var(--ion-color-medium-shade, #52675c);
+  font: 750 13px Arial, sans-serif; cursor: pointer;
+}
+html[data-prakiva-skin="default"] .instrument-rotary-choice.is-selected {
+  color: var(--ion-color-primary, #39765b);
+}
+html[data-prakiva-skin="default"] .instrument-rotary-choice-1h { top: 99px; left: 18px; }
+html[data-prakiva-skin="default"] .instrument-rotary-choice-6h { top: 45px; left: 42px; }
+html[data-prakiva-skin="default"] .instrument-rotary-choice-24h { top: 45px; right: 42px; }
+html[data-prakiva-skin="default"] .instrument-rotary-choice-all { top: 99px; right: 18px; }
+html[data-prakiva-skin="default"] .instrument-rotary-knob {
+  appearance: none; position: absolute; top: 67px; left: 69px;
+  width: 92px; height: 92px; padding: 8px; border-radius: 50%;
+  border: 3px solid var(--ion-color-primary, #39765b);
+  background: var(--ion-color-primary, #39765b); cursor: pointer;
+  box-shadow: 0 2px 5px rgba(25, 50, 35, .13);
+}
+html[data-prakiva-skin="default"] .instrument-rotary-knob-face {
+  display: block; position: relative; width: 100%; height: 100%;
+  border-radius: 50%; background: #ffffff;
+  transition: transform 180ms ease;
+}
+html[data-prakiva-skin="default"] .instrument-rotary-pointer {
+  position: absolute; top: 4px; left: calc(50% - 3px);
+  width: 6px; height: 28px; border-radius: 3px;
+  background: var(--ion-color-primary-shade, #2b644b);
+}
+html[data-prakiva-skin="default"] .instrument-pushbutton:focus-visible,
+html[data-prakiva-skin="default"] .instrument-rotary-knob:focus-visible,
+html[data-prakiva-skin="default"] .instrument-rotary-choice:focus-visible {
+  outline: 3px solid var(--ion-color-primary, #39765b); outline-offset: 3px;
+}
+@media (max-width: 390px) {
+  html[data-prakiva-skin="default"] .instrument-history-footer { gap: 4px; padding: 0; }
+  html[data-prakiva-skin="default"] .instrument-pushbutton-bank { gap: 7px; }
+  html[data-prakiva-skin="default"] .instrument-pushbutton { width: 57px; height: 57px; }
+  html[data-prakiva-skin="default"] .instrument-history-selector { flex-basis: 106px; width: 106px; }
+  html[data-prakiva-skin="default"] .instrument-rotary-station { transform: translate(-50%, -50%) scale(.62); }
+}
+
+/* Stage 3: history plot and instrument controls are sibling cards. */
+.sensor-controls-card {
+  margin: 12px 0 0;
+  border: 1px solid var(--ion-color-step-150, #dce2dd);
+  border-radius: 14px;
+  background: var(--ion-card-background, #fff);
+  box-shadow: 0 2px 8px rgba(25, 40, 30, .06);
+}
+.sensor-controls-card ion-card-content {
+  padding: 12px 14px;
+}
+
+
+/* Default sensor panel: status is an LED inside the linear meter face. */
+.sensor-linear-status-led { fill: var(--ion-color-danger, #c74949); }
+.sensor-linear-status-valid { fill: var(--ion-color-success, #2fae53); }
+.sensor-linear-status-loading, .sensor-linear-status-stale { fill: var(--ion-color-warning, #e2a43b); }
+
+/* History header uses the same heartbeat emblem as the Instrument skin. */
+html:not([data-prakiva-skin="instrument"]) .sensor-history-heading { min-height: 32px; }
+html:not([data-prakiva-skin="instrument"]) .instrument-history-pulse {
+  display: block; width: 58px; height: 30px; color: var(--ion-color-primary, #39765b);
+}
+
+/* Shared three-panel instrument construction. Fasteners are CSS-only and skinable. */
+.sensor-instrument-enclosure { display: flex; flex-direction: column; gap: 16px; }
+.sensor-fastened-panel, .prakiva-vintage-gauge.sensor-widget-card { position: relative; overflow: visible; }
+.sensor-fastened-panel::before, .sensor-fastened-panel::after,
+.sensor-fastened-panel > ion-card-content::before, .sensor-fastened-panel > ion-card-content::after,
+.prakiva-vintage-gauge.sensor-widget-card::before, .prakiva-vintage-gauge.sensor-widget-card::after,
+.prakiva-vintage-gauge.sensor-widget-card > .prakiva-instrument-shell::before,
+.prakiva-vintage-gauge.sensor-widget-card > .prakiva-instrument-shell::after {
+   position: absolute; z-index: 4; pointer-events: none;
+  width: 15px; height: 15px; border-radius: 50%; box-sizing: border-box;
+  border: 1px solid var(--panel-screw-edge, transparent);
+  background: var(--panel-screw-face, transparent);
+  box-shadow: var(--panel-screw-shadow, none);
+}
+.sensor-fastened-panel::before, .prakiva-vintage-gauge.sensor-widget-card::before { top: 15px; left: 15px; }
+.sensor-fastened-panel::after, .prakiva-vintage-gauge.sensor-widget-card::after { top: 15px; right: 15px; }
+.sensor-fastened-panel > ion-card-content::before,
+.prakiva-vintage-gauge.sensor-widget-card > .prakiva-instrument-shell::before { bottom: 15px; left: 15px; }
+.sensor-fastened-panel > ion-card-content::after,
+.prakiva-vintage-gauge.sensor-widget-card > .prakiva-instrument-shell::after { bottom: 15px; right: 15px; }
+.sensor-fastened-panel > ion-card-content { position: relative; }
+.sensor-fastened-panel-two > ion-card-content::before,
+.sensor-fastened-panel-two > ion-card-content::after { display: none; }
+.sensor-fastened-panel-two::before { top: 50%; left: 16px; transform: translateY(-50%); }
+.sensor-fastened-panel-two::after { top: 50%; right: 16px; transform: translateY(-50%); }
+.sensor-history-heading { padding-left: 30px; }
+
+
+/* Stage 9: fasteners anchored to the panel box (not the IonCardContent box).
+   A shared DOM element prevents bottom screws drifting into the scope. */
+.sensor-fastened-panel::before, .sensor-fastened-panel::after,
+.sensor-fastened-panel > ion-card-content::before, .sensor-fastened-panel > ion-card-content::after,
+.prakiva-vintage-gauge.sensor-widget-card::before, .prakiva-vintage-gauge.sensor-widget-card::after,
+.prakiva-vintage-gauge.sensor-widget-card > .prakiva-instrument-shell::before,
+.prakiva-vintage-gauge.sensor-widget-card > .prakiva-instrument-shell::after { content: none !important; display: none !important; }
+.sensor-panel-fastener {
+  position: absolute; z-index: 5; pointer-events: none;
+  width: 15px; height: 15px; border-radius: 50%; box-sizing: border-box;
+  border: 1px solid var(--panel-screw-edge, transparent);
+  background: var(--panel-screw-face, transparent);
+  box-shadow: var(--panel-screw-shadow, none);
+}
+.sensor-panel-fastener-tl { top: 15px; left: 15px; }
+.sensor-panel-fastener-tr { top: 15px; right: 15px; }
+.sensor-panel-fastener-bl { bottom: 15px; left: 15px; }
+.sensor-panel-fastener-br { bottom: 15px; right: 15px; }
+.sensor-panel-fastener-ml { top: 50%; left: 16px; transform: translateY(-50%); }
+.sensor-panel-fastener-mr { top: 50%; right: 16px; transform: translateY(-50%); }
+/* Unified controls: compact, centred; spacing is between the actual button stations. */
+html[data-prakiva-skin="default"] .sensor-controls-card .instrument-history-footer {
+  display: flex; justify-content: center; align-items: center; 
+  width: 100%; padding: 0 24px; box-sizing: border-box;
+}
+html[data-prakiva-skin="default"] .sensor-controls-card .instrument-pushbutton-bank { gap: 35px; }
+@media (max-width: 390px) {
+ html[data-prakiva-skin="default"] .sensor-controls-card .instrument-pushbutton-bank { gap: 25px; }
+}
+/* One circular dial structure in every skin. Default uses clean, flat materials. */
+html[data-prakiva-skin="default"] .prakiva-vintage-gauge { padding: 14px; }
+html[data-prakiva-skin="default"] .prakiva-instrument-shell { width: 100%; margin: 0; padding: 0; background: transparent; }
+html[data-prakiva-skin="default"] .prakiva-instrument { width: min(100%, 440px); margin: 0 auto; }
+html[data-prakiva-skin="default"] .prakiva-instrument-bezel { position: relative; padding: 3.3%; border-radius: 50%; background: #e2e8e2; box-shadow: none; }
+html[data-prakiva-skin="default"] .prakiva-instrument-rim { position: relative; padding: 1.4%; border-radius: 50%; background: #f7faf7; box-shadow: none; }
+html[data-prakiva-skin="default"] .prakiva-instrument-dial { display: block; width: 100%; height: auto; border-radius: 50%; }
+html[data-prakiva-skin="default"] .prakiva-dial-shadow {   stroke-width: 2; }
+html[data-prakiva-skin="default"] .prakiva-dial-face { fill: #ffffff; stroke: #dfe6df; stroke-width: 1.5; }
+html[data-prakiva-skin="default"] .prakiva-dial-inner-ring { fill: none;  stroke-width: 1; }
+html[data-prakiva-skin="default"] .prakiva-dial-index { fill: #39765b; }
+html[data-prakiva-skin="default"] .prakiva-dial-tick { stroke: #2c3530; }
+html[data-prakiva-skin="default"] .prakiva-dial-tick-warning { stroke: #39765b; }
+html[data-prakiva-skin="default"] .prakiva-dial-number { fill: #202820; font: 700 15px Arial,sans-serif; }
+html[data-prakiva-skin="default"] .prakiva-dial-brand-wordmark { fill: #59616b; font: 700 16px Arial,sans-serif; letter-spacing: 1.7px; }
+html[data-prakiva-skin="default"] .prakiva-dial-measurement-label { fill: #59616b; font: 700 8px Arial,sans-serif; letter-spacing: 1px; }
+html[data-prakiva-skin="default"] .prakiva-dial-unit-label { fill: #59616b; font: 700 11px Arial,sans-serif; }
+html[data-prakiva-skin="default"] .prakiva-instrument-needle { stroke: #39765b; stroke-width: 5; stroke-linecap: round; }
+html[data-prakiva-skin="default"] .prakiva-instrument-raw-needle { stroke: #929aa1; stroke-width: 2.7; opacity: .72; }
+html[data-prakiva-skin="default"] .prakiva-needle-hub-outer { fill: #ffffff; stroke: #65736b; stroke-width: 2; }
+html[data-prakiva-skin="default"] .prakiva-needle-hub-brass { fill: #39765b; stroke: #39765b; stroke-width: 1; }
+html[data-prakiva-skin="default"] .prakiva-needle-hub-pin { fill: #ffffff; }
+html[data-prakiva-skin="default"] .prakiva-digital-window { fill: #38d666; stroke: #38d666; stroke-width: 1; }
+html[data-prakiva-skin="default"] .prakiva-digital-reading { fill: #12351f; font: 800 22px Arial,sans-serif; }
+html[data-prakiva-skin="default"] .prakiva-status-lamp { stroke-width: 1; stroke: rgba(0,0,0,.15); }
+html[data-prakiva-skin="default"] .prakiva-status-lamp-online { fill: #2fae53; }
+html[data-prakiva-skin="default"] .prakiva-status-lamp-warning { fill: #e2a43b; }
+html[data-prakiva-skin="default"] .prakiva-status-lamp-error { fill: #c74949; }
+html[data-prakiva-skin="default"] .prakiva-overrange-caption { fill: #a52e24; font: 700 6px Arial,sans-serif; }
+html[data-prakiva-skin="default"] .prakiva-bezel-screw { display: none; }
+
+/* Stage 10 — common instrument geometry and engraved panel fasteners. */
+.sensor-panel-fastener::after {
+  content: ""; position: absolute; left: 19%; right: 19%; top: calc(50% - 1px);
+  height: 2px; border-radius: 1px; transform: rotate(-38deg);
+  background: var(--panel-screw-slot, transparent);
+  box-shadow: 0 1px 0 var(--panel-screw-slot-highlight, transparent);
+}
+/* The same circular instrument diameter is used by all skins. */
+html[data-prakiva-skin="default"] .prakiva-vintage-gauge .prakiva-instrument {
+  width: min(100%, 420px);
+}
+/* Reserve the rotary selector's visual footprint consistently across skins. */
+html[data-prakiva-skin="default"] .sensor-controls-card .instrument-history-footer {
+  gap: 12px;
+}
+html[data-prakiva-skin="default"] .sensor-controls-card .instrument-history-selector {
+  flex: 0 0 145px; width: 145px;
+}
+/* Reduce the dead space while retaining room for the control labels. */
+html[data-prakiva-skin="default"] .sensor-controls-card .instrument-history-footer {
+  min-height: 132px;
+}
+@media (max-width: 390px) {
+  html[data-prakiva-skin="default"] .sensor-controls-card .instrument-history-selector {
+    flex-basis: 125px; width: 125px;
+  }
+}
+
+/* Stage 11: flatten the dial's concentric housing into the white card.
+   Preserve the exact shared dial geometry and its internal scale rings. */
+html[data-prakiva-skin="default"] .prakiva-instrument-bezel,
+html[data-prakiva-skin="default"] .prakiva-instrument-rim {
+  background: #fff;
+  box-shadow: none;
+}
+html[data-prakiva-skin="default"] .prakiva-dial-shadow {
+  fill: #fff;
+  stroke: #fff;
+}
+html[data-prakiva-skin="default"] .prakiva-dial-inner-ring {
+  stroke: #fff;
+}

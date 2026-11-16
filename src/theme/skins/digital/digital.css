@@ -1,0 +1,468 @@
+/* Digital: modern HMI skin. Shared structure and interactions remain unchanged. */
+html[data-prakiva-skin="digital"] {
+  color-scheme: dark;
+  --ion-background-color: #071426;
+  --ion-background-color-rgb: 7,20,38;
+  --ion-text-color: #e7f4ff;
+  --ion-text-color-rgb: 231,244,255;
+  --ion-card-background: #111f33;
+  --ion-item-background: #111f33;
+  --ion-toolbar-background: #101d31;
+  --ion-color-primary: #37d9f3;
+  --ion-color-primary-rgb: 55,217,243;
+  --ion-color-primary-contrast: #061523;
+  --ion-color-primary-shade: #31bfd5;
+  --ion-color-primary-tint: #4bdef4;
+  --ion-color-medium: #9db3c9;
+  --ion-color-medium-rgb: 157,179,201;
+  --prakiva-page-bg: #071426;
+  --prakiva-card-bg: #111f33;
+  --prakiva-muted: #9db3c9;
+  --prakiva-card-radius: 16px;
+}
+html[data-prakiva-skin="digital"] body,
+html[data-prakiva-skin="digital"] ion-app,
+html[data-prakiva-skin="digital"] ion-content {
+  --background: #071426;
+  background: #071426;
+  color: #e7f4ff;
+}
+html[data-prakiva-skin="digital"] ion-toolbar {
+  --background: #101d31;
+  --color: #e7f4ff;
+  --border-color: #28435e;
+}
+html[data-prakiva-skin="digital"] ion-card,
+html[data-prakiva-skin="digital"] .prakiva-card {
+  --background: #101f33;
+  background: #101f33;
+  color: #e7f4ff;
+  border: 1px solid #2c4662;
+  border-radius: 16px;
+  box-shadow: 0 5px 16px rgba(0,0,0,.2);
+}
+html[data-prakiva-skin="digital"] ion-item {
+  --background: #101f33;
+  --color: #e7f4ff;
+  --border-color: #2c4662;
+}
+html[data-prakiva-skin="digital"] .capability-dashboard {
+  --background: radial-gradient(ellipse at 85% 100%, #0d2850 0%, #071426 60%);
+}
+html[data-prakiva-skin="digital"] .capability-section-title {
+  color: #38d7f3;
+  justify-content: center;
+  gap: 16px;
+  margin: 23px 0 13px;
+}
+html[data-prakiva-skin="digital"] .capability-section-title::before,
+html[data-prakiva-skin="digital"] .capability-section-title::after {
+  content: ''; height: 1px; flex: 1;
+  background: linear-gradient(90deg, transparent, #1caec7);
+}
+html[data-prakiva-skin="digital"] .capability-section-title::after {
+  background: linear-gradient(90deg, #1caec7, transparent);
+}
+html[data-prakiva-skin="digital"] .capability-grid .capability-tile {
+  --background: linear-gradient(160deg, #182b42 0%, #0b1728 78%);
+  background: linear-gradient(160deg, #182b42 0%, #0b1728 78%);
+  border: 1px solid #365570;
+  border-radius: 16px;
+  min-height: 104px;
+  box-shadow: inset 0 1px 0 rgba(185,229,255,.13), 0 4px 12px rgba(0,0,0,.26);
+  position: relative;
+  overflow: hidden;
+}
+html[data-prakiva-skin="digital"] .capability-grid .capability-tile::after {
+  content: ''; position: absolute; bottom: 0; left: 18%; right: 18%; height: 2px;
+  background: #38d7f3; box-shadow: 0 0 9px #38d7f3;
+}
+html[data-prakiva-skin="digital"] .capability-grid .sensor-tile::after {
+  background: #24e1ad; box-shadow: 0 0 9px #24e1ad;
+}
+html[data-prakiva-skin="digital"] .capability-tile-content {
+  flex-direction: row; justify-content: flex-start; text-align: left;
+  gap: 12px; min-height: 102px; padding: 14px 12px;
+}
+html[data-prakiva-skin="digital"] .capability-name {
+  color: #eaf5ff; width: auto; font-size: .83rem; letter-spacing: .015em;
+}
+html[data-prakiva-skin="digital"] .capability-component-icon {
+  display: block; flex: 0 0 auto; font-size: 1.75rem; color: #38d7f3;
+  filter: drop-shadow(0 0 5px rgba(56,215,243,.35));
+}
+html[data-prakiva-skin="digital"] .sensor-tile .capability-component-icon {
+  color: #24e1ad; filter: drop-shadow(0 0 5px rgba(36,225,173,.35));
+}
+html[data-prakiva-skin="digital"] .capability-tile:active { transform: scale(.975); }
+/* Icons are metadata-driven but deliberately absent from the two established skins. */
+html:not([data-prakiva-skin="digital"]) .capability-component-icon { display: none; }
+/* Shared instrument structure: graphite casing and electronic readout. */
+html[data-prakiva-skin="digital"] .sensor-gauge-card,
+html[data-prakiva-skin="digital"] .sensor-history-card,
+html[data-prakiva-skin="digital"] .sensor-controls-card {
+  --background: #101f33; background: #101f33;
+  border: 1px solid #2b4964; border-radius: 16px;
+  box-shadow: inset 0 1px rgba(180,225,255,.09), 0 5px 14px rgba(0,0,0,.25);
+}
+html[data-prakiva-skin="digital"] .prakiva-dial-face { fill: #15273b; stroke: #3d637d; }
+html[data-prakiva-skin="digital"] .prakiva-dial-number,
+html[data-prakiva-skin="digital"] .prakiva-dial-measurement-label { fill: #c9e9f4; }
+html[data-prakiva-skin="digital"] .prakiva-dial-brand-wordmark,
+html[data-prakiva-skin="digital"] .prakiva-dial-unit-label { fill: #76c9de; }
+html[data-prakiva-skin="digital"] .prakiva-dial-tick { stroke: #6dc9dd; }
+html[data-prakiva-skin="digital"] .prakiva-dial-inner-ring { stroke: #2d5c73; }
+html[data-prakiva-skin="digital"] .prakiva-digital-window { fill: #07121c; stroke: #37617a; }
+html[data-prakiva-skin="digital"] .prakiva-digital-reading { fill: #55e6f6; }
+html[data-prakiva-skin="digital"] .sensor-history-chart-wrap { background: #081826; border-radius: 12px; }
+html[data-prakiva-skin="digital"] .instrument-panel-screw { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  html[data-prakiva-skin="digital"] .capability-tile { transition: none; }
+}
+
+
+/* Stage 21: Digital sensor instruments — shared geometry, HMI materials. */
+html[data-prakiva-skin="digital"] .prakiva-vintage-gauge .prakiva-instrument,
+html[data-prakiva-skin="digital"] .prakiva-instrument {
+  width: min(100%, 420px);
+  margin: 0 auto;
+}
+html[data-prakiva-skin="digital"] .prakiva-instrument-shell {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+}
+html[data-prakiva-skin="digital"] .prakiva-instrument-bezel {
+  position: relative;
+  padding: 3.3%;
+  border-radius: 50%;
+  background: #07111d;
+  box-shadow: inset 0 0 0 2px #294963;
+}
+html[data-prakiva-skin="digital"] .prakiva-instrument-rim {
+  position: relative;
+  padding: 1.4%;
+  border-radius: 50%;
+  background: #12283e;
+}
+html[data-prakiva-skin="digital"] .prakiva-instrument-dial {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 50%;
+}
+html[data-prakiva-skin="digital"] .prakiva-dial-shadow {
+  fill: #091420;
+  stroke: #31546d;
+}
+html[data-prakiva-skin="digital"] .prakiva-instrument-needle {
+  stroke: #42e3fa;
+  stroke-width: 5;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 3px rgba(66,227,250,.65));
+}
+html[data-prakiva-skin="digital"] .prakiva-instrument-raw-needle {
+  stroke: #f7ad52;
+  stroke-width: 2.7;
+  opacity: .85;
+}
+html[data-prakiva-skin="digital"] .prakiva-needle-hub-outer {
+  fill: #142b40;
+  stroke: #65d9ec;
+}
+html[data-prakiva-skin="digital"] .prakiva-needle-hub-brass {
+  fill: #238da5;
+  stroke: #69d8e9;
+}
+html[data-prakiva-skin="digital"] .prakiva-needle-hub-pin { fill: #d8faff; }
+html[data-prakiva-skin="digital"] .prakiva-dial-index { fill: #38d7f3; }
+
+/* The common controls component was previously hidden outside Default/Analog. */
+html[data-prakiva-skin="digital"] .sensor-controls-card .instrument-history-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 132px;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+html[data-prakiva-skin="digital"] .instrument-pushbutton-bank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  flex: 0 0 auto;
+}
+html[data-prakiva-skin="digital"] .instrument-pushbutton-unit {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 8px;
+  color: #b3d9e7;
+  font: 700 10px Arial, sans-serif;
+  letter-spacing: .7px;
+}
+html[data-prakiva-skin="digital"] .instrument-pushbutton {
+  appearance: none;
+  width: 62px;
+  height: 62px;
+  padding: 0;
+  border: 2px solid #4cd6eb;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 28%, #305a72, #0d2437 68%);
+  box-shadow: inset 0 1px 2px #9aeaf4aa, 0 0 11px #27b5ce55;
+  cursor: pointer;
+}
+html[data-prakiva-skin="digital"] .instrument-pushbutton:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 2px 6px #020a11;
+}
+html[data-prakiva-skin="digital"] .instrument-history-selector {
+  display: block;
+  position: relative;
+  flex: 0 0 145px;
+  width: 145px;
+  height: 130px;
+}
+html[data-prakiva-skin="digital"] .instrument-history-selector-label { display: none; }
+html[data-prakiva-skin="digital"] .instrument-rotary-station {
+  position: absolute;
+  width: 230px;
+  height: 160px;
+  left: 50%;
+  top: calc(50% - 14px);
+  transform: translate(-50%, -50%) scale(.72);
+  transform-origin: center;
+}
+html[data-prakiva-skin="digital"] .instrument-rotary-scale {
+  display: block;
+  width: 230px;
+  height: 160px;
+  overflow: visible;
+  color: #80b5cb;
+}
+html[data-prakiva-skin="digital"] .instrument-rotary-choice {
+  fill: #93c7d8;
+  color: #93c7d8;
+}
+html[data-prakiva-skin="digital"] .instrument-rotary-choice.is-selected {
+  fill: #48e0f4;
+  color: #48e0f4;
+}
+html[data-prakiva-skin="digital"] .instrument-rotary-knob {
+  cursor: pointer;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #345b72, #0b1d2d);
+  box-shadow: inset 0 1px 2px #b1ecf266, 0 3px 9px #0009;
+}
+html[data-prakiva-skin="digital"] .instrument-rotary-knob-face {
+  background: radial-gradient(circle at 35% 28%, #466c83, #132d43 70%);
+  border-radius: 50%;
+}
+html[data-prakiva-skin="digital"] .instrument-rotary-pointer {
+  background: #43e4f4;
+  box-shadow: 0 0 5px #43e4f4;
+}
+html[data-prakiva-skin="digital"] .sensor-history-range-control { display: none; }
+
+/* Digital linear meter and raw/calibrated pointers. */
+html[data-prakiva-skin="digital"] .sensor-linear-face {
+  fill: #102237;
+  stroke: #6ab6d2;
+}
+html[data-prakiva-skin="digital"] .sensor-linear-brand,
+html[data-prakiva-skin="digital"] .sensor-linear-label { fill: #d4eefa; }
+html[data-prakiva-skin="digital"] .sensor-linear-tick,
+html[data-prakiva-skin="digital"] .sensor-linear-tick-major { stroke: #9ccde1; }
+html[data-prakiva-skin="digital"] .sensor-linear-pointer { stroke: #48e2f6; }
+html[data-prakiva-skin="digital"] .sensor-linear-raw { stroke: #f5ac52; opacity: .85; }
+html[data-prakiva-skin="digital"] .sensor-linear-reading { fill: #4de3f5; }
+
+/* Curve editor's preview hint must not inherit a light background in Digital. */
+html[data-prakiva-skin="digital"] .curve-editor-add-preview {
+  background: #162c42;
+  color: #c9e9f7;
+  border: 1px solid #31536b;
+}
+@media (max-width: 390px) {
+  html[data-prakiva-skin="digital"] .instrument-pushbutton-bank { gap: 12px; }
+  html[data-prakiva-skin="digital"] .instrument-pushbutton { width: 55px; height: 55px; }
+  html[data-prakiva-skin="digital"] .instrument-history-selector { flex-basis: 120px; width: 120px; }
+  html[data-prakiva-skin="digital"] .instrument-rotary-station {
+    transform: translate(-50%, -50%) scale(.62);
+  }
+}
+
+
+/* Stage 22 — compact electronic dial, explicit pilot lamp and complete rotary geometry. */
+html[data-prakiva-skin="digital"] .sensor-gauge-card .prakiva-instrument {
+  width: min(100%, 380px);
+  max-width: 380px;
+  margin: 0 auto;
+}
+html[data-prakiva-skin="digital"] .sensor-gauge-card .prakiva-instrument-shell {
+  padding: 12px 0;
+  box-sizing: border-box;
+}
+html[data-prakiva-skin="digital"] .prakiva-instrument-bezel {
+  padding: 2px;
+  background: #142a3b;
+  border: 1px solid #3c627a;
+  box-shadow: inset 0 1px 2px #b0e5fa22, 0 2px 5px #0005;
+}
+html[data-prakiva-skin="digital"] .prakiva-instrument-rim {
+  padding: 2px;
+  background: #0a1a2a;
+  border: 1px solid #26475d;
+  box-shadow: none;
+}
+html[data-prakiva-skin="digital"] .prakiva-instrument-dial .prakiva-status-lamp {
+  display: initial;
+  stroke-width: 1.2;
+}
+html[data-prakiva-skin="digital"] .prakiva-status-lamp-online {
+  fill: #39e69a;
+  stroke: #16875c;
+  filter: drop-shadow(0 0 4px #39e69a);
+}
+html[data-prakiva-skin="digital"] .prakiva-status-lamp-warning {
+  fill: #ffc35a;
+  stroke: #a76d1c;
+  filter: drop-shadow(0 0 3px #ffc35a88);
+}
+html[data-prakiva-skin="digital"] .prakiva-status-lamp-error {
+  fill: #ff6676;
+  stroke: #a83248;
+  filter: drop-shadow(0 0 3px #ff667688);
+}
+html[data-prakiva-skin="digital"] .prakiva-bezel-screw { display: none; }
+
+/* Fixed 230x160 coordinate system from SensorHistoryControls.tsx.
+   The CSS dimensions, detents and SVG arc must use the same coordinates. */
+html[data-prakiva-skin="digital"] .instrument-rotary-station {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 230px;
+  height: 160px;
+  overflow: visible;
+  isolation: isolate;
+  left: auto;
+  top: auto;
+  transform: scale(.72);
+  transform-origin: center center;
+  margin: 0;
+}
+html[data-prakiva-skin="digital"] .instrument-history-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 170px;
+  width: 170px;
+  height: 132px;
+  margin: 0;
+  overflow: visible;
+}
+html[data-prakiva-skin="digital"] .instrument-rotary-scale {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 230px;
+  height: 160px;
+  z-index: 0;
+  pointer-events: none;
+}
+html[data-prakiva-skin="digital"] .instrument-rotary-choice {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  min-width: 35px;
+  height: 29px;
+  padding: 2px;
+  border: 0;
+  background: transparent;
+  font: 800 12px Arial, sans-serif;
+  text-shadow: none;
+  cursor: pointer;
+}
+html[data-prakiva-skin="digital"] .instrument-rotary-choice-1h { top: 72px; left: 16px; }
+html[data-prakiva-skin="digital"] .instrument-rotary-choice-6h { top: 22px; left: 69px; }
+html[data-prakiva-skin="digital"] .instrument-rotary-choice-24h { top: 22px; right: 69px; }
+html[data-prakiva-skin="digital"] .instrument-rotary-choice-all { top: 72px; right: 16px; }
+html[data-prakiva-skin="digital"] .instrument-rotary-knob {
+  position: absolute;
+  z-index: 1;
+  display: block;
+  top: 67px;
+  left: 69px;
+  width: 92px;
+  height: 92px;
+  padding: 7px;
+  border: 3px solid #4e819b;
+  box-sizing: border-box;
+  border-radius: 50%;
+  background: linear-gradient(135deg,#547d92,#0b1b2a 75%);
+  box-shadow: inset 0 0 0 2px #132f43, 0 3px 8px #0008;
+  cursor: pointer;
+}
+html[data-prakiva-skin="digital"] .instrument-rotary-knob-face {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 27%, #466c83, #142b3e 72%);
+  box-shadow: inset 0 1px 3px #b0eaff55;
+  transition: transform 180ms ease;
+}
+html[data-prakiva-skin="digital"] .instrument-rotary-pointer {
+  position: absolute;
+  left: calc(50% - 3px);
+  top: 5px;
+  width: 6px;
+  height: 29px;
+  border-radius: 3px;
+  background: #43e4f4;
+  box-shadow: 0 0 5px #43e4f4;
+}
+@media (max-width: 390px) {
+  html[data-prakiva-skin="digital"] .instrument-history-selector {
+    flex-basis: 130px;
+    width: 130px;
+  }
+  html[data-prakiva-skin="digital"] .instrument-rotary-station {
+    transform: scale(.62);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-prakiva-skin="digital"] .instrument-rotary-knob-face { transition: none; }
+}
+
+/* Stage 23 — final Digital polish: one clean dial rim, aligned control centers. */
+html[data-prakiva-skin="digital"] .sensor-gauge-card .prakiva-instrument-bezel {
+  padding: 2px;
+  border: 1px solid #35647b;
+  background: #10283b;
+  box-shadow: 0 1px 3px rgba(0,0,0,.22);
+}
+html[data-prakiva-skin="digital"] .sensor-gauge-card .prakiva-instrument-rim {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+html[data-prakiva-skin="digital"] .prakiva-dial-inner-ring { display: none; }
+html[data-prakiva-skin="digital"] .prakiva-dial-shadow {
+  fill: #091420;
+  stroke: none;
+}
+html[data-prakiva-skin="digital"] .prakiva-dial-face {
+  stroke: none;
+}
+html[data-prakiva-skin="digital"] .instrument-history-selector .instrument-rotary-station {
+  top: -14px;
+}

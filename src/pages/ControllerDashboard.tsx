@@ -4,7 +4,7 @@ import {
     IonPage, IonRow, IonText, IonTitle, IonToolbar, IonAlert, IonLoading,
 } from '@ionic/react';
 import {
-    homeOutline, settingsOutline, syncOutline, checkmarkCircleOutline, alertCircleOutline,
+    homeOutline, settingsOutline, syncOutline, checkmarkCircleOutline, alertCircleOutline, cogOutline, speedometerOutline,
 } from 'ionicons/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { SavedController } from '../models/saved-controller';
@@ -463,24 +463,21 @@ const ControllerDashboard: React.FC = () => {
             {error && <IonText color="danger"><p>{error}</p></IonText>}
             {saveError && <IonText color="danger"><p>{saveError}</p></IonText>}
 
-            <h2 className="capability-section-title">Actuators</h2>
+            <h2 className="capability-section-title" aria-label="Actuators" title="Actuators"><IonIcon icon={cogOutline} aria-hidden="true" /></h2>
             <IonGrid className="capability-grid">
                 <IonRow>
                     {actuators.map(capability => (
                         <ActuatorTile
                             key={capability.id}
-                            capability={capability}
                             displayName={displayName(capability)}
-                            configuredChannelCount={capability.channels.filter(
-                                channel => !!policies[channelPolicyKey(capability.id, channel.id)],
-                            ).length}
+                            suggestedIcon={capability.icon}
                             onSelect={() => openPolicy(capability)}
                         />
                     ))}
                 </IonRow>
             </IonGrid>
 
-            <h2 className="capability-section-title">Sensors</h2>
+            <h2 className="capability-section-title" aria-label="Sensors" title="Sensors"><IonIcon icon={speedometerOutline} aria-hidden="true" /></h2>
             <IonGrid className="capability-grid">
                 <IonRow>
                     {sensors.flatMap(capability => capability.channels.map(channel => {
@@ -488,10 +485,8 @@ const ControllerDashboard: React.FC = () => {
                         return (
                             <SensorTile
                                 key={key}
-                                capability={capability}
-                                channel={channel}
                                 displayName={displayName(capability)}
-                                widget={sensorWidgets[key] ?? 'none'}
+                                suggestedIcon={capability.icon}
                                 onSelect={() => navigate(
                                     `/sensor-detail/${encodeURIComponent(capability.id)}/${encodeURIComponent(channel.id)}`,
                                     {

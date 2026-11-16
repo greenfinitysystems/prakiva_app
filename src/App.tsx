@@ -30,6 +30,8 @@ import '@ionic/react/css/display.css';
 import '@ionic/react/css/palettes/dark.class.css';
 import './theme/skins/default/variables.css';
 import './theme/skins/default/prakiva-theme.css';
+import './theme/skins/instrument/instrument.css';
+import './theme/skins/digital/digital.css';
 
 import { applyAppTheme, loadAppTheme } from './services/theme-preferences';
 

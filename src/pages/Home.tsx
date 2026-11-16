@@ -221,7 +221,7 @@ const Home: React.FC = () => {
                         }}
                     >
                         <IonIcon slot="start" icon={settingsOutline} />
-                        <IonLabel>Settings</IonLabel>
+                        <IonLabel>Themes</IonLabel>
                     </IonItem>
 
                     {isAndroid && (

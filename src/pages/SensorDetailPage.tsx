@@ -312,7 +312,8 @@ const SensorDetailPage: React.FC = () => {
         <IonContent className="ion-padding sensor-detail-page">
             {pageError && <IonText color="danger"><p>{pageError}</p></IonText>}
             {configurationNotice && <IonText color="success"><p className="virtual-sensor-configuration-notice">{configurationNotice}</p></IonText>}
-            <SensorWidgetRenderer
+            <div className="sensor-instrument-enclosure">
+                <SensorWidgetRenderer
                 widget={widget}
                 title={`${displayName}${capability.channels.length > 1 ? ` · ${channel.label}` : ''}`}
                 value={measurementValid && !stale ? (calibrationReadings?.corrected ?? numericValue) : undefined}
@@ -333,7 +334,11 @@ const SensorDetailPage: React.FC = () => {
                 error={historyError}
                 min={channel.min}
                 max={channel.max}
+                instrumentStatus={status}
+                onCalibrate={capability.kind === 'sensor' && sessionToken ? () => setCalibrationEditorOpen(true) : undefined}
+                onParameters={virtualSensorDeclaration ? () => setParameterEditorOpen(true) : undefined}
             />}
+            </div>
             <SensorCalibrationEditor
                 isOpen={calibrationEditorOpen}
                 onDismiss={() => setCalibrationEditorOpen(false)}

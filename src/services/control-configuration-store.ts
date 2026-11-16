@@ -124,7 +124,7 @@ const isValidDocument = (value: unknown): value is ControlConfigurationDocument 
     for (const [capabilityId, control] of Object.entries(value.controls)) {
         if (!isRecord(control) || control.capabilityId !== capabilityId) return false;
         if (!isRecord(control.channelPolicies) ||
-            !(control.sensorWidgets === undefined || (isRecord(control.sensorWidgets) && Object.values(control.sensorWidgets).every(value => ['none', 'text', 'gauge'].includes(String(value))))) ||
+            !(control.sensorWidgets === undefined || (isRecord(control.sensorWidgets) && Object.values(control.sensorWidgets).every(value => ['none', 'text', 'gauge', 'linear'].includes(String(value))))) ||
             !Array.isArray(control.curves) || !isRecord(control.inlineConfigurations) || !(control.profilesByControlId === undefined || isRecord(control.profilesByControlId)) ||
             !(control.workspace === null || isRecord(control.workspace))) return false;
     }

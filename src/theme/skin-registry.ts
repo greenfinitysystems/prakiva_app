@@ -5,6 +5,8 @@
  */
 export const SKINS = [
     { id: 'default', label: 'Default', description: 'PRAKIVA standard appearance' },
+    { id: 'instrument', label: 'Analog', description: 'Classic precision instrument console' },
+    { id: 'digital', label: 'Digital', description: 'Modern graphite HMI with illuminated controls' },
 ] as const;
 
 export type SkinId = (typeof SKINS)[number]['id'];

@@ -40,15 +40,14 @@ const Settings: React.FC = () => {
             <IonHeader>
                 <IonToolbar>
                     <IonButtons slot="start"><IonBackButton defaultHref="/home" /></IonButtons>
-                    <IonTitle>App Settings</IonTitle>
+                    <IonTitle>Themes</IonTitle>
                 </IonToolbar>
             </IonHeader>
             <IonContent className="prakiva-home ion-padding">
                 <IonCard className="prakiva-card">
                     <IonCardContent>
-                        <h1>App Settings</h1>
-                        <p className="prakiva-muted">These preferences affect Prakiva on this phone, not the controller.</p>
-                        <h2 className="prakiva-subheading">Appearance</h2>
+                        <h1>Themes</h1>
+                        <p className="prakiva-muted">Choose the visual theme for Prakiva on this phone. This does not change the controller.</p>
                         <IonRadioGroup value={theme} onIonChange={event => {
                             const value: unknown = event.detail.value;
                             if (isSkinId(value)) void chooseTheme(value);

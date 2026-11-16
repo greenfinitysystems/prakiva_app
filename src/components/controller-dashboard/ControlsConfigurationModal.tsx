@@ -93,7 +93,7 @@ const ControlsConfigurationModal: React.FC<ControlsConfigurationModalProps> = ({
                             </IonSelect>
                         ) : (
                             <IonSelect
-                                value={sensorWidgets[`${capability.id}:${channel.id}`] ?? 'none'}
+                                value={sensorWidgets[`${capability.id}:${channel.id}`] === 'text' ? 'linear' : (sensorWidgets[`${capability.id}:${channel.id}`] ?? 'none')}
                                 placeholder="Not configured"
                                 onIonChange={e => onChangeSensorWidget(
                                     capability,
@@ -102,8 +102,8 @@ const ControlsConfigurationModal: React.FC<ControlsConfigurationModalProps> = ({
                                 )}
                             >
                                 <IonSelectOption value="none">Not Configured</IonSelectOption>
-                                <IonSelectOption value="text">Plain Text</IonSelectOption>
-                                <IonSelectOption value="gauge">Gauge</IonSelectOption>
+                                <IonSelectOption value="linear">Linear Gauge</IonSelectOption>
+                                <IonSelectOption value="gauge">Circular Dial</IonSelectOption>
                             </IonSelect>
                         )}
                     </IonItem>)}

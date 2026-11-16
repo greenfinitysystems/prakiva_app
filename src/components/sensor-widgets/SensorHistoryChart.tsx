@@ -1,4 +1,7 @@
 import React, { useMemo, useState } from 'react';
+import { SensorHistoryControls } from './SensorHistoryControls';
+import { HISTORY_RANGES, type HistoryRange } from './SensorHistoryRanges';
+import { PanelFasteners } from './PanelFasteners';
 import { IonCard, IonCardContent, IonText } from '@ionic/react';
 import type { SensorHistoryPoint } from '../../services/capability-operations';
 import '../../theme/skins/default/styles/components/sensor-widgets/sensor-widgets.css';
@@ -11,18 +14,14 @@ export interface SensorHistoryChartProps {
     error?: string;
     min?: number;
     max?: number;
+    instrumentStatus?: string;
+    onCalibrate?: () => void;
+    onParameters?: () => void;
 }
 
 const WIDTH = 760;
 const HEIGHT = 290;
 const PLOT = { left: 62, right: 744, top: 18, bottom: 238 };
-type HistoryRange = '1h' | '6h' | '24h' | 'all';
-const HISTORY_RANGES: { value: HistoryRange; label: string; seconds?: number }[] = [
-    { value: '1h', label: '1 hour', seconds: 3600 },
-    { value: '6h', label: '6 hours', seconds: 21600 },
-    { value: '24h', label: '24 hours', seconds: 86400 },
-    { value: 'all', label: 'All available' },
-];
 const numberLabel = (value: number) => Number(value.toFixed(2)).toString();
 
 function makeScale(values: number[], declaredMin?: number, declaredMax?: number) {
@@ -42,7 +41,7 @@ const formatTime = (timestamp: number) => new Date(timestamp * 1000).toLocaleTim
 });
 
 const SensorHistoryChart: React.FC<SensorHistoryChartProps> = ({
-    title, unit = '', points, loading = false, error, min, max,
+    title, unit = '', points, loading = false, error, min, max, onCalibrate, onParameters,
 }) => {
     const [range, setRange] = useState<HistoryRange>('all');
     const visiblePoints = useMemo(() => {
@@ -53,7 +52,6 @@ const SensorHistoryChart: React.FC<SensorHistoryChartProps> = ({
     }, [points, range]);
 
     const chart = useMemo(() => {
-        if (!visiblePoints.length) return null;
         const values = visiblePoints.flatMap(point => point.value === null ? [] : [point.value]);
         const scale = makeScale(values, min, max);
         const y = (value: number) => PLOT.bottom - ((value - scale.min) / (scale.max - scale.min)) * (PLOT.bottom - PLOT.top);
@@ -73,16 +71,19 @@ const SensorHistoryChart: React.FC<SensorHistoryChartProps> = ({
         });
         if (current.length) segments.push(current.join(' '));
         const yTicks = Array.from({ length: 6 }, (_, index) => scale.min + ((scale.max - scale.min) * index / 5)).reverse();
-        const xIndices = Array.from(new Set([0, Math.round((visiblePoints.length - 1) / 4), Math.round((visiblePoints.length - 1) / 2), Math.round((visiblePoints.length - 1) * 3 / 4), visiblePoints.length - 1]));
+        const xIndices = visiblePoints.length === 0
+            ? []
+            : Array.from(new Set([0, Math.round((visiblePoints.length - 1) / 4), Math.round((visiblePoints.length - 1) / 2), Math.round((visiblePoints.length - 1) * 3 / 4), visiblePoints.length - 1]));
         return { segments, yTicks, xIndices, x, y, scale };
     }, [visiblePoints, min, max]);
 
-    return <IonCard className="sensor-history-card">
+    return <>
+    <IonCard className="sensor-history-card sensor-fastened-panel">
+        <PanelFasteners />
         <IonCardContent>
             <div className="sensor-history-heading">
-                <div>
-                    <IonText className="sensor-history-title">{title} History</IonText>
-                    <div className="sensor-history-subtitle">Recent measurements</div>
+                <div className="sensor-history-caption">
+                    <svg className="instrument-history-pulse" viewBox="0 0 64 32" aria-hidden="true" focusable="false"><path d="M2 17 H18 L23 6 L29 27 L35 12 L40 17 H62" fill="none" stroke="currentColor" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" /></svg>
                 </div>
                 <label className="sensor-history-range-control">
                     <span className="sensor-history-range-label">Range</span>
@@ -90,12 +91,12 @@ const SensorHistoryChart: React.FC<SensorHistoryChartProps> = ({
                         {HISTORY_RANGES.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
                     </select>
                 </label>
+
             </div>
             {error && <IonText color="danger"><p className="sensor-history-message">{error}</p></IonText>}
-            {loading && !points.length && <div className="sensor-history-message">Loading sensor history…</div>}
             {!loading && !error && !points.length && <div className="sensor-history-message">No history is available yet.</div>}
             {!loading && !error && points.length > 0 && !visiblePoints.length && <div className="sensor-history-message">No measurements in the selected time range.</div>}
-            {chart && <div className="sensor-history-chart-wrap">
+            <div className="sensor-history-chart-wrap">
                 <svg className="sensor-history-chart" viewBox={`0 0 ${WIDTH} ${HEIGHT}`} role="img" aria-label={`${title} history chart`}>
                     <defs>
                         <linearGradient id="sensor-history-area" x1="0" y1="0" x2="0" y2="1">
@@ -124,10 +125,16 @@ const SensorHistoryChart: React.FC<SensorHistoryChartProps> = ({
                     })}
                     {unit && <text x={PLOT.left} y={12} className="sensor-history-unit">{unit}</text>}
                 </svg>
-            </div>}
-            {loading && points.length > 0 && <div className="sensor-history-refreshing">Updating history…</div>}
+            </div>
         </IonCardContent>
-    </IonCard>;
+    </IonCard>
+    <IonCard className="sensor-controls-card sensor-fastened-panel sensor-fastened-panel-two">
+        <PanelFasteners sidesOnly />
+        <IonCardContent>
+            <SensorHistoryControls range={range} onRangeChange={setRange} onCalibrate={onCalibrate} onParameters={onParameters} />
+        </IonCardContent>
+    </IonCard>
+    </>;
 };
 
 export default SensorHistoryChart;

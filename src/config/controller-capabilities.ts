@@ -4,7 +4,7 @@ export type CapabilityValueType = 'binary' | 'analog' | 'trigger';
 export type ControlPolicy = 'manual_binary' | 'binary_curve' | 'analog_curve' | 'threshold_rules' | 'periodic_pulse' | 'trigger';
 
 /** User-selected presentation for a sensor channel in the dashboard. */
-export type SensorWidgetType = 'none' | 'text' | 'gauge';
+export type SensorWidgetType = 'none' | 'text' | 'gauge' | 'linear';
 
 export interface CapabilityChannel {
     id: string;
