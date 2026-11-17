@@ -57,6 +57,31 @@ const ControllerDashboard: React.FC = () => {
     const [sensorWidgets, setSensorWidgets] = useState<SensorWidgetMap>({});
     const [capabilities, setCapabilities] = useState<ControllerCapability[]>([]);
     const [mappingOpen, setMappingOpen] = useState(false);
+    const [remoteProtocols, setRemoteProtocols] = useState<Record<string, string[]>>({});
+    const [selectedProtocols, setSelectedProtocols] = useState<Record<string, string>>({});
+    useEffect(() => {
+        if (!controller || !mappingOpen) return;
+        let active = true;
+        void ControllerSynchronizationStore.load(controller.deviceId).then(snapshot => {
+            if (!active || !snapshot) return;
+            const supported: Record<string, string[]> = {};
+            const selected: Record<string, string> = {};
+            for (const declaration of snapshot.capabilities.virtual_sensors ?? []) {
+                if (!declaration.supported_protocols?.length) continue;
+                supported[declaration.capability_id] = declaration.supported_protocols;
+                const entry = VirtualSensorConfigurationStore.getEntry(controller.deviceId, declaration.component_id);
+                const remote = (
+                    snapshot.configuration?.configuration?.virtual_sensors as
+                    Record<string, { selected_protocol?: string }> | undefined
+                )?.[declaration.component_id];
+
+                selected[declaration.capability_id] = entry?.selected_protocol ?? remote?.selected_protocol ?? '';
+            }
+            setRemoteProtocols(supported);
+            setSelectedProtocols(selected);
+        });
+        return () => { active = false; };
+    }, [controller, mappingOpen]);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [applyRecord, setApplyRecord] = useState<ControllerSyncRecord | null>(() => controller ? getControllerSyncRecord(controller.deviceId) : null);
     const [controllerMetadata, setControllerMetadata] = useState<ControllerConfigurationMetadata | null>(null);
@@ -124,16 +149,16 @@ const ControllerDashboard: React.FC = () => {
     const applyStatusLabel = hasUnsavedChanges
         ? 'You have unsaved changes'
         : applyStatus === 'up-to-date' ? 'Settings are up to date'
-        : applyStatus === 'apply-pending' ? 'Saved settings need applying'
-        : applyStatus === 'applying' ? 'Sending settings…'
-        : applyStatus === 'checking' ? 'Checking your controller…'
-        : applyStatus === 'conflict' ? 'Both copies have changed'
-        : applyStatus === 'failed' ? 'Couldn’t update controller settings'
-        : 'No settings saved on controller';
+            : applyStatus === 'apply-pending' ? 'Saved settings need applying'
+                : applyStatus === 'applying' ? 'Sending settings…'
+                    : applyStatus === 'checking' ? 'Checking your controller…'
+                        : applyStatus === 'conflict' ? 'Both copies have changed'
+                            : applyStatus === 'failed' ? 'Couldn’t update controller settings'
+                                : 'No settings saved on controller';
     const applyStatusColor = hasUnsavedChanges || applyStatus === 'apply-pending' || applyStatus === 'not-configured' || applyStatus === 'conflict'
         ? 'warning'
         : applyStatus === 'failed' ? 'danger'
-        : applyStatus === 'applying' || applyStatus === 'checking' ? 'primary' : 'success';
+            : applyStatus === 'applying' || applyStatus === 'checking' ? 'primary' : 'success';
     const applyStatusIcon = applyStatus === 'up-to-date' && !hasUnsavedChanges
         ? checkmarkCircleOutline
         : applyStatus === 'failed' ? alertCircleOutline : syncOutline;
@@ -296,7 +321,7 @@ const ControllerDashboard: React.FC = () => {
     }, [location.pathname, controller, navigate]);
 
     // Only expose actuators after the user has assigned a compatible control policy.
-    const actuators = useMemo(() => capabilities.filter(item => item.kind === 'actuator' && item.channels.some(ch => !!policies[channelPolicyKey(item.id,ch.id)])), [capabilities, policies]);
+    const actuators = useMemo(() => capabilities.filter(item => item.kind === 'actuator' && item.channels.some(ch => !!policies[channelPolicyKey(item.id, ch.id)])), [capabilities, policies]);
     const sensors = useMemo(() => capabilities.filter(item => item.kind === 'sensor'), [capabilities]);
 
     const logout = async () => {
@@ -438,6 +463,15 @@ const ControllerDashboard: React.FC = () => {
         <ControlsConfigurationModal
             isOpen={mappingOpen}
             capabilities={capabilities}
+            remoteProtocols={remoteProtocols}
+            selectedProtocols={selectedProtocols}
+            onChangeRemoteProtocol={(capabilityId, protocol) => {
+                if (!controller) return;
+                const componentId = `${capabilityId}_driver`;
+                VirtualSensorConfigurationStore.setRemote(controller.deviceId, componentId, { selected_protocol: protocol });
+                setSelectedProtocols(previous => ({ ...previous, [capabilityId]: protocol }));
+                markLocalConfigurationPending(controller.deviceId);
+            }}
             labels={labels}
             policies={policies}
             sensorWidgets={sensorWidgets}

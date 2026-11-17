@@ -49,7 +49,9 @@ export async function applyAppConfigurationToController(
             : {};
         mergedVirtualSensors[componentId] = {
             ...previousEntry,
-            parameters: { ...localEntry.parameters },
+            parameters: { ...(isRecord(previousEntry.parameters) ? previousEntry.parameters : {}), ...localEntry.parameters },
+            ...(localEntry.selected_protocol !== undefined ? { selected_protocol: localEntry.selected_protocol } : {}),
+            ...(localEntry.request !== undefined ? { request: localEntry.request } : {}),
         };
     }
     if (Object.keys(mergedVirtualSensors).length > 0 ||

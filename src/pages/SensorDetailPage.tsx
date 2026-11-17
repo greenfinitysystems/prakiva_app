@@ -10,6 +10,8 @@ import { markLocalConfigurationPending } from '../services/configuration-apply';
 import type { VirtualSensorDeclaration } from '../services/controller-api';
 import { VirtualSensorConfigurationStore, type VirtualSensorParameterValues } from '../services/virtual-sensor-configuration-store';
 import VirtualSensorParameterEditor from '../components/VirtualSensorParameterEditor';
+import RemoteVirtualSensorEditor from '../components/RemoteVirtualSensorEditor';
+import type { VirtualSensorDraft } from '../services/virtual-sensor-configuration-store';
 import '../theme/skins/default/styles/pages/SensorDetailPage.css';
 import { ControllerSessionStore } from '../services/controller-session-store';
 import { getCapability, getSensorHistory, type CapabilityReadResult, type SensorHistoryPoint } from '../services/capability-operations';
@@ -63,6 +65,8 @@ const SensorDetailPage: React.FC = () => {
     const [virtualSensorDeclaration, setVirtualSensorDeclaration] = useState<VirtualSensorDeclaration | null>(null);
     const [virtualSensorParameters, setVirtualSensorParameters] = useState<VirtualSensorParameterValues>({});
     const [parameterEditorOpen, setParameterEditorOpen] = useState(false);
+    const [remoteDraft, setRemoteDraft] = useState<VirtualSensorDraft>({ parameters: {} });
+    const [sensorSources, setSensorSources] = useState<Array<{ component_id: string; label: string }>>([]);
     const [configurationNotice, setConfigurationNotice] = useState('');
     const [calibrationEditorOpen, setCalibrationEditorOpen] = useState(false);
     const [calibrationReadings, setCalibrationReadings] = useState<{ raw: number; corrected: number } | null>(null);
@@ -134,13 +138,22 @@ const SensorDetailPage: React.FC = () => {
                 const validRemote: VirtualSensorParameterValues = {};
                 for (const [id, definition] of Object.entries(declaration.parameters)) {
                     const value = remoteParameters[id];
-                    if (typeof value === 'number' && Number.isFinite(value)) validRemote[id] = value;
+                    if ((definition.type === 'string' && typeof value === 'string') ||
+                        (definition.type !== 'string' && typeof value === 'number' && Number.isFinite(value))) validRemote[id] = value;
                     else validRemote[id] = definition.default;
                 }
                 const local = VirtualSensorConfigurationStore.getParameters(
                     controller.deviceId, declaration.component_id,
                 );
                 setVirtualSensorParameters({ ...defaults, ...validRemote, ...(local ?? {}) });
+                const remote = remoteEntry && typeof remoteEntry === 'object' && !Array.isArray(remoteEntry)
+                    ? remoteEntry as VirtualSensorDraft : { parameters: {} };
+                setRemoteDraft({ ...remote, ...VirtualSensorConfigurationStore.getEntry(controller.deviceId, declaration.component_id), parameters: { ...defaults, ...validRemote, ...(local ?? {}) } });
+                const known = new Map((snapshot?.capabilities.virtual_sensors ?? []).map(item => [item.capability_id, item.component_id]));
+                setSensorSources(snapshot?.capabilities.capabilities.filter(c => c.kind === 'sensor').map(c => ({
+                    component_id: known.get(c.id) ?? `${c.id}_sensor_driver`,
+                    label: c.name,
+                })) ?? []);
             } catch (error) {
                 if (active) console.error('[Prakiva] Could not load virtual sensor parameters:', error);
             }
@@ -350,7 +363,21 @@ const SensorDetailPage: React.FC = () => {
                 title={displayName}
                 unit={channel.unit}
             />
-            {virtualSensorDeclaration && <VirtualSensorParameterEditor
+            {virtualSensorDeclaration?.supported_protocols?.length ? <RemoteVirtualSensorEditor
+                isOpen={parameterEditorOpen}
+                declaration={virtualSensorDeclaration}
+                initial={remoteDraft}
+                sensors={sensorSources}
+                onDismiss={() => setParameterEditorOpen(false)}
+                onSave={patch => {
+                    if (!controller) return;
+                    VirtualSensorConfigurationStore.setRemote(controller.deviceId, virtualSensorDeclaration.component_id, patch);
+                    setRemoteDraft(previous => ({ ...previous, ...patch }));
+                    markLocalConfigurationPending(controller.deviceId);
+                    setParameterEditorOpen(false);
+                    setConfigurationNotice('Remote sensor configuration saved locally. Apply Configuration from the dashboard to update the controller.');
+                }}
+            /> : virtualSensorDeclaration && <VirtualSensorParameterEditor
                 isOpen={parameterEditorOpen}
                 declaration={virtualSensorDeclaration}
                 initialValues={virtualSensorParameters}

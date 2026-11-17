@@ -466,3 +466,28 @@ html[data-prakiva-skin="digital"] .prakiva-dial-face {
 html[data-prakiva-skin="digital"] .instrument-history-selector .instrument-rotary-station {
   top: -14px;
 }
+
+/* Controls mapping: keep selected display types legible on dark cards. */
+html[data-prakiva-skin="digital"] .capability-mapping .mapping-card ion-select {
+  --color: #e7f4ff;
+  --placeholder-color: #b7cce0;
+  --placeholder-opacity: 1;
+}
+html[data-prakiva-skin="digital"] .capability-mapping .mapping-card ion-select::part(text) {
+  color: #e7f4ff;
+}
+
+/* Ionic renders select option alerts in an overlay outside IonModal. */
+html[data-prakiva-skin="digital"] ion-alert.prakiva-controls-choice-alert {
+  --background: #0b1b2a;
+  --color: #e7f4ff;
+}
+html[data-prakiva-skin="digital"] ion-alert.prakiva-controls-choice-alert .alert-radio-label {
+  color: #e7f4ff !important;
+}
+html[data-prakiva-skin="digital"] ion-alert.prakiva-controls-choice-alert .alert-radio-button[aria-checked="true"] .alert-radio-label {
+  color: #7ee7f3 !important;
+}
+html[data-prakiva-skin="digital"] ion-alert.prakiva-controls-choice-alert .alert-button {
+  color: #6ee5f2;
+}

@@ -35,23 +35,20 @@ export class ControllerApiError extends Error {
 }
 
 
-/** Numeric parameter declaration published by a virtual sensor in the Product Specification. */
-export interface VirtualSensorNumericParameter {
-    type: 'number';
+/** Product-spec parameters are JSON numbers or strings; absent type means number. */
+export type VirtualSensorParameter = {
     label: string;
     description?: string;
-    default: number;
-    minimum?: number;
-    maximum?: number;
-    step?: number;
-}
+} & ({ type?: 'number'; default: number; minimum?: number; maximum?: number; step?: number } |
+     { type: 'string'; default: string });
 
 export interface VirtualSensorDeclaration {
     component_id: string;
     driver: string;
     capability_id: string;
     channel_id: string;
-    parameters: Record<string, VirtualSensorNumericParameter>;
+    parameters: Record<string, VirtualSensorParameter>;
+    supported_protocols?: string[];
 }
 
 function isVirtualSensorDeclaration(value: unknown): value is VirtualSensorDeclaration {
@@ -60,13 +57,19 @@ function isVirtualSensorDeclaration(value: unknown): value is VirtualSensorDecla
         typeof value.driver !== 'string' || !value.driver ||
         typeof value.capability_id !== 'string' || !value.capability_id ||
         typeof value.channel_id !== 'string' || !value.channel_id ||
-        !isRecord(value.parameters)) return false;
+        !isRecord(value.parameters) ||
+        (value.supported_protocols !== undefined &&
+         (!Array.isArray(value.supported_protocols) || !value.supported_protocols.every(p => typeof p === 'string')))) return false;
 
     return Object.values(value.parameters).every(parameter => {
-        if (!isRecord(parameter) || parameter.type !== 'number' ||
-            typeof parameter.label !== 'string' ||
-            typeof parameter.default !== 'number' || !Number.isFinite(parameter.default)) return false;
+        if (!isRecord(parameter) || typeof parameter.label !== 'string') return false;
         if (parameter.description !== undefined && typeof parameter.description !== 'string') return false;
+        if (parameter.type === 'string') {
+            return typeof parameter.default === 'string' &&
+                parameter.minimum === undefined && parameter.maximum === undefined && parameter.step === undefined;
+        }
+        if (parameter.type !== undefined && parameter.type !== 'number') return false;
+        if (typeof parameter.default !== 'number' || !Number.isFinite(parameter.default)) return false;
         if (parameter.minimum !== undefined && (typeof parameter.minimum !== 'number' || !Number.isFinite(parameter.minimum))) return false;
         if (parameter.maximum !== undefined && (typeof parameter.maximum !== 'number' || !Number.isFinite(parameter.maximum))) return false;
         if (parameter.step !== undefined && (typeof parameter.step !== 'number' || !Number.isFinite(parameter.step) || parameter.step <= 0)) return false;

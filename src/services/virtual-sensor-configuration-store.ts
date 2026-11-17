@@ -5,8 +5,18 @@
  * sensor parameters are interpreted and validated by firmware, while control
  * presentation preferences belong exclusively to the app.
  */
-export type VirtualSensorParameterValues = Record<string, number>;
-export type VirtualSensorConfiguration = Record<string, { parameters: VirtualSensorParameterValues }>;
+export type VirtualSensorParameterValues = Record<string, number | string>;
+export interface RemoteSensorRequest {
+    include_controller_time: boolean;
+    sensor_mappings: Array<{ component_id: string; field: string; include: boolean }>;
+    additional_json: Record<string, unknown>;
+}
+export interface VirtualSensorDraft {
+    parameters: VirtualSensorParameterValues;
+    selected_protocol?: string;
+    request?: RemoteSensorRequest;
+}
+export type VirtualSensorConfiguration = Record<string, VirtualSensorDraft>;
 
 const keyFor = (deviceId: string) => `prakiva.virtual-sensor-configuration.v1.${deviceId}`;
 
@@ -24,9 +34,13 @@ function read(deviceId: string): VirtualSensorConfiguration {
             if (!isRecord(entry) || !isRecord(entry.parameters)) continue;
             const parameters: VirtualSensorParameterValues = {};
             for (const [name, value] of Object.entries(entry.parameters)) {
-                if (typeof value === 'number' && Number.isFinite(value)) parameters[name] = value;
+                if (typeof value === 'string' || (typeof value === 'number' && Number.isFinite(value))) parameters[name] = value;
             }
-            result[componentId] = { parameters };
+            result[componentId] = {
+                parameters,
+                ...(typeof entry.selected_protocol === 'string' ? { selected_protocol: entry.selected_protocol } : {}),
+                ...(isRecord(entry.request) ? { request: entry.request as unknown as RemoteSensorRequest } : {}),
+            };
         }
         return result;
     } catch {
@@ -50,7 +64,23 @@ export class VirtualSensorConfigurationStore {
         parameters: VirtualSensorParameterValues,
     ): void {
         const current = read(deviceId);
-        current[componentId] = { parameters: { ...parameters } };
+        current[componentId] = { ...current[componentId], parameters: { ...parameters } };
+        localStorage.setItem(keyFor(deviceId), JSON.stringify(current));
+    }
+
+    static getEntry(deviceId: string, componentId: string): VirtualSensorDraft | null {
+        return read(deviceId)[componentId] ?? null;
+    }
+
+    static setRemote(deviceId: string, componentId: string, patch: Partial<VirtualSensorDraft>): void {
+        const current = read(deviceId);
+        current[componentId] = {
+            ...current[componentId],
+            ...patch,
+            parameters: patch.parameters
+                ?? current[componentId]?.parameters
+                ?? {},
+        };
         localStorage.setItem(keyFor(deviceId), JSON.stringify(current));
     }
 
@@ -62,9 +92,13 @@ export class VirtualSensorConfigurationStore {
                 if (!isRecord(entry) || !isRecord(entry.parameters)) continue;
                 const parameters: VirtualSensorParameterValues = {};
                 for (const [name, value] of Object.entries(entry.parameters)) {
-                    if (typeof value === 'number' && Number.isFinite(value)) parameters[name] = value;
+                    if (typeof value === 'string' || (typeof value === 'number' && Number.isFinite(value))) parameters[name] = value;
                 }
-                next[componentId] = { parameters };
+                next[componentId] = {
+                    parameters,
+                    ...(typeof entry.selected_protocol === 'string' ? { selected_protocol: entry.selected_protocol } : {}),
+                    ...(isRecord(entry.request) ? { request: entry.request as unknown as RemoteSensorRequest } : {}),
+                };
             }
         }
         localStorage.setItem(keyFor(deviceId), JSON.stringify(next));

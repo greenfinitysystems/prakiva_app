@@ -16,6 +16,9 @@ type SensorWidgetMap = Record<string, SensorWidgetType>;
 interface ControlsConfigurationModalProps {
     isOpen: boolean;
     capabilities: ControllerCapability[];
+    remoteProtocols: Record<string, string[]>;
+    selectedProtocols: Record<string, string>;
+    onChangeRemoteProtocol: (componentId: string, protocol: string) => void;
     labels: LabelMap;
     policies: PolicyMap;
     sensorWidgets: SensorWidgetMap;
@@ -41,6 +44,7 @@ interface ControlsConfigurationModalProps {
 const ControlsConfigurationModal: React.FC<ControlsConfigurationModalProps> = ({
     isOpen,
     capabilities,
+    remoteProtocols, selectedProtocols, onChangeRemoteProtocol,
     labels,
     policies,
     sensorWidgets,
@@ -70,12 +74,18 @@ const ControlsConfigurationModal: React.FC<ControlsConfigurationModalProps> = ({
                             placeholder={capability.id}
                         />
                     </IonItem>
+                    {remoteProtocols[capability.id] && <IonItem><IonLabel position="stacked">Remote sensor protocol</IonLabel>
+                        <IonSelect interfaceOptions={{ cssClass: 'prakiva-controls-choice-alert' }} value={selectedProtocols[capability.id] ?? ''} onIonChange={e => onChangeRemoteProtocol(capability.id, e.detail.value ?? '')}>
+                            <IonSelectOption value="">Not configured</IonSelectOption>
+                            {remoteProtocols[capability.id].map(protocol => <IonSelectOption key={protocol} value={protocol}>{protocol}</IonSelectOption>)}
+                        </IonSelect></IonItem>}
                     {capability.channels.map(channel => <IonItem key={channel.id} lines="none">
                         <IonLabel position="stacked">
                             {channel.label} · {channel.valueType === 'analog' ? `Analogue${channel.unit ? ` (${channel.unit})` : ''}` : channel.valueType === 'trigger' ? 'Operation trigger' : 'Binary'}
                         </IonLabel>
                         {capability.kind === 'actuator' ? (
                             <IonSelect
+                                interfaceOptions={{ cssClass: 'prakiva-controls-choice-alert' }}
                                 value={policies[channelPolicyKey(capability.id, channel.id)] ?? ''}
                                 placeholder="Not configured"
                                 onIonChange={e => onChangePolicy(
@@ -93,6 +103,7 @@ const ControlsConfigurationModal: React.FC<ControlsConfigurationModalProps> = ({
                             </IonSelect>
                         ) : (
                             <IonSelect
+                                interfaceOptions={{ cssClass: 'prakiva-controls-choice-alert' }}
                                 value={sensorWidgets[`${capability.id}:${channel.id}`] === 'text' ? 'linear' : (sensorWidgets[`${capability.id}:${channel.id}`] ?? 'none')}
                                 placeholder="Not configured"
                                 onIonChange={e => onChangeSensorWidget(

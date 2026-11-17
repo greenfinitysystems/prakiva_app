@@ -31,9 +31,10 @@ const VirtualSensorParameterEditor: React.FC<VirtualSensorParameterEditorProps> 
     }, [isOpen, declaration, initialValues]);
 
     const updateValue = (parameterId: string, raw: string) => {
+        const definition = declaration.parameters[parameterId];
         setValues(previous => ({
             ...previous,
-            [parameterId]: raw.trim() === '' ? Number.NaN : Number(raw),
+            [parameterId]: definition.type === 'string' ? raw : (raw.trim() === '' ? Number.NaN : Number(raw)),
         }));
         setError('');
     };
@@ -42,17 +43,24 @@ const VirtualSensorParameterEditor: React.FC<VirtualSensorParameterEditorProps> 
         const validated: VirtualSensorParameterValues = {};
         for (const [parameterId, definition] of Object.entries(declaration.parameters)) {
             const value = values[parameterId];
-            if (typeof value !== 'number' || !Number.isFinite(value)) {
-                setError(`Enter a valid number for ${definition.label}.`);
-                return;
-            }
-            if (definition.minimum !== undefined && value < definition.minimum) {
-                setError(`${definition.label} must be at least ${definition.minimum}.`);
-                return;
-            }
-            if (definition.maximum !== undefined && value > definition.maximum) {
-                setError(`${definition.label} must not exceed ${definition.maximum}.`);
-                return;
+            if (definition.type === 'string') {
+                if (typeof value !== 'string') {
+                    setError(`Enter valid text for ${definition.label}.`);
+                    return;
+                }
+            } else {
+                if (typeof value !== 'number' || !Number.isFinite(value)) {
+                    setError(`Enter a valid number for ${definition.label}.`);
+                    return;
+                }
+                if (definition.minimum !== undefined && value < definition.minimum) {
+                    setError(`${definition.label} must be at least ${definition.minimum}.`);
+                    return;
+                }
+                if (definition.maximum !== undefined && value > definition.maximum) {
+                    setError(`${definition.label} must not exceed ${definition.maximum}.`);
+                    return;
+                }
             }
             validated[parameterId] = value;
         }
@@ -84,12 +92,13 @@ const VirtualSensorParameterEditor: React.FC<VirtualSensorParameterEditorProps> 
                                 {definition.description && <p>{definition.description}</p>}
                             </IonLabel>
                             <IonInput
-                                type="number"
-                                inputMode="decimal"
-                                value={Number.isFinite(values[parameterId]) ? String(values[parameterId]) : ''}
-                                min={definition.minimum}
-                                max={definition.maximum}
-                                step={String(definition.step ?? 'any')}
+                                type={definition.type === 'string' ? 'text' : 'number'}
+                                inputMode={definition.type === 'string' ? 'text' : 'decimal'}
+                                value={typeof values[parameterId] === 'string' ? values[parameterId] :
+                                    (typeof values[parameterId] === 'number' && Number.isFinite(values[parameterId]) ? String(values[parameterId]) : '')}
+                                min={definition.type === 'string' ? undefined : definition.minimum}
+                                max={definition.type === 'string' ? undefined : definition.maximum}
+                                step={definition.type === 'string' ? undefined : String(definition.step ?? 'any')}
                                 onIonInput={event => updateValue(parameterId, event.detail.value ?? '')}
                             />
                         </IonItem>
