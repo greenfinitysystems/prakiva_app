@@ -1,127 +1,78 @@
-import {
-    IonButton, IonButtons, IonCard, IonCardContent, IonContent, IonHeader,
-    IonInput, IonItem, IonLabel, IonModal, IonSelect, IonSelectOption,
-    IonText, IonTitle, IonToolbar,
-} from '@ionic/react';
+import { useState } from 'react';
+import { IonButton, IonCard, IonCardContent, IonContent, IonInput, IonItem, IonLabel, IonSegment, IonSegmentButton, IonSelect, IonSelectOption, IonText } from '@ionic/react';
 import { POLICY_LABELS } from '../../config/control-policies';
-import {
-    type ControlPolicy, type ControllerCapability, type SensorWidgetType,
-    channelPolicyKey,
-} from '../../config/controller-capabilities';
+import { type ControlPolicy, type ControllerCapability, type SensorWidgetType, channelPolicyKey } from '../../config/controller-capabilities';
 
 type PolicyMap = Record<string, ControlPolicy>;
-type LabelMap = Record<string, string>;
-type SensorWidgetMap = Record<string, SensorWidgetType>;
-
-interface ControlsConfigurationModalProps {
-    isOpen: boolean;
+interface Props {
     capabilities: ControllerCapability[];
     remoteProtocols: Record<string, string[]>;
     selectedProtocols: Record<string, string>;
-    onChangeRemoteProtocol: (componentId: string, protocol: string) => void;
-    labels: LabelMap;
+    onChangeRemoteProtocol: (capabilityId: string, protocol: string) => void;
+    labels: Record<string, string>;
     policies: PolicyMap;
-    sensorWidgets: SensorWidgetMap;
-    onDismiss: () => void;
-    onDone: () => void;
+    sensorWidgets: Record<string, SensorWidgetType>;
     onSaveLabel: (capabilityId: string, value: string) => void;
-    onChangePolicy: (
-        capability: ControllerCapability,
-        channelId: string,
-        policy: ControlPolicy | '',
-    ) => void;
-    onChangeSensorWidget: (
-        capability: ControllerCapability,
-        channelId: string,
-        widget: SensorWidgetType,
-    ) => void;
+    onChangePolicy: (capability: ControllerCapability, channelId: string, policy: ControlPolicy | '') => void;
+    onChangeSensorWidget: (capability: ControllerCapability, channelId: string, widget: SensorWidgetType) => void;
+    methods: Record<string, string>;
+    onChangeMethod: (capabilityId: string, channelId: string, method: string) => void;
+    onConfigureActuator: (capabilityId: string, channelId: string) => void;
+    onConfigureSensor: (capabilityId: string) => void;
+    virtualSensorParameters: Record<string, boolean>;
 }
-
-/**
- * App-local presentation and editing preferences for controller capabilities.
- * This component deliberately does not apply configuration to the controller.
- */
-const ControlsConfigurationModal: React.FC<ControlsConfigurationModalProps> = ({
-    isOpen,
-    capabilities,
-    remoteProtocols, selectedProtocols, onChangeRemoteProtocol,
-    labels,
-    policies,
-    sensorWidgets,
-    onDismiss,
-    onDone,
-    onSaveLabel,
-    onChangePolicy,
-    onChangeSensorWidget,
-}) => (
-    <IonModal isOpen={isOpen} onDidDismiss={onDismiss}>
-        <IonHeader><IonToolbar>
-            <IonTitle>Controls</IonTitle>
-            <IonButtons slot="end">
-                <IonButton onClick={onDone}>Done</IonButton>
-            </IonButtons>
-        </IonToolbar></IonHeader>
-        <IonContent className="ion-padding capability-mapping">
-            <IonText color="medium"><p>Choose how each channel is presented and edited in this app. These selections are saved locally on this device; they do not change the controller's hardware behaviour. Use Apply Configuration only after changing an actuator's actual operating settings.</p></IonText>
-            {capabilities.map(capability => (
-                <IonCard key={capability.id} className="mapping-card"><IonCardContent>
-                    <IonText className="mapping-id">Controller ID: {capability.id}</IonText>
-                    <IonItem lines="none">
-                        <IonLabel position="stacked">Control name</IonLabel>
-                        <IonInput
-                            value={labels[capability.id] ?? capability.name}
-                            onIonInput={e => onSaveLabel(capability.id, e.detail.value ?? '')}
-                            placeholder={capability.id}
-                        />
-                    </IonItem>
-                    {remoteProtocols[capability.id] && <IonItem><IonLabel position="stacked">Remote sensor protocol</IonLabel>
-                        <IonSelect interfaceOptions={{ cssClass: 'prakiva-controls-choice-alert' }} value={selectedProtocols[capability.id] ?? ''} onIonChange={e => onChangeRemoteProtocol(capability.id, e.detail.value ?? '')}>
+const ControlsConfigurationModal: React.FC<Props> = ({ capabilities, remoteProtocols, selectedProtocols, onChangeRemoteProtocol, labels, policies, sensorWidgets, onSaveLabel, onChangePolicy, onChangeSensorWidget, methods, onChangeMethod, onConfigureActuator, onConfigureSensor, virtualSensorParameters }) => {
+    const [tab, setTab] = useState<'actuator' | 'sensor'>('actuator');
+    const [expanded, setExpanded] = useState<string | null>(null);
+    return <IonContent className="ion-padding capability-mapping">
+        <IonSegment value={tab} onIonChange={e => { setTab(e.detail.value as 'actuator' | 'sensor'); setExpanded(null); }}>
+            <IonSegmentButton value="actuator"><IonLabel>Actuators</IonLabel></IonSegmentButton>
+            <IonSegmentButton value="sensor"><IonLabel>Sensors</IonLabel></IonSegmentButton>
+        </IonSegment>
+        <IonText color="medium"><p>Configure channel presentation, policies and transport. Apply Configuration from the dashboard to update the controller.</p></IonText>
+        {capabilities.filter(c => c.kind === tab).map(capability => <IonCard key={capability.id} className="mapping-card">
+            <IonCardContent>
+                <IonButton fill="clear" expand="block" style={{ textAlign: 'left', justifyContent: 'flex-start', width: '100%', '--padding-start': '0px', '--padding-end': '0px' } as React.CSSProperties} onClick={() => setExpanded(expanded === capability.id ? null : capability.id)}>
+                    <span style={{ display: 'block', width: '100%', textAlign: 'left' }}>{labels[capability.id] || capability.name} ({capability.channels.length}) {expanded === capability.id ? '▴' : '▾'}</span>
+                </IonButton>
+                {expanded === capability.id && <>
+                    <IonText color="medium"><p>Controller ID: {capability.id}</p></IonText>
+                    <IonItem><IonLabel position="stacked">Display name</IonLabel><IonInput value={labels[capability.id] ?? capability.name} onIonInput={e => onSaveLabel(capability.id, e.detail.value ?? '')}/></IonItem>
+                    {capability.kind === 'sensor' && remoteProtocols[capability.id] && <IonItem>
+                        <IonLabel position="stacked">Sensor protocol</IonLabel>
+                        <IonSelect value={selectedProtocols[capability.id] ?? ''} onIonChange={e => onChangeRemoteProtocol(capability.id, e.detail.value ?? '')}>
                             <IonSelectOption value="">Not configured</IonSelectOption>
                             {remoteProtocols[capability.id].map(protocol => <IonSelectOption key={protocol} value={protocol}>{protocol}</IonSelectOption>)}
-                        </IonSelect></IonItem>}
-                    {capability.channels.map(channel => <IonItem key={channel.id} lines="none">
-                        <IonLabel position="stacked">
-                            {channel.label} · {channel.valueType === 'analog' ? `Analogue${channel.unit ? ` (${channel.unit})` : ''}` : channel.valueType === 'trigger' ? 'Operation trigger' : 'Binary'}
-                        </IonLabel>
-                        {capability.kind === 'actuator' ? (
-                            <IonSelect
-                                interfaceOptions={{ cssClass: 'prakiva-controls-choice-alert' }}
-                                value={policies[channelPolicyKey(capability.id, channel.id)] ?? ''}
-                                placeholder="Not configured"
-                                onIonChange={e => onChangePolicy(
-                                    capability,
-                                    channel.id,
-                                    (e.detail.value ?? '') as ControlPolicy | '',
-                                )}
-                            >
-                                <IonSelectOption value="">Not configured</IonSelectOption>
-                                {channel.supportedPolicies.filter(policy => policy !== 'periodic_pulse').map(policy => (
-                                    <IonSelectOption key={policy} value={policy}>
-                                        {POLICY_LABELS[policy]}
-                                    </IonSelectOption>
-                                ))}
-                            </IonSelect>
-                        ) : (
-                            <IonSelect
-                                interfaceOptions={{ cssClass: 'prakiva-controls-choice-alert' }}
-                                value={sensorWidgets[`${capability.id}:${channel.id}`] === 'text' ? 'linear' : (sensorWidgets[`${capability.id}:${channel.id}`] ?? 'none')}
-                                placeholder="Not configured"
-                                onIonChange={e => onChangeSensorWidget(
-                                    capability,
-                                    channel.id,
-                                    (e.detail.value ?? 'none') as SensorWidgetType,
-                                )}
-                            >
-                                <IonSelectOption value="none">Not Configured</IonSelectOption>
-                                <IonSelectOption value="linear">Linear Gauge</IonSelectOption>
-                                <IonSelectOption value="gauge">Circular Dial</IonSelectOption>
-                            </IonSelect>
-                        )}
-                    </IonItem>)}
-                </IonCardContent></IonCard>
-            ))}
-        </IonContent>
-    </IonModal>
-);
-
+                        </IonSelect>
+                    </IonItem>}
+                    {capability.kind === 'sensor' && (virtualSensorParameters[capability.id] || remoteProtocols[capability.id]) && <IonButton size="small" fill="outline"
+                        disabled={!!remoteProtocols[capability.id] && !selectedProtocols[capability.id]}
+                        onClick={() => onConfigureSensor(capability.id)}>
+                        {selectedProtocols[capability.id] && selectedProtocols[capability.id] !== 'local' ? 'Configure protocol' : 'Configure parameters'}
+                    </IonButton>}
+                    {capability.channels.map(channel => {
+                        const key = channelPolicyKey(capability.id, channel.id);
+                        const supported = channel.supportedActuationMethods ?? [];
+                        const selected = methods[key] ?? supported[0] ?? '';
+                        return <div key={channel.id} style={{ marginTop: 16, padding: 12, border: '1px solid var(--ion-color-step-200)', borderRadius: 8 }}>
+                            <IonText><strong>{channel.label}</strong></IonText>
+                            {capability.kind === 'actuator' ? <>
+                                <IonItem><IonLabel position="stacked">Control policy</IonLabel><IonSelect value={policies[key] ?? ''} onIonChange={e => onChangePolicy(capability, channel.id, (e.detail.value ?? '') as ControlPolicy | '')}>
+                                    <IonSelectOption value="">Not configured</IonSelectOption>
+                                    {channel.supportedPolicies.filter(p => p !== 'periodic_pulse').map(p => <IonSelectOption key={p} value={p}>{POLICY_LABELS[p]}</IonSelectOption>)}
+                                </IonSelect></IonItem>
+                                <IonItem><IonLabel position="stacked">Actuation method</IonLabel><IonSelect value={selected} disabled={supported.length <= 1} onIonChange={e => onChangeMethod(capability.id, channel.id, e.detail.value)}>
+                                    {supported.map(method => <IonSelectOption key={method} value={method}>{method.toUpperCase()}</IonSelectOption>)}
+                                </IonSelect></IonItem>
+                                {(selected === 'http-get' || selected === 'http-post') && <IonButton fill="outline" size="small" onClick={() => onConfigureActuator(capability.id, channel.id)}>Configure HTTP</IonButton>}
+                            </> : <IonItem><IonLabel position="stacked">Display widget</IonLabel><IonSelect value={sensorWidgets[key] === 'text' ? 'linear' : (sensorWidgets[key] ?? 'none')} onIonChange={e => onChangeSensorWidget(capability, channel.id, (e.detail.value ?? 'none') as SensorWidgetType)}>
+                                <IonSelectOption value="none">Not configured</IonSelectOption><IonSelectOption value="linear">Linear gauge</IonSelectOption><IonSelectOption value="gauge">Circular dial</IonSelectOption>
+                            </IonSelect></IonItem>}
+                        </div>;
+                    })}
+                </>}
+            </IonCardContent>
+        </IonCard>)}
+    </IonContent>;
+};
 export default ControlsConfigurationModal;

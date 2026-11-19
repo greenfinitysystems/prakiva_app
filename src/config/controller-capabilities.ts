@@ -14,6 +14,7 @@ export interface CapabilityChannel {
     min?: number;
     max?: number;
     supportedPolicies: ControlPolicy[];
+    supportedActuationMethods?: string[];
 }
 
 export interface ControllerCapability {
@@ -39,6 +40,8 @@ export function isControllerCapability(value: unknown): value is ControllerCapab
             (channel.valueType === 'binary' || channel.valueType === 'analog' || channel.valueType === 'trigger') &&
             Array.isArray(channel.supportedPolicies) && channel.supportedPolicies.every(policy =>
                 ['manual_binary', 'binary_curve', 'analog_curve', 'threshold_rules', 'periodic_pulse', 'trigger'].includes(String(policy))) &&
+            (channel.supportedActuationMethods === undefined || (Array.isArray(channel.supportedActuationMethods) && channel.supportedActuationMethods.every(method => typeof method === 'string' && method.length > 0))) &&
+            (item.kind !== 'actuator' || (Array.isArray(channel.supportedActuationMethods) && channel.supportedActuationMethods.length > 0)) &&
             (channel.unit === undefined || typeof channel.unit === 'string') &&
             (channel.min === undefined || typeof channel.min === 'number') &&
             (channel.max === undefined || typeof channel.max === 'number');

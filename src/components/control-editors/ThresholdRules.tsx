@@ -28,18 +28,22 @@ const ThresholdRules: React.FC<InlineChannelEditorProps> = ({ value = {}, onChan
         [capabilities],
     );
 
-    // A displayed default must also exist in the parent configuration document.
-    // Otherwise the editor looks configured while firmware receives sensorId="".
-    useEffect(() => {
-        if (value.sensorId) return;
+    // Display defaults without mutating the configuration on mount.
+    // Persist them only after an explicit user edit, so merely opening the
+    // editor never creates a pending local configuration revision.
+    const update = (patch: Record<string, unknown>) => {
         const preferred = sensors.find(sensor => sensor.id === 'water_temperature.value');
         const fallback = preferred ?? sensors[0];
-        if (fallback) onChange({ ...value, sensorId: fallback.id,
-            lowThreshold: value.lowThreshold ?? 28, highThreshold: value.highThreshold ?? 30,
-            lowAction: value.lowAction ?? 'off', highAction: value.highAction ?? 'on' });
-    }, [value, sensors, onChange]);
-
-    const update = (patch: Record<string, unknown>) => onChange({ ...value, ...patch });
+        onChange({
+            sensorId: value.sensorId ?? fallback?.id ?? '',
+            lowThreshold: value.lowThreshold ?? 28,
+            highThreshold: value.highThreshold ?? 30,
+            lowAction: value.lowAction ?? 'off',
+            highAction: value.highAction ?? 'on',
+            ...value,
+            ...patch,
+        });
+    };
 
     return (
         <>

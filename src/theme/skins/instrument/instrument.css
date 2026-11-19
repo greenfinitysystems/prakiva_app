@@ -8,6 +8,7 @@ html[data-prakiva-skin="instrument"] {
   --ion-card-background: #f8edd2;
   --ion-item-background: #f8edd2;
   --ion-toolbar-background: #ead7ab;
+  --prakiva-binary-curve-color: var(--ion-color-primary);
   --ion-color-primary: #705020;
   --ion-color-primary-rgb: 112,80,32;
   --ion-color-primary-contrast: #ffffff;

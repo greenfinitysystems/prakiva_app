@@ -1,3 +1,4 @@
+import { RemoteActuatorConfigurationStore } from './remote-actuator-configuration-store';
 /** PRAKIVA V1 portable system backup. No drafts, credentials, or session tokens. */
 import type { SavedController } from '../models/saved-controller';
 import { getControllerCapabilities, getControllerConfiguration, setControllerConfiguration } from './controller-api';
@@ -144,6 +145,7 @@ export async function restoreSystemBackup(controller: SavedController, token: st
     try {
         ControlConfigurationStore.replaceWithControllerDocument(backup.configuration.app_configuration);
         VirtualSensorConfigurationStore.replaceFromController(controller.deviceId, backup.configuration.virtual_sensors);
+        RemoteActuatorConfigurationStore.replaceFromController(controller.deviceId, backup.configuration.remote_actuators);
         const snapshot = await ControllerSynchronizationStore.load(controller.deviceId);
         if (snapshot) {
             const current = await getControllerConfiguration(controller.address, controller.httpPort, token);

@@ -1,3 +1,5 @@
+import { ActuationMethodStore } from '../services/actuation-method-store';
+import type { VirtualSensorDeclaration } from '../services/controller-api';
 import { useEffect, useMemo, useState } from 'react';
 import {
     IonBadge, IonButton, IonButtons, IonContent, IonGrid, IonHeader, IonIcon,
@@ -12,6 +14,7 @@ import { logoutOwner, validateOwnerSession } from '../services/controller-api';
 import { applyAppConfigurationToController } from '../services/controller-configuration-adapter';
 import { ControllerSynchronizationStore } from '../services/controller-synchronization-store';
 import { ControllerSessionStore } from '../services/controller-session-store';
+import { RemoteActuatorConfigurationStore } from '../services/remote-actuator-configuration-store';
 import { VirtualSensorConfigurationStore } from '../services/virtual-sensor-configuration-store';
 import { ControlConfigurationStore, isControlConfigurationDocument, setControllerCapabilities } from '../services/control-configuration-store';
 import {
@@ -20,11 +23,10 @@ import {
     markLocalConfigurationPending, markConfigurationSynchronized,
     type ControllerSyncRecord, type ConfigurationSyncStatus, type ControllerConfigurationMetadata,
 } from '../services/configuration-apply';
-import { DEFAULT_CONTROL_POLICIES } from '../config/control-policies';
 import { type ControlPolicy, type ControllerCapability, type SensorWidgetType, channelPolicyKey } from '../config/controller-capabilities';
-import ControlsConfigurationModal from '../components/controller-dashboard/ControlsConfigurationModal';
 import ActuatorTile from '../components/controller-dashboard/ActuatorTile';
 import SensorTile from '../components/controller-dashboard/SensorTile';
+import ControllerClock from '../components/controller-dashboard/ControllerClock';
 import ControllerMenu from '../components/controller-dashboard/ControllerMenu';
 import DashboardDialogs from '../components/controller-dashboard/DashboardDialogs';
 import { useDashboardNavigationGuard } from '../hooks/controller-dashboard/useDashboardNavigationGuard';
@@ -36,7 +38,6 @@ import '../theme/skins/default/styles/pages/ControllerDashboard.css';
 interface DashboardState { controller?: SavedController }
 type PolicyMap = Record<string, ControlPolicy>;
 type LabelMap = Record<string, string>;
-type SensorWidgetMap = Record<string, SensorWidgetType>;
 const sensorChannelKey = (capabilityId: string, channelId: string) => `${capabilityId}:${channelId}`;
 const ControllerDashboard: React.FC = () => {
     const location = useLocation();
@@ -53,35 +54,11 @@ const ControllerDashboard: React.FC = () => {
     const [loggingOut, setLoggingOut] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const [policies, setPolicies] = useState<PolicyMap>({});
+    const [methods, setMethods] = useState<Record<string, string>>({});
+    const [sensorWidgets, setSensorWidgets] = useState<Record<string, SensorWidgetType>>({});
+    const [virtualDeclarations, setVirtualDeclarations] = useState<VirtualSensorDeclaration[]>([]);
     const [labels, setLabels] = useState<LabelMap>({});
-    const [sensorWidgets, setSensorWidgets] = useState<SensorWidgetMap>({});
     const [capabilities, setCapabilities] = useState<ControllerCapability[]>([]);
-    const [mappingOpen, setMappingOpen] = useState(false);
-    const [remoteProtocols, setRemoteProtocols] = useState<Record<string, string[]>>({});
-    const [selectedProtocols, setSelectedProtocols] = useState<Record<string, string>>({});
-    useEffect(() => {
-        if (!controller || !mappingOpen) return;
-        let active = true;
-        void ControllerSynchronizationStore.load(controller.deviceId).then(snapshot => {
-            if (!active || !snapshot) return;
-            const supported: Record<string, string[]> = {};
-            const selected: Record<string, string> = {};
-            for (const declaration of snapshot.capabilities.virtual_sensors ?? []) {
-                if (!declaration.supported_protocols?.length) continue;
-                supported[declaration.capability_id] = declaration.supported_protocols;
-                const entry = VirtualSensorConfigurationStore.getEntry(controller.deviceId, declaration.component_id);
-                const remote = (
-                    snapshot.configuration?.configuration?.virtual_sensors as
-                    Record<string, { selected_protocol?: string }> | undefined
-                )?.[declaration.component_id];
-
-                selected[declaration.capability_id] = entry?.selected_protocol ?? remote?.selected_protocol ?? '';
-            }
-            setRemoteProtocols(supported);
-            setSelectedProtocols(selected);
-        });
-        return () => { active = false; };
-    }, [controller, mappingOpen]);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [applyRecord, setApplyRecord] = useState<ControllerSyncRecord | null>(() => controller ? getControllerSyncRecord(controller.deviceId) : null);
     const [controllerMetadata, setControllerMetadata] = useState<ControllerConfigurationMetadata | null>(null);
@@ -102,14 +79,15 @@ const ControllerDashboard: React.FC = () => {
         const refreshDraft = () => {
             setHasUnsavedChanges(ControlConfigurationStore.hasUnsavedChanges());
             if (controller) setApplyRecord(getControllerSyncRecord(controller.deviceId));
-            setPolicies({ ...DEFAULT_CONTROL_POLICIES, ...ControlConfigurationStore.getChannelPolicies() });
-            setLabels(ControlConfigurationStore.getCapabilityLabels());
-            const widgetMap: SensorWidgetMap = {};
-            for (const capability of capabilities.filter(item => item.kind === 'sensor')) {
+            setPolicies(ControlConfigurationStore.getChannelPolicies());
+            if (controller) setMethods(ActuationMethodStore.getAll(controller.deviceId));
+            const widgets: Record<string, SensorWidgetType> = {};
+            for (const capability of capabilities.filter(c => c.kind === 'sensor')) {
                 const configured = ControlConfigurationStore.getControl(capability.id).sensorWidgets ?? {};
-                for (const channel of capability.channels) widgetMap[sensorChannelKey(capability.id, channel.id)] = configured[channel.id] ?? 'none';
+                for (const channel of capability.channels) widgets[sensorChannelKey(capability.id, channel.id)] = configured[channel.id] ?? 'none';
             }
-            setSensorWidgets(widgetMap);
+            setSensorWidgets(widgets);
+            setLabels(ControlConfigurationStore.getCapabilityLabels());
         };
         refreshDraft();
         return ControlConfigurationStore.subscribe(refreshDraft);
@@ -166,14 +144,8 @@ const ControllerDashboard: React.FC = () => {
     const replaceLocalFromController = (document: Parameters<typeof ControlConfigurationStore.replaceWithControllerDocument>[0]) => {
         ControlConfigurationStore.replaceWithControllerDocument(document);
         setHasUnsavedChanges(false);
-        setPolicies({ ...DEFAULT_CONTROL_POLICIES, ...ControlConfigurationStore.getChannelPolicies() });
+        setPolicies(ControlConfigurationStore.getChannelPolicies());
         setLabels(ControlConfigurationStore.getCapabilityLabels());
-        const widgetMap: SensorWidgetMap = {};
-        for (const capability of capabilities.filter(item => item.kind === 'sensor')) {
-            const configured = ControlConfigurationStore.getControl(capability.id).sensorWidgets ?? {};
-            for (const channel of capability.channels) widgetMap[sensorChannelKey(capability.id, channel.id)] = configured[channel.id] ?? 'none';
-        }
-        setSensorWidgets(widgetMap);
     };
 
     const beginApply = async () => {
@@ -237,6 +209,11 @@ const ControllerDashboard: React.FC = () => {
                 controller.deviceId,
                 snapshot.configuration.configuration?.virtual_sensors,
             );
+            ActuationMethodStore.replaceFromController(controller.deviceId, snapshot.configuration.configuration?.actuator_channels);
+            RemoteActuatorConfigurationStore.replaceFromController(
+                controller.deviceId,
+                snapshot.configuration.configuration?.remote_actuators,
+            );
             const timestamp = snapshot.configuration.configuration_timestamp;
             const controllerTimestamp = typeof timestamp === 'number' && timestamp > 0
                 ? new Date(timestamp * 1000).toISOString().replace(/\.\d{3}Z$/, 'Z') : null;
@@ -291,6 +268,7 @@ const ControllerDashboard: React.FC = () => {
                 if (snapshot && active) {
                     setControllerCapabilities(snapshot.capabilities.capabilities);
                     setCapabilities(snapshot.capabilities.capabilities);
+                    setVirtualDeclarations(snapshot.capabilities.virtual_sensors ?? []);
                     const exists = snapshot.configuration.configuration_exists;
                     const unixTimestamp = snapshot.configuration.configuration_timestamp;
                     const timestamp = exists && typeof unixTimestamp === 'number' && unixTimestamp > 0
@@ -308,6 +286,7 @@ const ControllerDashboard: React.FC = () => {
                     }
                 } else {
                     setCapabilities([]);
+                    setVirtualDeclarations([]);
                     setError('Your controller information isn’t available right now. Please sign in again to reconnect.');
                     setApplyRecord(getControllerSyncRecord(controller.deviceId));
                 }
@@ -320,9 +299,44 @@ const ControllerDashboard: React.FC = () => {
         return () => { active = false; };
     }, [location.pathname, controller, navigate]);
 
-    // Only expose actuators after the user has assigned a compatible control policy.
-    const actuators = useMemo(() => capabilities.filter(item => item.kind === 'actuator' && item.channels.some(ch => !!policies[channelPolicyKey(item.id, ch.id)])), [capabilities, policies]);
-    const sensors = useMemo(() => capabilities.filter(item => item.kind === 'sensor'), [capabilities]);
+    // Dashboard visibility is based on committed configuration, not a default
+    // inferred from the firmware's list of supported options.
+    const actuators = useMemo(() => capabilities.filter(item =>
+        item.kind === 'actuator' && item.channels.some(channel => {
+            const key = channelPolicyKey(item.id, channel.id);
+            const policy = policies[key];
+            const supportedMethods = channel.supportedActuationMethods ?? [];
+            // Local-only channels need no separate method-store entry: the
+            // firmware declares their sole possible transport.
+            const method = methods[key] ??
+                (supportedMethods.length === 1 && supportedMethods[0] === 'local' ? 'local' : undefined);
+            if (!policy || !channel.supportedPolicies.includes(policy)) return false;
+            if (!method || !supportedMethods.includes(method)) return false;
+            if (method === 'local') return true;
+            if (method !== 'http-get' && method !== 'http-post') return false;
+            // Remote settings are stored by driver. A missing endpoint is not
+            // an operationally configured transport.
+            const draft = controller && RemoteActuatorConfigurationStore.getEntry(controller.deviceId, `${item.id}_driver`);
+            return !!draft?.parameters.endpoint_uri?.trim() &&
+                /^https?:\/\//i.test(draft.parameters.endpoint_uri.trim());
+        })
+    ), [capabilities, policies, methods, controller]);
+
+    const sensors = useMemo(() => capabilities.filter(item =>
+        item.kind === 'sensor' && item.channels.some(channel => {
+            if (!sensorWidgets[sensorChannelKey(item.id, channel.id)] ||
+                sensorWidgets[sensorChannelKey(item.id, channel.id)] === 'none') return false;
+            const declaration = virtualDeclarations.find(d => d.capability_id === item.id);
+            if (!declaration?.supported_protocols?.length) return true; // Physical/local sensor.
+            const entry = controller && VirtualSensorConfigurationStore.getEntry(controller.deviceId, declaration.component_id);
+            const protocol = entry?.selected_protocol;
+            if (!protocol || !declaration.supported_protocols.includes(protocol)) return false;
+            if (protocol === 'local') return true;
+            if (protocol !== 'http-get' && protocol !== 'http-post') return false;
+            const endpoint = entry?.parameters.endpoint_uri;
+            return typeof endpoint === 'string' && /^https?:\/\//i.test(endpoint.trim());
+        })
+    ), [capabilities, sensorWidgets, virtualDeclarations, controller]);
 
     const logout = async () => {
         if (!controller) return;
@@ -401,25 +415,6 @@ const ControllerDashboard: React.FC = () => {
 
     const displayName = (capability: ControllerCapability) => labels[capability.id]?.trim() || capability.name;
 
-    const saveLabel = (id: string, value: string) => {
-        const next = { ...labels, [id]: value }; setLabels(next);
-        ControlConfigurationStore.setCapabilityLabel(id, value);
-    };
-
-    const changePolicy = (capability: ControllerCapability, channelId: string, policy: ControlPolicy | '') => {
-        const next = { ...policies }; const key = channelPolicyKey(capability.id, channelId);
-        const channel = capability.channels.find(ch => ch.id === channelId);
-        if (policy && channel?.supportedPolicies.includes(policy)) next[key] = policy;
-        else delete next[key];
-        setPolicies(next);
-        ControlConfigurationStore.setChannelPolicy(capability.id, channelId, policy || undefined);
-    };
-
-    const changeSensorWidget = (capability: ControllerCapability, channelId: string, widget: SensorWidgetType) => {
-        ControlConfigurationStore.setSensorWidget(capability.id, channelId, widget);
-        setSensorWidgets(previous => ({ ...previous, [sensorChannelKey(capability.id, channelId)]: widget }));
-    };
-
     if (!controller) return <IonPage><IonContent className="ion-padding"><p>Controller context is missing.</p><IonButton onClick={() => navigate('/home', { replace: true })}>Go to Home</IonButton></IonContent></IonPage>;
 
     return <IonPage>
@@ -440,7 +435,10 @@ const ControllerDashboard: React.FC = () => {
             applyBusy={applyBusy}
             applyStatusColor={applyStatusColor}
             loggingOut={loggingOut}
-            onControls={() => { setMenuOpen(false); setMappingOpen(true); }}
+            onControls={() => {
+                setMenuOpen(false);
+                requestLeave(() => navigate('/controls-configuration', { state: { controller } }));
+            }}
             onWifi={() => {
                 setMenuOpen(false);
                 requestLeave(() => navigate('/wifi-configuration', { state: { controller } }));
@@ -460,43 +458,12 @@ const ControllerDashboard: React.FC = () => {
                 requestLeave(() => { void logout(); });
             }}
         />
-        <ControlsConfigurationModal
-            isOpen={mappingOpen}
-            capabilities={capabilities}
-            remoteProtocols={remoteProtocols}
-            selectedProtocols={selectedProtocols}
-            onChangeRemoteProtocol={(capabilityId, protocol) => {
-                if (!controller) return;
-                const componentId = `${capabilityId}_driver`;
-                VirtualSensorConfigurationStore.setRemote(controller.deviceId, componentId, { selected_protocol: protocol });
-                setSelectedProtocols(previous => ({ ...previous, [capabilityId]: protocol }));
-                markLocalConfigurationPending(controller.deviceId);
-            }}
-            labels={labels}
-            policies={policies}
-            sensorWidgets={sensorWidgets}
-            onDismiss={() => setMappingOpen(false)}
-            onDone={() => {
-                try {
-                    // Controls-page choices are app presentation preferences.
-                    // Commit them locally; do not mark controller configuration pending.
-                    ControlConfigurationStore.save();
-                    setHasUnsavedChanges(ControlConfigurationStore.hasUnsavedChanges());
-                    setMappingOpen(false);
-                } catch (e) {
-                    setSaveError(e instanceof Error ? e.message : 'Could not save control presentation settings.');
-                }
-            }}
-            onSaveLabel={saveLabel}
-            onChangePolicy={changePolicy}
-            onChangeSensorWidget={changeSensorWidget}
-        />
-
         <IonContent className="prakiva-home ion-padding capability-dashboard">
             {checking && <div className="dashboard-status"><IonText color="medium">Checking controller session…</IonText></div>}
             {error && <IonText color="danger"><p>{error}</p></IonText>}
             {saveError && <IonText color="danger"><p>{saveError}</p></IonText>}
 
+            <ControllerClock address={controller.address} httpPort={controller.httpPort} sessionToken={sessionToken} />
             <h2 className="capability-section-title" aria-label="Actuators" title="Actuators"><IonIcon icon={cogOutline} aria-hidden="true" /></h2>
             <IonGrid className="capability-grid">
                 <IonRow>
@@ -514,7 +481,7 @@ const ControllerDashboard: React.FC = () => {
             <h2 className="capability-section-title" aria-label="Sensors" title="Sensors"><IonIcon icon={speedometerOutline} aria-hidden="true" /></h2>
             <IonGrid className="capability-grid">
                 <IonRow>
-                    {sensors.flatMap(capability => capability.channels.map(channel => {
+                    {sensors.flatMap(capability => capability.channels.filter(channel => sensorWidgets[sensorChannelKey(capability.id, channel.id)] && sensorWidgets[sensorChannelKey(capability.id, channel.id)] !== 'none').map(channel => {
                         const key = sensorChannelKey(capability.id, channel.id);
                         return (
                             <SensorTile

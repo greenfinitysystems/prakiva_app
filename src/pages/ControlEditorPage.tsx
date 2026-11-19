@@ -3,8 +3,8 @@ import { useLocation, useNavigate, useParams, useSearchParams } from 'react-rout
 import { arrowBack } from 'ionicons/icons';
 import { IonAlert, IonButton, IonButtons, IonCard, IonCardContent, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonNote, IonPage, IonSelect, IonSelectOption, IonText, IonTitle, IonToolbar } from '@ionic/react';
 import CurveEditor, { type CurveAxis, type CurveDefinition } from '../components/CurveEditor';
-import { DEFAULT_CONTROL_POLICIES, POLICY_LABELS } from '../config/control-policies';
-import { type ControlPolicy, type ControllerCapability, channelPolicyKey } from '../config/controller-capabilities';
+import { POLICY_LABELS } from '../config/control-policies';
+import { type CapabilityChannel, type ControlPolicy, type ControllerCapability, channelPolicyKey } from '../config/controller-capabilities';
 import { ControlConfigurationStore } from '../services/control-configuration-store';
 import { ControlProfileStore } from '../services/control-profile-store';
 import { markLocalConfigurationPending } from '../services/configuration-apply';
@@ -13,10 +13,11 @@ import { ControllerSessionStore } from '../services/controller-session-store';
 import type { SavedController } from '../models/saved-controller';
 import type { ControlProfile } from '../models/control-profile';
 import InlineChannelEditor from '../components/control-editors/InlineChannelEditor';
+import FixedValueKnob from '../components/control-editors/FixedValueKnob';
 import { validateTriggerRangeConfiguration } from '../config/trigger-validation';
 import { validateThresholdConfigurations } from '../config/threshold-validation';
 import '../theme/skins/default/styles/pages/ControlEditorPage.css';
-interface RouteState { controller?: SavedController; capabilities?: ControllerCapability[]; capability?: ControllerCapability; policy?: ControlPolicy; channel?: { id: string; label: string; valueType: 'binary' | 'analog' | 'trigger'; unit?: string; min?: number; max?: number; supportedPolicies: ControlPolicy[] } }
+interface RouteState { controller?: SavedController; capabilities?: ControllerCapability[]; capability?: ControllerCapability; policy?: ControlPolicy; channel?: CapabilityChannel }
 const palette = ['#d1d5db', '#ef4444', '#22c55e', '#3b82f6', '#eab308', '#a855f7', '#06b6d4', '#f97316'];
 const BINARY_AXIS: CurveAxis = { label: 'Output state', min: 0, max: 1, ticks: [0, 1], formatTick: value => value >= 0.5 ? 'ON' : 'OFF' };
 const X_AXIS: CurveAxis = { label: 'Time of day', min: 0, max: 24, unit: 'hours', ticks: [0, 3, 6, 9, 12, 15, 18, 21, 24], formatTick: v => `${String(v === 24 ? 0 : v).padStart(2, '0')}:00` };
@@ -28,7 +29,6 @@ const ControlEditorPage: React.FC = () => {
     const controllerAddress = controller?.address;
     const controllerHttpPort = controller?.httpPort;
     const [aquariumTime, setAquariumTime] = useState<Date | null>(null);
-
     // Use the controller's schedule-adjusted clock for the curve NOW marker.
     // Anchor the controller timestamp to the phone's monotonic passage of time between refreshes.
     useEffect(() => {
@@ -88,7 +88,7 @@ const ControlEditorPage: React.FC = () => {
         if (!editorCapabilityId || !editorBaseline) return false;
         return JSON.stringify(ControlConfigurationStore.getControlEditorSnapshot(editorCapabilityId)) !== JSON.stringify(editorBaseline);
     }, [editorCapabilityId, editorBaseline]);
-    const [policies, setPolicies] = useState<Record<string, ControlPolicy>>(() => ({ ...DEFAULT_CONTROL_POLICIES, ...ControlConfigurationStore.getChannelPolicies() }));
+    const [policies, setPolicies] = useState<Record<string, ControlPolicy>>(() => ControlConfigurationStore.getChannelPolicies());
     const [colors, setColors] = useState<Record<string, string>>(() => ControlConfigurationStore.getChannelColors());
     const [curves, setCurves] = useState<CurveDefinition[]>(() => {
         if (!capability) return [];
@@ -96,9 +96,13 @@ const ControlEditorPage: React.FC = () => {
             const saved = ControlConfigurationStore.getControl(capability.id).curves;
             if (Array.isArray(saved) && saved.length) return saved as CurveDefinition[];
         } catch { /* The store reports malformed data; retain safe editor defaults. */ }
-        return capability.channels.filter(c => c.valueType === 'analog' && (policies[channelPolicyKey(capability.id, c.id)] ?? c.supportedPolicies[0]) === 'analog_curve').map((c, i) => ({ id: c.id, label: c.label, color: colors[channelPolicyKey(capability.id, c.id)] ?? palette[i % palette.length], points: [{ x: 0, y: c.min ?? 0 }, { x: 7, y: c.min ?? 0 }, { x: 10, y: c.max ?? 100 }, { x: 16, y: c.max ?? 100 }, { x: 20, y: c.min ?? 0 }, { x: 24, y: c.min ?? 0 }] }));
+        return capability.channels.filter(c => c.valueType === 'analog' && policies[channelPolicyKey(capability.id, c.id)] === 'analog_curve').map((c, i) => ({ id: c.id, label: c.label, color: colors[channelPolicyKey(capability.id, c.id)] ?? palette[i % palette.length], points: [{ x: 0, y: c.min ?? 0 }, { x: 7, y: c.min ?? 0 }, { x: 10, y: c.max ?? 100 }, { x: 16, y: c.max ?? 100 }, { x: 20, y: c.min ?? 0 }, { x: 24, y: c.min ?? 0 }] }));
     });
     const [selectedAnalogChannel, setSelectedAnalogChannel] = useState<string>(() => capability?.channels.find(c => c.valueType === 'analog')?.id ?? '');
+    const [fixedModes, setFixedModes] = useState<Record<string, boolean>>(() => {
+        const modes = capability ? ControlConfigurationStore.getControl(capability.id).workspace?.fixedValueModes : undefined;
+        return modes && typeof modes === 'object' && !Array.isArray(modes) ? modes as Record<string, boolean> : {};
+    });
     const [selectedBinaryChannel, setSelectedBinaryChannel] = useState<string>(() => capability?.channels.find(c => c.valueType === 'binary')?.id ?? '');
     const controlId = capability ? `control_${capability.id}` : '';
     const [customProfiles, setCustomProfiles] = useState<ControlProfile[]>(() => capability
@@ -172,14 +176,19 @@ const ControlEditorPage: React.FC = () => {
     if (!isActiveControlEditorRoute) return <IonPage />;
 
     if (!capability) return <IonPage><IonContent className="ion-padding"><IonText color="danger">Capability not found.</IonText><IonButton onClick={() => navigate('/controller-dashboard')}>Return</IonButton></IonContent></IonPage>;
-    const analogChannels = capability.channels.filter(c => c.valueType === 'analog' && (policies[channelPolicyKey(capability.id, c.id)] ?? c.supportedPolicies[0]) === 'analog_curve');
-    const binaryCurveChannels = capability.channels.filter(c => c.valueType === 'binary' && (policies[channelPolicyKey(capability.id, c.id)] ?? c.supportedPolicies[0]) === 'binary_curve');
-    const binaryOtherChannels = capability.channels.filter(c => c.valueType === 'binary' && (policies[channelPolicyKey(capability.id, c.id)] ?? c.supportedPolicies[0]) !== 'binary_curve');
+    const analogChannels = capability.channels.filter(c => c.valueType === 'analog' && policies[channelPolicyKey(capability.id, c.id)] === 'analog_curve');
+    const binaryCurveChannels = capability.channels.filter(c => c.valueType === 'binary' && policies[channelPolicyKey(capability.id, c.id)] === 'binary_curve');
+    // Inline policy editors also apply to numeric actuator channels (for example,
+    // a remote actuator using manual ON/OFF or sensor thresholds).
+    const inlinePolicyChannels = capability.channels.filter(c => {
+        const policy = policies[channelPolicyKey(capability.id, c.id)];
+        return c.valueType !== 'trigger' && !!policy && policy !== 'analog_curve' && policy !== 'binary_curve';
+    });
     const binaryCurves: CurveDefinition[] = binaryCurveChannels.map((channel, index) => {
         const saved = inlineConfigs[channel.id]?.curve as CurveDefinition | undefined;
         return {
             id: channel.id, label: channel.label,
-            color: colors[channelPolicyKey(capability.id, channel.id)] ?? saved?.color ?? palette[index % palette.length],
+            color: colors[channelPolicyKey(capability.id, channel.id)] ?? (saved?.color && saved.color !== '#22c55e' ? saved.color : 'var(--prakiva-binary-curve-color, #22c55e)'),
             points: Array.isArray(saved?.points) ? saved.points.map(point => ({ ...point })) : [
                 { x: 0, y: 0 }, { x: 7, y: 0 }, { x: 10, y: 1 }, { x: 17, y: 0 }, { x: 24, y: 0 },
             ],
@@ -201,12 +210,38 @@ const ControlEditorPage: React.FC = () => {
     // Trigger channels are operation-level actuators, not binary hardware outputs.
     // Keep their editor separate so they never fall through the binary editor path.
     const triggerChannels = capability.channels.filter(c => c.valueType === 'trigger' &&
-        (policies[channelPolicyKey(capability.id, c.id)] ?? c.supportedPolicies[0]) === 'trigger');
+        policies[channelPolicyKey(capability.id, c.id)] === 'trigger');
     const analogGroups = Object.values(analogChannels.reduce<Record<string, typeof analogChannels>>((groups, channel) => { const key = `${channel.unit ?? ''}|${channel.min ?? 0}|${channel.max ?? 100}`; (groups[key] ??= []).push(channel); return groups; }, {}));
     const axisFor = (group: typeof analogChannels): CurveAxis => { const min = group[0]?.min ?? 0, max = group[0]?.max ?? 100; return { label: group[0]?.unit ? `Output (${group[0].unit})` : 'Output', min, max, unit: group[0]?.unit, ticks: [min, min + (max - min) * .25, min + (max - min) * .5, min + (max - min) * .75, max] }; };
     const saveCurves = (next: CurveDefinition[]) => { setCurves(next); ControlConfigurationStore.saveCurves(capability.id, next); };
     const activeAnalogChannel = analogChannels.find(c => c.id === selectedAnalogChannel) ?? analogChannels[0];
     const activeAnalogCurve = activeAnalogChannel ? curves.find(c => c.id === activeAnalogChannel.id) : undefined;
+    const setFixedMode = (channelId: string, enabled: boolean) => {
+        const next = { ...fixedModes, [channelId]: enabled };
+        setFixedModes(next);
+        const workspace = ControlConfigurationStore.getControl(capability.id).workspace ?? {};
+        ControlConfigurationStore.saveWorkspace(capability.id, { ...workspace, fixedValueModes: next });
+        if (enabled) {
+            const channel = analogChannels.find(item => item.id === channelId);
+            const current = curves.find(item => item.id === channelId);
+            if (channel) {
+                const value = current?.points.length && current.points.every(point => Math.abs(point.y - current.points[0].y) < 1e-7)
+                    ? current.points[0].y : (channel.min ?? 0);
+                const curve = { id: channelId, label: channel.label, color: current?.color ?? '#3a9d82', points: [{ x: 0, y: value }, { x: 24, y: value }] };
+                saveCurves([...curves.filter(item => item.id !== channelId), curve]);
+            }
+        }
+    };
+    const updateFixedValue = (channelId: string, value: number) => {
+        const channel = analogChannels.find(item => item.id === channelId);
+        if (!channel) return;
+        const existing = curves.find(item => item.id === channelId);
+        saveCurves([...curves.filter(item => item.id !== channelId), {
+            id: channelId, label: channel.label, color: existing?.color ?? '#3a9d82',
+            points: [{ x: 0, y: value }, { x: 24, y: value }],
+        }]);
+        setSelectedProfile(''); setProfileName('');
+    };
     const loadProfile = (value: string) => {
         const profile = customProfiles.find(item => item.profileId === value);
         if (!profile) return;
@@ -257,7 +292,7 @@ const ControlEditorPage: React.FC = () => {
         const snapshot: ControlProfile = {
             profileId: `custom:${controlId}:${name}`, controlId, capabilityId: capability.id, name, source: 'custom',
             channels: capability.channels.map(channel => {
-                const policy = policies[channelPolicyKey(capability.id, channel.id)] ?? channel.supportedPolicies[0] ?? 'unassigned';
+                const policy = policies[channelPolicyKey(capability.id, channel.id)] ?? 'unassigned';
                 const configuration = policy === 'analog_curve'
                     ? { curve: curves.find(curve => curve.id === channel.id) ?? null }
                     : { ...(inlineConfigs[channel.id] ?? {}) };
@@ -326,6 +361,8 @@ const ControlEditorPage: React.FC = () => {
             return false;
         }
     };
+    // Structural policy and transport selection now live exclusively in Controls.
+    // This page retains the operational policy editors and profiles.
     return <IonPage><IonHeader><IonToolbar><IonButtons slot="start"><IonButton fill="clear" onClick={requestBack} aria-label="Back to dashboard"><IonIcon slot="icon-only" icon={arrowBack} /></IonButton></IonButtons><IonTitle>{displayName}</IonTitle></IonToolbar></IonHeader><IonContent className="ion-padding">
             <IonCard><IonCardContent>
                 <h2>Profiles</h2>
@@ -343,19 +380,28 @@ const ControlEditorPage: React.FC = () => {
                 <IonNote>{profileNotice}</IonNote>
             </IonCardContent></IonCard>
         {analogChannels.length > 0 && <>
-
-            {analogChannels.length > 1 && <>
-                {analogGroups.map((group, index) => <IonCard key={`${group[0].unit ?? ''}-${group[0].min}-${group[0].max}`}><IonCardContent>
-                    <h2>{analogGroups.length > 1 ? `${group[0].unit || 'Analogue'} channel group ${index + 1}` : `${displayName} · channel overview`}</h2>
-                    <p>Read-only overview of the analogue curves in this compatible channel group.</p>
-                    <CurveEditor xAxis={X_AXIS} yAxis={axisFor(group)} mode="analog" curves={curves.filter(c => group.some(a => a.id === c.id))} onChange={() => undefined} readOnly selectedCurveId={selectedAnalogChannel} currentTime={aquariumTime} />
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 12 }}>{group.map((c, i) => <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 12, height: 12, borderRadius: 8, background: colors[channelPolicyKey(capability.id, c.id)] ?? curves.find(x => x.id === c.id)?.color ?? palette[i % palette.length] }} /><span>{c.label}</span><IonSelect interface="popover" value={colors[channelPolicyKey(capability.id, c.id)] ?? curves.find(x => x.id === c.id)?.color ?? palette[i % palette.length]} onIonChange={e => saveColor(c.id, String(e.detail.value))}>{palette.map(color => <IonSelectOption key={color} value={color}>{color}</IonSelectOption>)}</IonSelect></div>)}</div>
-                </IonCardContent></IonCard>)}
-            </>}
+            {analogGroups.map((group, index) => <IonCard key={`${group[0].unit ?? ''}-${group[0].min}-${group[0].max}`}><IonCardContent>
+                <h2>{analogGroups.length > 1 ? `${group[0].unit || 'Analogue'} channel group ${index + 1}` : `${displayName} · channel overview`}</h2>
+                <p>Read-only overview of all analogue channels, including fixed-value channels.</p>
+                <CurveEditor xAxis={X_AXIS} yAxis={axisFor(group)} mode="analog" curves={curves.filter(c => group.some(a => a.id === c.id))} onChange={() => undefined} readOnly selectedCurveId={selectedAnalogChannel} currentTime={aquariumTime} />
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 12 }}>{group.map((c, i) => <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 12, height: 12, borderRadius: 8, background: colors[channelPolicyKey(capability.id, c.id)] ?? curves.find(x => x.id === c.id)?.color ?? palette[i % palette.length] }} /><span>{c.label}</span><IonSelect interface="popover" value={colors[channelPolicyKey(capability.id, c.id)] ?? curves.find(x => x.id === c.id)?.color ?? palette[i % palette.length]} onIonChange={e => saveColor(c.id, String(e.detail.value))}>{palette.map(color => <IonSelectOption key={color} value={color}>{color}</IonSelectOption>)}</IonSelect></div>)}</div>
+            </IonCardContent></IonCard>)}
             <IonCard><IonCardContent>
                 <h2>{analogChannels.length > 1 ? 'Individual channel editor' : analogChannels[0].label}</h2>
-                {analogChannels.length > 1 && <IonItem><IonLabel position="stacked">Channel</IonLabel><IonSelect interface="popover" value={activeAnalogChannel?.id ?? ''} onIonChange={e => setSelectedAnalogChannel(String(e.detail.value))}>{analogChannels.map(c => <IonSelectOption key={c.id} value={c.id}>{c.label}</IonSelectOption>)}</IonSelect></IonItem>}
-                {activeAnalogCurve && activeAnalogChannel && <CurveEditor xAxis={X_AXIS} yAxis={axisFor([activeAnalogChannel])} mode="analog" curves={[activeAnalogCurve]} onChange={updateActiveCurve} title={`Edit ${activeAnalogChannel.label}`} currentTime={aquariumTime} />}
+                {analogChannels.length > 1 && <IonItem><IonLabel>Channel</IonLabel><IonSelect interface="popover" slot="end" value={activeAnalogChannel?.id ?? ''} onIonChange={e => setSelectedAnalogChannel(String(e.detail.value))}>{analogChannels.map(c => <IonSelectOption key={c.id} value={c.id}>{c.label}</IonSelectOption>)}</IonSelect></IonItem>}
+                {activeAnalogChannel && <IonItem><IonLabel>Presentation</IonLabel>
+                    <IonSelect interface="popover" slot="end" value={fixedModes[activeAnalogChannel.id] ? 'knob' : 'curve'}
+                        onIonChange={event => setFixedMode(activeAnalogChannel.id, event.detail.value === 'knob')}>
+                        <IonSelectOption value="curve">Graph</IonSelectOption>
+                        <IonSelectOption value="knob">Knob</IonSelectOption>
+                    </IonSelect>
+                </IonItem>}
+                {activeAnalogCurve && activeAnalogChannel && !fixedModes[activeAnalogChannel.id] && <CurveEditor xAxis={X_AXIS} yAxis={axisFor([activeAnalogChannel])} mode="analog" curves={[activeAnalogCurve]} onChange={updateActiveCurve} title={`Edit ${activeAnalogChannel.label}`} currentTime={aquariumTime} />}
+                {activeAnalogChannel && fixedModes[activeAnalogChannel.id] && <div className="prakiva-fixed-knob-panel">
+                    <FixedValueKnob label={activeAnalogChannel.label} min={activeAnalogChannel.min ?? 0} max={activeAnalogChannel.max ?? 100}
+                        value={activeAnalogCurve?.points[0]?.y ?? (activeAnalogChannel.min ?? 0)}
+                        onChange={value => updateFixedValue(activeAnalogChannel.id, value)} />
+                </div>}
             </IonCardContent></IonCard>
         </>}
         {binaryCurveChannels.length > 0 && <>
@@ -389,9 +435,9 @@ const ControlEditorPage: React.FC = () => {
                 {activeBinaryCurve && <CurveEditor xAxis={X_AXIS} yAxis={BINARY_AXIS} mode="binary" curves={[activeBinaryCurve]} onChange={updateBinaryCurve} title={`Edit ${activeBinaryChannel.label}`} currentTime={aquariumTime} />}
             </IonCardContent></IonCard>
         </>}
-        {binaryOtherChannels.map(c => {
+        {inlinePolicyChannels.map(c => {
             const key = channelPolicyKey(capability.id, c.id);
-            const policy = policies[key] ?? c.supportedPolicies[0];
+            const policy = policies[key];
             return <IonCard key={c.id}><IonCardContent>
                 <h2>{c.label}</h2>
                 <IonNote>{policy ? POLICY_LABELS[policy] : 'No control surface assigned in Control Settings'}</IonNote>

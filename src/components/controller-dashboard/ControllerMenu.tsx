@@ -71,7 +71,7 @@ const ControllerMenu: FC<ControllerMenuProps> = ({
             </IonItem>
             <IonItem button onClick={onControllerInfo}>
                 <IonIcon slot="start" icon={informationCircleOutline} />
-                <IonLabel>Controller</IonLabel>
+                <IonLabel>About</IonLabel>
             </IonItem>
             <IonItem button onClick={onBackupRestore}>
                 <IonIcon slot="start" icon={archiveOutline} />

@@ -1,0 +1,12 @@
+.prakiva-fixed-knob-panel { display:flex; flex-wrap:wrap; justify-content:space-evenly; gap:14px; }
+.prakiva-fixed-knob-unit { width:230px; min-height:208px; display:flex; flex-direction:column; align-items:center; }
+.prakiva-fixed-knob-station { position:relative !important; flex:none; width:230px !important; height:160px !important; transform:none !important; left:auto !important; top:auto !important; margin:0 !important; }
+.prakiva-fixed-knob-station .instrument-rotary-knob { touch-action:none; }
+.prakiva-fixed-knob-value { position:absolute; left:50%; top:164px; transform:translateX(-50%); font-size:20px; font-weight:700; color:var(--ion-text-color); font-variant-numeric:tabular-nums; }
+.prakiva-fixed-knob-label { margin-top:33px; font-size:14px; font-weight:600; text-align:center; }
+html[data-prakiva-skin="digital"] .prakiva-fixed-knob-value { color:#48e0f4; text-shadow:0 0 7px #48e0f455; }
+html[data-prakiva-skin="instrument"] .prakiva-fixed-knob-value { color:#4e3b20; }
+html[data-prakiva-skin="digital"] .prakiva-fixed-knob-value,
+html[data-prakiva-skin="default"] .prakiva-fixed-knob-value { top:100px; z-index:4; pointer-events:none; font-size:20px; }
+html[data-prakiva-skin="digital"] .prakiva-fixed-knob-station .instrument-rotary-pointer,
+html[data-prakiva-skin="default"] .prakiva-fixed-knob-station .instrument-rotary-pointer { opacity:0; }

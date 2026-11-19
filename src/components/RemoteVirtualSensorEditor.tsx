@@ -1,3 +1,4 @@
+import { validateHttpEndpoint } from '../services/http-endpoint-validation';
 import { useEffect, useState } from 'react';
 import { IonButton, IonButtons, IonCheckbox, IonContent, IonFooter, IonHeader, IonInput, IonItem, IonLabel, IonList, IonModal, IonTextarea, IonText, IonTitle, IonToolbar } from '@ionic/react';
 import type { VirtualSensorDeclaration } from '../services/controller-api';
@@ -43,8 +44,9 @@ const RemoteVirtualSensorEditor: React.FC<Props> = ({ isOpen, declaration, initi
             const included = request.sensor_mappings.filter(m => m.include);
             if (included.some(m => !m.field.trim())) throw new Error('Every included sensor needs a field name.');
             if (new Set(included.map(m => m.field.trim())).size !== included.length) throw new Error('Sensor field names must be unique.');
+            const endpoint = validateHttpEndpoint(uri);
             onSave({
-                parameters: { ...initial.parameters, endpoint_uri: uri.trim() },
+                parameters: { ...initial.parameters, endpoint_uri: endpoint },
                 request: { ...request, sensor_mappings: request.sensor_mappings.map(m => ({ ...m, field: m.field.trim() })), additional_json: additional as Record<string, unknown> },
             });
         } catch (e) { setError(e instanceof Error ? e.message : 'Invalid JSON'); }
@@ -53,7 +55,7 @@ const RemoteVirtualSensorEditor: React.FC<Props> = ({ isOpen, declaration, initi
         <IonHeader><IonToolbar><IonTitle>Remote Sensor Configuration</IonTitle><IonButtons slot="end"><IonButton onClick={onDismiss}>Close</IonButton></IonButtons></IonToolbar></IonHeader>
         <IonContent className="ion-padding">
             <IonText color="medium"><p>Protocol is selected in Controls Configuration. Configure the destination and request data here.</p></IonText>
-            <IonItem><IonLabel position="stacked">{declaration.parameters.endpoint_uri?.label ?? 'URI'}</IonLabel><IonInput value={uri} onIonInput={e => setUri(e.detail.value ?? '')}/></IonItem>
+            <IonItem><IonLabel position="stacked">{declaration.parameters.endpoint_uri?.label ?? 'URI'} <span aria-label="required" style={{ color: 'var(--ion-color-danger)' }}>*</span></IonLabel><IonInput required type="url" value={uri} onIonInput={e => setUri(e.detail.value ?? '')}/></IonItem>
             <IonItem><IonCheckbox slot="start" checked={request.include_controller_time} onIonChange={e => setRequest(r => ({ ...r, include_controller_time: e.detail.checked }))}/><IonLabel>Include controller time</IonLabel></IonItem>
             <IonText><p>Sensor collection</p></IonText>
             <IonList>{sensors.filter(s => s.component_id !== declaration.component_id).map(sensor => {

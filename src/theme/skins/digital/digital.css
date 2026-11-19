@@ -8,6 +8,7 @@ html[data-prakiva-skin="digital"] {
   --ion-card-background: #111f33;
   --ion-item-background: #111f33;
   --ion-toolbar-background: #101d31;
+  --prakiva-binary-curve-color: var(--ion-color-primary);
   --ion-color-primary: #37d9f3;
   --ion-color-primary-rgb: 55,217,243;
   --ion-color-primary-contrast: #061523;
@@ -489,5 +490,32 @@ html[data-prakiva-skin="digital"] ion-alert.prakiva-controls-choice-alert .alert
   color: #7ee7f3 !important;
 }
 html[data-prakiva-skin="digital"] ion-alert.prakiva-controls-choice-alert .alert-button {
+  color: #6ee5f2;
+}
+
+/* All Ionic select/confirmation alerts are global overlays, not descendants
+   of the page that opened them. Use the skin scope rather than a per-dialog
+   cssClass, and set both host variables and Ionic's internal alert elements. */
+html[data-prakiva-skin="digital"] ion-alert {
+  --background: #0b1b2a;
+  --color: #e7f4ff;
+  color: #e7f4ff;
+}
+html[data-prakiva-skin="digital"] ion-alert .alert-wrapper {
+  background: #0b1b2a;
+  color: #e7f4ff;
+}
+html[data-prakiva-skin="digital"] ion-alert .alert-title,
+html[data-prakiva-skin="digital"] ion-alert .alert-sub-title,
+html[data-prakiva-skin="digital"] ion-alert .alert-message,
+html[data-prakiva-skin="digital"] ion-alert .alert-radio-label,
+html[data-prakiva-skin="digital"] ion-alert .alert-checkbox-label {
+  color: #e7f4ff;
+}
+html[data-prakiva-skin="digital"] ion-alert .alert-radio-button[aria-checked="true"] .alert-radio-label,
+html[data-prakiva-skin="digital"] ion-alert .alert-checkbox-button[aria-checked="true"] .alert-checkbox-label {
+  color: #7ee7f3;
+}
+html[data-prakiva-skin="digital"] ion-alert .alert-button {
   color: #6ee5f2;
 }

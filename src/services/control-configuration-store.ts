@@ -54,7 +54,7 @@ let controllerCapabilities: ControllerCapability[] | null = null;
 
 /** Set the authenticated controller's catalogue before loading or migrating app configuration. */
 export function setControllerCapabilities(capabilities: ControllerCapability[]): void {
-    controllerCapabilities = capabilities.map(capability => ({ ...capability, channels: capability.channels.map(channel => ({ ...channel, supportedPolicies: [...channel.supportedPolicies] })) }));
+    controllerCapabilities = capabilities.map(capability => ({ ...capability, channels: capability.channels.map(channel => ({ ...channel, supportedPolicies: [...channel.supportedPolicies], supportedActuationMethods: [...(channel.supportedActuationMethods ?? [])] })) }));
 }
 let savedContent = '';
 const draftListeners = new Set<() => void>();

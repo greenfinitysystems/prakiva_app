@@ -1,17 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonPage, IonText, IonTitle, IonToolbar } from '@ionic/react';
-import { arrowBack, settingsOutline, optionsOutline } from 'ionicons/icons';
+import { arrowBack, settingsOutline } from 'ionicons/icons';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import type { SavedController } from '../models/saved-controller';
 import type { ControllerCapability, CapabilityChannel, SensorWidgetType } from '../config/controller-capabilities';
 import { ControlConfigurationStore } from '../services/control-configuration-store';
-import { ControllerSynchronizationStore } from '../services/controller-synchronization-store';
-import { markLocalConfigurationPending } from '../services/configuration-apply';
-import type { VirtualSensorDeclaration } from '../services/controller-api';
-import { VirtualSensorConfigurationStore, type VirtualSensorParameterValues } from '../services/virtual-sensor-configuration-store';
-import VirtualSensorParameterEditor from '../components/VirtualSensorParameterEditor';
-import RemoteVirtualSensorEditor from '../components/RemoteVirtualSensorEditor';
-import type { VirtualSensorDraft } from '../services/virtual-sensor-configuration-store';
 import '../theme/skins/default/styles/pages/SensorDetailPage.css';
 import { ControllerSessionStore } from '../services/controller-session-store';
 import { getCapability, getSensorHistory, type CapabilityReadResult, type SensorHistoryPoint } from '../services/capability-operations';
@@ -62,12 +55,6 @@ const SensorDetailPage: React.FC = () => {
     const [historyLoading, setHistoryLoading] = useState(false);
     const [historyError, setHistoryError] = useState('');
     const [pageError, setPageError] = useState('');
-    const [virtualSensorDeclaration, setVirtualSensorDeclaration] = useState<VirtualSensorDeclaration | null>(null);
-    const [virtualSensorParameters, setVirtualSensorParameters] = useState<VirtualSensorParameterValues>({});
-    const [parameterEditorOpen, setParameterEditorOpen] = useState(false);
-    const [remoteDraft, setRemoteDraft] = useState<VirtualSensorDraft>({ parameters: {} });
-    const [sensorSources, setSensorSources] = useState<Array<{ component_id: string; label: string }>>([]);
-    const [configurationNotice, setConfigurationNotice] = useState('');
     const [calibrationEditorOpen, setCalibrationEditorOpen] = useState(false);
     const [calibrationReadings, setCalibrationReadings] = useState<{ raw: number; corrected: number } | null>(null);
 
@@ -105,73 +92,6 @@ const SensorDetailPage: React.FC = () => {
         void loadSession();
         return () => { active = false; };
     }, [location.pathname, controller]);
-
-    useEffect(() => {
-        if (!controller || !capability || !channel) return;
-        let active = true;
-        const loadVirtualSensorDefinition = async () => {
-            try {
-                const snapshot = await ControllerSynchronizationStore.load(controller.deviceId);
-                const declaration = snapshot?.capabilities.virtual_sensors?.find(item =>
-                    item.capability_id === capability.id && item.channel_id === channel.id);
-                if (!active) return;
-                setVirtualSensorDeclaration(declaration ?? null);
-                if (!declaration) return;
-
-                const defaults = Object.fromEntries(
-                    Object.entries(declaration.parameters).map(([id, definition]) => [id, definition.default]),
-                ) as VirtualSensorParameterValues;
-                const remoteConfiguration = snapshot?.configuration.configuration;
-                const remoteVirtualSensors = remoteConfiguration &&
-                    typeof remoteConfiguration.virtual_sensors === 'object' &&
-                    remoteConfiguration.virtual_sensors !== null &&
-                    !Array.isArray(remoteConfiguration.virtual_sensors)
-                    ? remoteConfiguration.virtual_sensors as Record<string, unknown>
-                    : {};
-                const remoteEntry = remoteVirtualSensors[declaration.component_id];
-                const remoteParameters = remoteEntry && typeof remoteEntry === 'object' &&
-                    !Array.isArray(remoteEntry) &&
-                    typeof (remoteEntry as Record<string, unknown>).parameters === 'object' &&
-                    (remoteEntry as Record<string, unknown>).parameters !== null
-                    ? (remoteEntry as Record<string, unknown>).parameters as Record<string, unknown>
-                    : {};
-                const validRemote: VirtualSensorParameterValues = {};
-                for (const [id, definition] of Object.entries(declaration.parameters)) {
-                    const value = remoteParameters[id];
-                    if ((definition.type === 'string' && typeof value === 'string') ||
-                        (definition.type !== 'string' && typeof value === 'number' && Number.isFinite(value))) validRemote[id] = value;
-                    else validRemote[id] = definition.default;
-                }
-                const local = VirtualSensorConfigurationStore.getParameters(
-                    controller.deviceId, declaration.component_id,
-                );
-                setVirtualSensorParameters({ ...defaults, ...validRemote, ...(local ?? {}) });
-                const remote = remoteEntry && typeof remoteEntry === 'object' && !Array.isArray(remoteEntry)
-                    ? remoteEntry as VirtualSensorDraft : { parameters: {} };
-                setRemoteDraft({ ...remote, ...VirtualSensorConfigurationStore.getEntry(controller.deviceId, declaration.component_id), parameters: { ...defaults, ...validRemote, ...(local ?? {}) } });
-                const known = new Map((snapshot?.capabilities.virtual_sensors ?? []).map(item => [item.capability_id, item.component_id]));
-                setSensorSources(snapshot?.capabilities.capabilities.filter(c => c.kind === 'sensor').map(c => ({
-                    component_id: known.get(c.id) ?? `${c.id}_sensor_driver`,
-                    label: c.name,
-                })) ?? []);
-            } catch (error) {
-                if (active) console.error('[Prakiva] Could not load virtual sensor parameters:', error);
-            }
-        };
-        void loadVirtualSensorDefinition();
-        return () => { active = false; };
-    }, [controller, capability, channel]);
-
-    const saveVirtualSensorParameters = (values: VirtualSensorParameterValues) => {
-        if (!controller || !virtualSensorDeclaration) return;
-        VirtualSensorConfigurationStore.setParameters(
-            controller.deviceId, virtualSensorDeclaration.component_id, values,
-        );
-        markLocalConfigurationPending(controller.deviceId);
-        setVirtualSensorParameters(values);
-        setParameterEditorOpen(false);
-        setConfigurationNotice('Parameters saved on this phone. Return to the controller dashboard and choose Apply Configuration to send them to the controller.');
-    };
 
     useEffect(() => {
         if (location.pathname !== `/sensor-detail/${encodeURIComponent(capabilityId)}/${encodeURIComponent(channelId)}` ||
@@ -313,18 +233,12 @@ const SensorDetailPage: React.FC = () => {
             <IonTitle>{displayName}{capability.channels.length > 1 ? ` · ${channel.label}` : ''}</IonTitle>
             <IonButtons slot="end">
                 {capability.kind === 'sensor' && <IonButton fill="clear" aria-label="Calibrate sensor" onClick={() => setCalibrationEditorOpen(true)} disabled={!sessionToken}>
-                    <IonIcon icon={optionsOutline} />
-                </IonButton>}
-                {virtualSensorDeclaration && <>
-                <IonButton fill="clear" aria-label="Configure virtual sensor" onClick={() => setParameterEditorOpen(true)}>
                     <IonIcon icon={settingsOutline} />
-                </IonButton>
-                </>}
+                </IonButton>}
             </IonButtons>
         </IonToolbar></IonHeader>
         <IonContent className="ion-padding sensor-detail-page">
             {pageError && <IonText color="danger"><p>{pageError}</p></IonText>}
-            {configurationNotice && <IonText color="success"><p className="virtual-sensor-configuration-notice">{configurationNotice}</p></IonText>}
             <div className="sensor-instrument-enclosure">
                 <SensorWidgetRenderer
                 widget={widget}
@@ -349,7 +263,6 @@ const SensorDetailPage: React.FC = () => {
                 max={channel.max}
                 instrumentStatus={status}
                 onCalibrate={capability.kind === 'sensor' && sessionToken ? () => setCalibrationEditorOpen(true) : undefined}
-                onParameters={virtualSensorDeclaration ? () => setParameterEditorOpen(true) : undefined}
             />}
             </div>
             <SensorCalibrationEditor
@@ -363,27 +276,6 @@ const SensorDetailPage: React.FC = () => {
                 title={displayName}
                 unit={channel.unit}
             />
-            {virtualSensorDeclaration?.supported_protocols?.length ? <RemoteVirtualSensorEditor
-                isOpen={parameterEditorOpen}
-                declaration={virtualSensorDeclaration}
-                initial={remoteDraft}
-                sensors={sensorSources}
-                onDismiss={() => setParameterEditorOpen(false)}
-                onSave={patch => {
-                    if (!controller) return;
-                    VirtualSensorConfigurationStore.setRemote(controller.deviceId, virtualSensorDeclaration.component_id, patch);
-                    setRemoteDraft(previous => ({ ...previous, ...patch }));
-                    markLocalConfigurationPending(controller.deviceId);
-                    setParameterEditorOpen(false);
-                    setConfigurationNotice('Remote sensor configuration saved locally. Apply Configuration from the dashboard to update the controller.');
-                }}
-            /> : virtualSensorDeclaration && <VirtualSensorParameterEditor
-                isOpen={parameterEditorOpen}
-                declaration={virtualSensorDeclaration}
-                initialValues={virtualSensorParameters}
-                onDismiss={() => setParameterEditorOpen(false)}
-                onSave={saveVirtualSensorParameters}
-            />}
         </IonContent>
     </IonPage>;
 };
