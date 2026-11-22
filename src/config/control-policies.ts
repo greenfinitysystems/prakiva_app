@@ -18,4 +18,5 @@ export const POLICY_LABELS: Record<ControlPolicy, string> = {
     threshold_rules: 'Sensor thresholds',
     periodic_pulse: 'Unavailable (retired)',
     trigger: 'Scheduled trigger',
+    slave: 'Slave (external command)',
 };

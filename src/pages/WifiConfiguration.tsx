@@ -143,7 +143,7 @@ const WifiConfiguration: React.FC = () => {
                   <IonItem lines="none">
                     <IonIcon slot="start" icon={checkmarkCircleOutline} color={status.wifi_status === 'connected' ? 'success' : 'medium'} />
                     <IonLabel className="ion-text-wrap">
-                      <h3>{statusLabel(status.wifi_status)}</h3>
+                      <h3>{status.wifi_status === 'connected' && typeof status.ssid === 'string' && status.ssid ? `Connected to ${status.ssid}` : statusLabel(status.wifi_status)}</h3>
                       <p>Configured mode: {status.wifi_type}</p>
                     </IonLabel>
                   </IonItem>

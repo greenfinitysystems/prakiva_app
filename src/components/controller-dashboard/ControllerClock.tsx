@@ -53,7 +53,7 @@ const ControllerClock: React.FC<Props> = ({ address, httpPort, sessionToken }) =
         fontVariantNumeric: 'tabular-nums',
     }}>
         <strong style={{ fontSize: '1.25rem', letterSpacing: '0.07em' }}>{display}</strong>
-        {(!sessionToken || !valid || stale) && <span style={{ fontSize: '0.72rem', opacity: 0.75 }}>
+        {(!sessionToken || !valid || stale) && <span style={{ position: 'fixed', bottom: 'calc(10px + env(safe-area-inset-bottom, 0px))', left: '50%', transform: 'translateX(-50%)', zIndex: 10, pointerEvents: 'none', fontSize: '0.72rem', opacity: 0.75, whiteSpace: 'nowrap', padding: '3px 9px', borderRadius: '8px', background: 'var(--ion-background-color)' }}>
             {!sessionToken ? 'Connecting' : !sample ? (stale ? 'Unavailable' : 'Syncing')
                 : !valid ? 'Clock not set' : 'Last known time'}
         </span>}

@@ -47,7 +47,7 @@ const RemoteVirtualSensorEditor: React.FC<Props> = ({ isOpen, declaration, initi
             const endpoint = validateHttpEndpoint(uri);
             onSave({
                 parameters: { ...initial.parameters, endpoint_uri: endpoint },
-                request: { ...request, sensor_mappings: request.sensor_mappings.map(m => ({ ...m, field: m.field.trim() })), additional_json: additional as Record<string, unknown> },
+                request: { ...request, sensor_mappings: included.map(m => ({ ...m, field: m.field.trim() })), additional_json: additional as Record<string, unknown> },
             });
         } catch (e) { setError(e instanceof Error ? e.message : 'Invalid JSON'); }
     };

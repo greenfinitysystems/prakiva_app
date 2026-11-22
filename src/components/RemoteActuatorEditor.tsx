@@ -55,7 +55,7 @@ const RemoteActuatorEditor: React.FC<Props> = ({ isOpen, initial, sensors, suppo
                 selected_actuation_method: protocol,
                 command_field: commandField.trim(),
                 parameters: { endpoint_uri: endpoint },
-                request: { ...request, sensor_mappings: request.sensor_mappings.map(m => ({ ...m, field: m.field.trim() })), additional_json: additional as Record<string, unknown> },
+                request: { ...request, sensor_mappings: included.map(m => ({ ...m, field: m.field.trim() })), additional_json: additional as Record<string, unknown> },
             });
         } catch (e) { setError(e instanceof Error ? e.message : 'Invalid JSON'); }
     };

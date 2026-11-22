@@ -199,7 +199,7 @@ const Home: React.FC = () => {
                     </IonList>
                 )}
                 {controllers.length > 0 && <IonButton expand="block" onClick={() => navigate('/discovery')}><IonIcon slot="start" icon={add} />Add controller</IonButton>}
-                <p className="prakiva-footer">Designed for your biotope.</p>
+                <p className="prakiva-footer">Designed for connected environments.</p>
             </IonContent>
             <IonAlert isOpen={removeTarget !== null} header="Remove controller?"
                 message={removeTarget ? `Remove “${removeTarget.name}” from this phone? Your controller and its settings will not be changed.` : ''}

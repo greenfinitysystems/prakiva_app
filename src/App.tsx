@@ -18,6 +18,10 @@ import ControllerDashboard from './pages/ControllerDashboard';
 import ControlEditorPage from './pages/ControlEditorPage';
 import ControlsConfigurationPage from './pages/ControlsConfigurationPage';
 import SensorDetailPage from './pages/SensorDetailPage';
+import ControllerNetworkAlerts from './pages/ControllerNetworkAlerts';
+import ControllerDiagnostics from './pages/ControllerDiagnostics';
+import ControllerBackupRestore from './pages/ControllerBackupRestore';
+import SystemTimingPage from './pages/SystemTimingPage';
 
 import '@ionic/react/css/core.css';
 import '@ionic/react/css/normalize.css';
@@ -63,6 +67,9 @@ const App: React.FC = () => {
                     <Route path="/home" element={<Home />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/controller-info" element={<ControllerInfo />} />
+                    <Route path="/controller-network-alerts" element={<ControllerNetworkAlerts />} />
+                    <Route path="/controller-diagnostics" element={<ControllerDiagnostics />} />
+                    <Route path="/controller-backup-restore" element={<ControllerBackupRestore />} />
                     <Route path="/wifi-configuration" element={<WifiConfiguration />} />
                     <Route path="/time-configuration" element={<TimeConfiguration />} />
                     <Route path="/discovery" element={<ControllerDiscovery />} />
@@ -72,6 +79,7 @@ const App: React.FC = () => {
                     <Route path="/controller-login" element={<ControllerLogin />} />
                     <Route path="/controller-reset" element={<ControllerReset />} />
                     <Route path="/controller-dashboard" element={<ControllerDashboard />} />
+                    <Route path="/system-timing" element={<SystemTimingPage />} />
                     <Route path="/controls-configuration" element={<ControlsConfigurationPage />} />
                     <Route path="/control-editor/:capabilityId" element={<ControlEditorPage />} />
                     <Route path="/control-editor/:capabilityId/:policy" element={<ControlEditorPage />} />

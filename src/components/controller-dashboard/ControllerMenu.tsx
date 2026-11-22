@@ -14,6 +14,8 @@ import {
     settingsOutline,
     timeOutline,
     wifiOutline,
+    pulseOutline,
+    alertCircleOutline,
 } from 'ionicons/icons';
 
 interface ControllerMenuProps {
@@ -23,9 +25,12 @@ interface ControllerMenuProps {
     applyStatusColor: string;
     loggingOut: boolean;
     onControls: () => void;
+    onSystemTiming: () => void;
     onWifi: () => void;
     onTime: () => void;
     onControllerInfo: () => void;
+    onNetworkMonitor: () => void;
+    onDiagnostics: () => void;
     onApply: () => void;
     onBackupRestore: () => void;
     onLogout: () => void;
@@ -42,9 +47,12 @@ const ControllerMenu: FC<ControllerMenuProps> = ({
     applyStatusColor,
     loggingOut,
     onControls,
+    onSystemTiming,
     onWifi,
     onTime,
     onControllerInfo,
+    onNetworkMonitor,
+    onDiagnostics,
     onApply,
     onBackupRestore,
     onLogout,
@@ -61,6 +69,7 @@ const ControllerMenu: FC<ControllerMenuProps> = ({
                 <IonIcon slot="start" icon={settingsOutline} />
                 <IonLabel>Controls</IonLabel>
             </IonItem>
+            <IonItem button onClick={onSystemTiming}><IonIcon slot="start" icon={timeOutline} /><IonLabel>System Timing</IonLabel></IonItem>
             <IonItem button onClick={onWifi}>
                 <IonIcon slot="start" icon={wifiOutline} />
                 <IonLabel>Wi-Fi</IonLabel>
@@ -69,13 +78,15 @@ const ControllerMenu: FC<ControllerMenuProps> = ({
                 <IonIcon slot="start" icon={timeOutline} />
                 <IonLabel>Time</IonLabel>
             </IonItem>
+            <IonItem button onClick={onNetworkMonitor}><IonIcon slot="start" icon={pulseOutline}/><IonLabel>Network Monitor</IonLabel></IonItem>
+            <IonItem button onClick={onDiagnostics}><IonIcon slot="start" icon={alertCircleOutline}/><IonLabel>Diagnostics &amp; Alerts</IonLabel></IonItem>
             <IonItem button onClick={onControllerInfo}>
                 <IonIcon slot="start" icon={informationCircleOutline} />
                 <IonLabel>About</IonLabel>
             </IonItem>
             <IonItem button onClick={onBackupRestore}>
                 <IonIcon slot="start" icon={archiveOutline} />
-                <IonLabel>Backup &amp; Restore</IonLabel>
+                <IonLabel>Maintenance</IonLabel>
             </IonItem>
             <IonItem button disabled={applyBusy} onClick={onApply}>
                 <IonIcon slot="start" icon={cloudUploadOutline} color={applyStatusColor} />

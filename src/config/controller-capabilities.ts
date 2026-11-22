@@ -1,7 +1,7 @@
 /** Capability contract published by the controller firmware. */
 export type CapabilityKind = 'actuator' | 'sensor';
 export type CapabilityValueType = 'binary' | 'analog' | 'trigger';
-export type ControlPolicy = 'manual_binary' | 'binary_curve' | 'analog_curve' | 'threshold_rules' | 'periodic_pulse' | 'trigger';
+export type ControlPolicy = 'manual_binary' | 'binary_curve' | 'analog_curve' | 'threshold_rules' | 'periodic_pulse' | 'trigger' | 'slave';
 
 /** User-selected presentation for a sensor channel in the dashboard. */
 export type SensorWidgetType = 'none' | 'text' | 'gauge' | 'linear';
@@ -39,7 +39,7 @@ export function isControllerCapability(value: unknown): value is ControllerCapab
         return typeof channel.id === 'string' && typeof channel.label === 'string' &&
             (channel.valueType === 'binary' || channel.valueType === 'analog' || channel.valueType === 'trigger') &&
             Array.isArray(channel.supportedPolicies) && channel.supportedPolicies.every(policy =>
-                ['manual_binary', 'binary_curve', 'analog_curve', 'threshold_rules', 'periodic_pulse', 'trigger'].includes(String(policy))) &&
+                ['manual_binary', 'binary_curve', 'analog_curve', 'threshold_rules', 'periodic_pulse', 'trigger', 'slave'].includes(String(policy))) &&
             (channel.supportedActuationMethods === undefined || (Array.isArray(channel.supportedActuationMethods) && channel.supportedActuationMethods.every(method => typeof method === 'string' && method.length > 0))) &&
             (item.kind !== 'actuator' || (Array.isArray(channel.supportedActuationMethods) && channel.supportedActuationMethods.length > 0)) &&
             (channel.unit === undefined || typeof channel.unit === 'string') &&
