@@ -5,7 +5,7 @@ import {
     IonTitle, IonToolbar, IonPopover, useIonViewWillEnter,
 } from '@ionic/react';
 import {
-    add, settingsOutline, hardwareChipOutline, trashOutline, logOutOutline,
+    add, settingsOutline, hardwareChipOutline, trashOutline, logOutOutline, informationCircleOutline,
 } from 'ionicons/icons';
 import { useNavigate } from 'react-router-dom';
 import type { SavedController } from '../models/saved-controller';
@@ -222,6 +222,11 @@ const Home: React.FC = () => {
                     >
                         <IonIcon slot="start" icon={settingsOutline} />
                         <IonLabel>Themes</IonLabel>
+                    </IonItem>
+
+                    <IonItem button detail={false} onClick={() => { setSettingsMenuOpen(false); navigate('/application-about'); }}>
+                        <IonIcon slot="start" icon={informationCircleOutline} />
+                        <IonLabel>About Application</IonLabel>
                     </IonItem>
 
                     {isAndroid && (

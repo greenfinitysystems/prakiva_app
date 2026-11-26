@@ -3,7 +3,7 @@ import { IonInput, IonItem, IonLabel, IonSelect, IonSelectOption, IonText } from
 import type { InlineChannelEditorProps } from './types';
 
 const ThresholdRules: React.FC<InlineChannelEditorProps> = ({ value = {}, onChange, capabilities }) => {
-    const [sensorId, setSensorId] = useState(String(value.sensorId ?? 'water_temperature.value'));
+    const [sensorId, setSensorId] = useState(String(value.sensorId ?? ''));
     const [low, setLow] = useState(Number(value.lowThreshold ?? 28));
     const [high, setHigh] = useState(Number(value.highThreshold ?? 30));
     const [lowAction, setLowAction] = useState(String(value.lowAction ?? 'off'));
@@ -11,7 +11,7 @@ const ThresholdRules: React.FC<InlineChannelEditorProps> = ({ value = {}, onChan
 
     // A loaded profile updates the parent value; mirror every restored field here.
     useEffect(() => {
-        setSensorId(String(value.sensorId ?? 'water_temperature.value'));
+        setSensorId(String(value.sensorId ?? ''));
         setLow(Number(value.lowThreshold ?? 28));
         setHigh(Number(value.highThreshold ?? 30));
         setLowAction(String(value.lowAction ?? 'off'));
@@ -32,10 +32,8 @@ const ThresholdRules: React.FC<InlineChannelEditorProps> = ({ value = {}, onChan
     // Persist them only after an explicit user edit, so merely opening the
     // editor never creates a pending local configuration revision.
     const update = (patch: Record<string, unknown>) => {
-        const preferred = sensors.find(sensor => sensor.id === 'water_temperature.value');
-        const fallback = preferred ?? sensors[0];
         onChange({
-            sensorId: value.sensorId ?? fallback?.id ?? '',
+            sensorId: value.sensorId ?? '',
             lowThreshold: value.lowThreshold ?? 28,
             highThreshold: value.highThreshold ?? 30,
             lowAction: value.lowAction ?? 'off',
@@ -49,7 +47,7 @@ const ThresholdRules: React.FC<InlineChannelEditorProps> = ({ value = {}, onChan
         <>
             <IonItem>
                 <IonLabel position="stacked">Sensor</IonLabel>
-                <IonSelect value={sensorId} onIonChange={event => {
+                <IonSelect placeholder="Select a configured sensor" disabled={!sensors.length} value={sensors.some(sensor => sensor.id === sensorId) ? sensorId : undefined} onIonChange={event => {
                     const next = String(event.detail.value);
                     setSensorId(next);
                     update({ sensorId: next });
@@ -57,6 +55,8 @@ const ThresholdRules: React.FC<InlineChannelEditorProps> = ({ value = {}, onChan
                     {sensors.map(sensor => <IonSelectOption key={sensor.id} value={sensor.id}>{sensor.label}</IonSelectOption>)}
                 </IonSelect>
             </IonItem>
+            {!sensors.length && <IonText color="danger"><p>No configured sensors. Configure a sensor in Controls first.</p></IonText>}
+            {sensorId && !sensors.some(sensor => sensor.id === sensorId) && <IonText color="danger"><p>Previously selected sensor ({sensorId}) is not configured. Select a configured sensor.</p></IonText>}
             <IonItem>
                 <IonLabel position="stacked">Low threshold</IonLabel>
                 <IonInput type="number" value={low} onIonInput={event => {

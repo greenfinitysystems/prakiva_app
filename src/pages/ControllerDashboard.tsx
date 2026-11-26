@@ -360,7 +360,7 @@ const ControllerDashboard: React.FC = () => {
     };
 
     const openPolicy = (capability: ControllerCapability) => {
-        navigate(`/control-editor/${encodeURIComponent(capability.id)}`, { state: { controller, capability: { ...capability, name: displayName(capability) }, capabilities } });
+        navigate(`/control-editor/${encodeURIComponent(capability.id)}`, { state: { controller, capability: { ...capability, name: displayName(capability) }, capabilities, virtualDeclarations } });
     };
 
     const displayName = (capability: ControllerCapability) => labels[capability.id]?.trim() || capability.name;

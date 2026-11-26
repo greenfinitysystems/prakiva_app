@@ -300,3 +300,20 @@ html[data-prakiva-skin="default"] .prakiva-dial-shadow {
 html[data-prakiva-skin="default"] .prakiva-dial-inner-ring {
   stroke: #fff;
 }
+
+.sensor-history-loading {
+    width: 100%;
+    aspect-ratio: 760 / 290;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: var(--ion-color-medium);
+    font-size: .84rem;
+}
+.sensor-history-loading ion-spinner {
+    color: var(--ion-color-primary);
+    width: 28px;
+    height: 28px;
+}

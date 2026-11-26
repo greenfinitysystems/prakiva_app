@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { IonAlert, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonLoading, IonSpinner, IonPage, IonText, IonTitle, IonToolbar } from '@ionic/react';
-import { arrowBack, cloudDownloadOutline, cloudUploadOutline, powerOutline, trashOutline } from 'ionicons/icons';
+import { arrowBack, cloudDownloadOutline, cloudUploadOutline, powerOutline, trashOutline, refreshOutline } from 'ionicons/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { SavedController } from '../models/saved-controller';
 import { ControllerSessionStore } from '../services/controller-session-store';
@@ -8,6 +8,13 @@ import { captureSystemBackup, decodeBackup, encodeBackup, restoreSystemBackup, t
 import { saveBackupDocument, openBackupDocument } from '../services/android-document-save';
 import { controllerRequest } from '../services/controller-api';
 import { ControllerSynchronizationStore } from '../services/controller-synchronization-store';
+
+import { synchronizeControllerAfterLogin } from '../services/controller-synchronization';
+import { ControlConfigurationStore, isControlConfigurationDocument } from '../services/control-configuration-store';
+import { VirtualSensorConfigurationStore } from '../services/virtual-sensor-configuration-store';
+import { ActuationMethodStore } from '../services/actuation-method-store';
+import { RemoteActuatorConfigurationStore } from '../services/remote-actuator-configuration-store';
+import { markConfigurationSynchronized } from '../services/configuration-apply';
 
 const ControllerBackupRestore: React.FC = () => {
     const navigate = useNavigate();
@@ -21,6 +28,41 @@ const ControllerBackupRestore: React.FC = () => {
     const [rebootConfirmOpen, setRebootConfirmOpen] = useState(false);
     const [rebootBusy, setRebootBusy] = useState(false);
     const [rebootError, setRebootError] = useState('');
+    const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+    const [resetBusy, setResetBusy] = useState(false);
+    const [resetError, setResetError] = useState('');
+
+    const resetLocalConfiguration = async () => {
+        if (!controller || resetBusy) return;
+        setResetConfirmOpen(false);
+        setResetError('');
+        setResetBusy(true);
+        try {
+            const session = await ControllerSessionStore.load(controller.deviceId);
+            if (!session?.sessionToken) throw new Error('Sign in to the controller before resetting local settings.');
+            // Obtain a fresh authenticated snapshot before modifying any local settings.
+            const fresh = await synchronizeControllerAfterLogin(controller, session.sessionToken);
+            const config = fresh.configuration.configuration;
+            const appDocument = config?.app_configuration;
+            if (!fresh.configuration.configuration_exists || !isControlConfigurationDocument(appDocument)) {
+                throw new Error('The controller has no valid saved application configuration. Local settings were preserved.');
+            }
+            ControlConfigurationStore.replaceWithControllerDocument(appDocument);
+            VirtualSensorConfigurationStore.replaceFromController(controller.deviceId, config?.virtual_sensors);
+            ActuationMethodStore.replaceFromController(controller.deviceId, config?.actuator_channels);
+            RemoteActuatorConfigurationStore.replaceFromController(controller.deviceId, config?.remote_actuators);
+            const timestamp = fresh.configuration.configuration_timestamp;
+            const iso = typeof timestamp === 'number' && timestamp > 0
+                ? new Date(timestamp * 1000).toISOString().replace(/\.\d{3}Z$/, 'Z') : null;
+            markConfigurationSynchronized(controller.deviceId, iso);
+            navigate('/controller-dashboard', { replace: true, state: { controller } });
+        } catch (error) {
+            setResetError(error instanceof Error ? error.message : 'Could not synchronize with controller. Local settings were preserved.');
+        } finally {
+            setResetBusy(false);
+        }
+    };
+
     const back = () => navigate('/controller-dashboard', { state: { controller } });
     const session = async () => {
         if (!controller) throw new Error('Controller context missing.');
@@ -132,14 +174,24 @@ const ControllerBackupRestore: React.FC = () => {
         <IonContent className="ion-padding">
             <p>Backups contain the controller's successfully applied configuration, not unapplied drafts.</p>
             <IonList>
-                <IonItem button disabled={busy} onClick={() => void backup()}><IonIcon slot="start" icon={cloudDownloadOutline}/><IonLabel><h2>Back Up System</h2><p>Save the applied controller configuration to a file.</p></IonLabel></IonItem>
-                <IonItem button disabled={busy} onClick={() => void chooseRestore()}><IonIcon slot="start" icon={cloudUploadOutline}/><IonLabel><h2>Restore System</h2><p>Select a backup file, review its details, then confirm.</p></IonLabel></IonItem>
+                <IonItem button disabled={busy || resetBusy || rebootBusy || factoryBusy} onClick={() => void backup()}><IonIcon slot="start" icon={cloudDownloadOutline}/><IonLabel><h2>Back Up System</h2><p>Save the applied controller configuration to a file.</p></IonLabel></IonItem>
+                <IonItem button disabled={busy || resetBusy || rebootBusy || factoryBusy} onClick={() => void chooseRestore()}><IonIcon slot="start" icon={cloudUploadOutline}/><IonLabel><h2>Restore System</h2><p>Select a backup file, review its details, then confirm.</p></IonLabel></IonItem>
             </IonList>
             <IonText color="medium"><p>To cancel file selection, use Android's Back button or the file picker's Cancel/Close control. No changes are made until you confirm Restore and Verify.</p></IonText>
+            <h2>Local configuration</h2>
+            <IonList>
+                <IonItem button disabled={resetBusy || busy || rebootBusy || factoryBusy} onClick={() => setResetConfirmOpen(true)}><IonIcon slot="start" icon={refreshOutline}/><IonLabel className="ion-text-wrap"><h2>Reset Local Configuration</h2><p>Discard local settings and resynchronize with the controller. The controller is not changed.</p></IonLabel></IonItem>
+            </IonList>
+            {resetBusy && <IonSpinner name="crescent" />}
+            {resetError && <IonText color="danger"><p role="alert">{resetError}</p></IonText>}
+            <IonAlert isOpen={resetConfirmOpen} onDidDismiss={() => setResetConfirmOpen(false)}
+                header="Reset local configuration?"
+                message="Discard this controller's local control, sensor and transport settings and replace them with a fresh copy from the controller? This will not change the controller. If the controller cannot be reached, local settings will be retained."
+                buttons={[{ text: 'Cancel', role: 'cancel' }, { text: 'Reset and synchronize', role: 'destructive', handler: () => { void resetLocalConfiguration(); } }]} />
             <h2>Device management</h2>
             <IonList>
-                <IonItem button disabled={rebootBusy || factoryBusy || busy} onClick={() => setRebootConfirmOpen(true)}><IonIcon slot="start" icon={powerOutline}/><IonLabel><h2>Reboot Controller</h2><p>Restart the controller without erasing its configuration.</p></IonLabel></IonItem>
-                <IonItem button disabled={rebootBusy || factoryBusy || busy} onClick={() => { setFactoryError(''); setFactoryConfirmOpen(true); }}><IonIcon slot="start" color="danger" icon={trashOutline}/><IonLabel color="danger"><h2>Factory Reset</h2><p>Erase controller ownership and configuration.</p></IonLabel></IonItem>
+                <IonItem button disabled={rebootBusy || factoryBusy || busy || resetBusy} onClick={() => setRebootConfirmOpen(true)}><IonIcon slot="start" icon={powerOutline}/><IonLabel><h2>Reboot Controller</h2><p>Restart the controller without erasing its configuration.</p></IonLabel></IonItem>
+                <IonItem button disabled={rebootBusy || factoryBusy || busy || resetBusy} onClick={() => { setFactoryError(''); setFactoryConfirmOpen(true); }}><IonIcon slot="start" color="danger" icon={trashOutline}/><IonLabel color="danger"><h2>Factory Reset</h2><p>Erase controller ownership and configuration.</p></IonLabel></IonItem>
             </IonList>
             {(rebootBusy || factoryBusy) && <IonSpinner name="crescent" />}
             {rebootError && <IonText color="danger"><p role="alert">{rebootError}</p></IonText>}

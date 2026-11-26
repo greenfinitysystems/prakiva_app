@@ -1,3 +1,4 @@
+import { isRejectedSession, reportSessionInvalidation } from './controller-session-events';
 import { CapacitorHttp } from '@capacitor/core';
 import type { SavedController } from '../models/saved-controller';
 import { isControllerCapability, type ControllerCapability } from '../config/controller-capabilities';
@@ -259,6 +260,15 @@ export async function controllerRequest<T extends Record<string, unknown> = Reco
     }
     if (!operation.trim()) throw new ControllerApiError('Controller API operation is missing.');
 
+    const session = typeof extraData.session_token === 'string' && extraData.session_token
+        ? { address, httpPort, sessionToken: extraData.session_token } : null;
+    if (session && isRejectedSession(session)) {
+        if (operation === 'validate_session') {
+            return { status: 'ok', data: { session_valid: false } } as unknown as ControllerApiResponse<T>;
+        }
+        reportSessionInvalidation(session);
+        throw new ControllerApiError('Owner session is invalid.', { code: 'UNAUTHENTICATED' });
+    }
     const url = `http://${address}:${httpPort}${CONTROLLER_API_PATH}`;
     const requestId = `prakiva-${Date.now()}-${++requestSequence}`;
 
@@ -306,9 +316,12 @@ export async function controllerRequest<T extends Record<string, unknown> = Reco
 
     if (response.status < 200 || response.status >= 300) {
         const body = decodeResponse(response.data);
-        const detail = isRecord(body) ? describeProtocolError(body).message : JSON.stringify(body);
+        const protocolError = isRecord(body) ? describeProtocolError(body) : undefined;
+        const detail = protocolError?.message ?? JSON.stringify(body);
+        if (session && protocolError?.code === 'UNAUTHENTICATED') reportSessionInvalidation(session);
         throw new ControllerApiError(`Controller returned HTTP ${response.status}: ${detail}`, {
             httpStatus: response.status,
+            code: protocolError?.code,
         });
     }
 
@@ -318,7 +331,9 @@ export async function controllerRequest<T extends Record<string, unknown> = Reco
     }
 
     if (decoded.status !== 'ok') {
-        throw describeProtocolError(decoded);
+        const error = describeProtocolError(decoded);
+        if (session && error.code === 'UNAUTHENTICATED') reportSessionInvalidation(session);
+        throw error;
     }
     if (!isRecord(decoded.data)) {
         throw new ControllerApiError('Controller returned a response without a valid data object.');

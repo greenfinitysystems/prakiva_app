@@ -52,7 +52,10 @@ const SystemTimingPage: React.FC = () => {
     useEffect(() => { active.current = true; return () => { active.current = false; }; }, []);
     const minHttp = timing?.remote_interval_minimum_seconds ?? 1;
     const maxHttp = timing?.remote_interval_maximum_seconds ?? 3600;
-    const valid = timing !== null && Number.isInteger(draft.cycle) && draft.cycle >= timing.minimum_seconds && draft.cycle <= timing.maximum_seconds &&
+    const minCycle = Math.max(1, timing?.minimum_seconds ?? 1);
+    const maxCycle = Math.min(60, timing?.maximum_seconds ?? 60);
+    const validCycle = Number.isInteger(draft.cycle) && draft.cycle >= minCycle && draft.cycle <= maxCycle;
+    const valid = timing !== null && validCycle &&
         Number.isInteger(draft.sensor) && draft.sensor >= minHttp && draft.sensor <= maxHttp &&
         Number.isInteger(draft.actuator) && draft.actuator >= minHttp && draft.actuator <= maxHttp;
     const leave = () => { setLeaveOpen(false); navigate('/controller-dashboard', { state: { controller } }); };
@@ -85,11 +88,9 @@ const SystemTimingPage: React.FC = () => {
             {!timing && !error && <IonSpinner />}
             {timing && <>
                 <IonText color="medium"><p>These settings apply directly to the controller and are independent of Controls Configuration.</p></IonText>
-                <IonItem><IonLabel position="stacked">Controller cycle (seconds)</IonLabel><IonInput type="number" min={String(timing.minimum_seconds)} max={String(timing.maximum_seconds)} step="1" value={draft.cycle} onIonInput={e => setDraft(p => ({ ...p, cycle: Number(e.detail.value) }))}/></IonItem>
-                <IonText color="medium"><p>Allowed: {timing.minimum_seconds}–{timing.maximum_seconds} seconds.</p></IonText>
-                <IonItem><IonLabel position="stacked">Remote sensor polling interval (seconds)</IonLabel><IonInput type="number" min={String(minHttp)} max={String(maxHttp)} step="1" value={draft.sensor} onIonInput={e => setDraft(p => ({ ...p, sensor: Number(e.detail.value) }))}/></IonItem>
-                <IonItem><IonLabel position="stacked">Remote actuator minimum dispatch spacing (seconds)</IonLabel><IonInput type="number" min={String(minHttp)} max={String(maxHttp)} step="1" value={draft.actuator} onIonInput={e => setDraft(p => ({ ...p, actuator: Number(e.detail.value) }))}/></IonItem>
-                <IonText color="medium"><p>Remote HTTP interval range: {minHttp}–{maxHttp} seconds.</p></IonText>
+                <IonItem><IonLabel position="stacked">Controller cycle ({minCycle}–{maxCycle}s)</IonLabel><IonInput type="number" min={String(minCycle)} max={String(maxCycle)} step="1" value={draft.cycle} onIonInput={e => setDraft(p => ({ ...p, cycle: Number(e.detail.value) }))}/></IonItem>
+                <IonItem><IonLabel position="stacked">Remote sensor polling interval ({minHttp}–{maxHttp}s)</IonLabel><IonInput type="number" min={String(minHttp)} max={String(maxHttp)} step="1" value={draft.sensor} onIonInput={e => setDraft(p => ({ ...p, sensor: Number(e.detail.value) }))}/></IonItem>
+                <IonItem><IonLabel position="stacked">Remote actuator minimum dispatch spacing ({minHttp}–{maxHttp}s)</IonLabel><IonInput type="number" min={String(minHttp)} max={String(maxHttp)} step="1" value={draft.actuator} onIonInput={e => setDraft(p => ({ ...p, actuator: Number(e.detail.value) }))}/></IonItem>
                 <IonButton expand="block" disabled={!dirty || !valid || busy} onClick={() => void apply(false)}>{busy ? 'Applying…' : 'Apply'}</IonButton>
             </>}
             {notice && <IonText color="success"><p>{notice}</p></IonText>}
@@ -98,7 +99,7 @@ const SystemTimingPage: React.FC = () => {
         <IonAlert isOpen={leaveOpen} onDidDismiss={() => setLeaveOpen(false)} header="Unsaved system timing" message="Apply the changes before leaving?" buttons={[
             { text: 'Continue Editing', role: 'cancel' },
             { text: 'Discard & Leave', role: 'destructive', handler: leave },
-            { text: 'Apply & Leave', handler: () => { void apply(true); } },
+            ...(valid ? [{ text: 'Apply & Leave', handler: () => { void apply(true); } }] : []),
         ]}/>
     </IonPage>;
 };

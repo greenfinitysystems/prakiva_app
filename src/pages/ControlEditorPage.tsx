@@ -15,9 +15,11 @@ import type { ControlProfile } from '../models/control-profile';
 import InlineChannelEditor from '../components/control-editors/InlineChannelEditor';
 import FixedValueKnob from '../components/control-editors/FixedValueKnob';
 import { validateTriggerRangeConfiguration } from '../config/trigger-validation';
-import { validateThresholdConfigurations } from '../config/threshold-validation';
+import { configuredThresholdSensors, validateThresholdConfigurations } from '../config/threshold-validation';
+import type { VirtualSensorDeclaration } from '../services/controller-api';
+import { VirtualSensorConfigurationStore } from '../services/virtual-sensor-configuration-store';
 import '../theme/skins/default/styles/pages/ControlEditorPage.css';
-interface RouteState { controller?: SavedController; capabilities?: ControllerCapability[]; capability?: ControllerCapability; policy?: ControlPolicy; channel?: CapabilityChannel }
+interface RouteState { virtualDeclarations?: VirtualSensorDeclaration[]; controller?: SavedController; capabilities?: ControllerCapability[]; capability?: ControllerCapability; policy?: ControlPolicy; channel?: CapabilityChannel }
 const palette = ['#d1d5db', '#ef4444', '#22c55e', '#3b82f6', '#eab308', '#a855f7', '#06b6d4', '#f97316'];
 const BINARY_AXIS: CurveAxis = { label: 'Output state', min: 0, max: 1, ticks: [0, 1], formatTick: value => value >= 0.5 ? 'ON' : 'OFF' };
 const X_AXIS: CurveAxis = { label: 'Time of day', min: 0, max: 24, unit: 'hours', ticks: [0, 3, 6, 9, 12, 15, 18, 21, 24], formatTick: v => `${String(v === 24 ? 0 : v).padStart(2, '0')}:00` };
@@ -70,6 +72,7 @@ const ControlEditorPage: React.FC = () => {
         return getActuatorExecutionState(controller.address, controller.httpPort, session.sessionToken, capabilityId, channelId);
     };
     const availableCapabilities = route?.capabilities ?? (route?.capability ? [route.capability] : []);
+    const thresholdSensors = configuredThresholdSensors(ControlConfigurationStore.load(), availableCapabilities, route?.virtualDeclarations ?? [], controller ? VirtualSensorConfigurationStore.getAll(controller.deviceId) : {});
     const parent = availableCapabilities.find(c => c.id === capabilityId);
     const channelId = search.get('channel');
     const selectedChannel = route?.channel ?? parent?.channels.find(c => c.id === channelId);
@@ -332,7 +335,7 @@ const ControlEditorPage: React.FC = () => {
                 setLeaveError(validateTriggerRangeConfiguration(invalidTrigger[1]).message ?? 'Correct the trigger range before saving.');
                 return false;
             }
-            const thresholdError = validateThresholdConfigurations(ControlConfigurationStore.load());
+            const thresholdError = validateThresholdConfigurations(ControlConfigurationStore.load(), thresholdSensors);
             if (thresholdError) { setLeaveError(thresholdError); return false; }
             ControlConfigurationStore.save();
             if (route?.controller?.deviceId) markLocalConfigurationPending(route.controller.deviceId);
@@ -441,7 +444,7 @@ const ControlEditorPage: React.FC = () => {
             return <IonCard key={c.id}><IonCardContent>
                 <h2>{c.label}</h2>
                 <IonNote>{policy ? POLICY_LABELS[policy] : 'No control surface assigned in Control Settings'}</IonNote>
-                {policy && policy !== 'periodic_pulse' && <InlineChannelEditor capabilities={availableCapabilities} currentTime={aquariumTime} capabilityId={capability.id} channelId={c.id} channelLabel={c.label} policy={policy} unit={c.unit} min={c.min} max={c.max} value={inlineConfigs[c.id]} onChange={value => setInlineConfigs(current => { const next = { ...current, [c.id]: value }; ControlConfigurationStore.saveInlineConfigurations(capability.id, next); return next; })} />}
+                {policy && policy !== 'periodic_pulse' && <InlineChannelEditor capabilities={policy === 'threshold_rules' ? thresholdSensors : availableCapabilities} currentTime={aquariumTime} capabilityId={capability.id} channelId={c.id} channelLabel={c.label} policy={policy} unit={c.unit} min={c.min} max={c.max} value={inlineConfigs[c.id]} onChange={value => setInlineConfigs(current => { const next = { ...current, [c.id]: value }; ControlConfigurationStore.saveInlineConfigurations(capability.id, next); return next; })} />}
             </IonCardContent></IonCard>;
         })}
         {triggerChannels.map(c => <IonCard key={c.id}><IonCardContent>

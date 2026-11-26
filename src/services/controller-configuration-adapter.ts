@@ -5,7 +5,7 @@ import { ActuationMethodStore } from './actuation-method-store';
 import { RemoteActuatorConfigurationStore } from './remote-actuator-configuration-store';
 import { VirtualSensorConfigurationStore } from './virtual-sensor-configuration-store';
 import { validateTriggerConfigurations } from '../config/trigger-validation';
-import { validateThresholdConfigurations } from '../config/threshold-validation';
+import { configuredThresholdSensors, validateThresholdConfigurations } from '../config/threshold-validation';
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
     typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -45,6 +45,8 @@ export async function applyAppConfigurationToController(
     // locally saved drafts into the existing firmware document without
     // overwriting unrelated virtual sensors or firmware-owned sections.
     const localVirtualSensors = VirtualSensorConfigurationStore.getAll(controller.deviceId);
+    const eligibilityError = validateThresholdConfigurations(appDocument, configuredThresholdSensors(appDocument, discovery.capabilities, discovery.virtual_sensors ?? [], localVirtualSensors));
+    if (eligibilityError) throw new Error(`Invalid threshold configuration: ${eligibilityError}`);
     const existingVirtualSensors = isRecord(existing.virtual_sensors) ? existing.virtual_sensors : {};
     const mergedVirtualSensors: Record<string, unknown> = Object.fromEntries(Object.entries(existingVirtualSensors).filter(([id]) => validVirtualIds.has(id)));
     for (const [componentId, localEntry] of Object.entries(localVirtualSensors)) {

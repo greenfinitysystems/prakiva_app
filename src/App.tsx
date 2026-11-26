@@ -4,6 +4,8 @@ import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 
 import Home from './pages/Home';
+import ControllerSessionGuard from './components/ControllerSessionGuard';
+import ApplicationAbout from './pages/ApplicationAbout';
 import Settings from './pages/Settings';
 import ControllerInfo from './pages/ControllerInfo';
 import WifiConfiguration from './pages/WifiConfiguration';
@@ -63,8 +65,10 @@ const App: React.FC = () => {
     return (
         <IonApp>
             <IonReactRouter>
+                <ControllerSessionGuard />
                 <IonRouterOutlet>
                     <Route path="/home" element={<Home />} />
+                    <Route path="/application-about" element={<ApplicationAbout />} />
                     <Route path="/settings" element={<Settings />} />
                     <Route path="/controller-info" element={<ControllerInfo />} />
                     <Route path="/controller-network-alerts" element={<ControllerNetworkAlerts />} />

@@ -8,6 +8,13 @@ export interface ControllerSession {
 
 const keyFor = (deviceId: string) => `prakiva.session.v1.${deviceId}`;
 
+let mutationQueue: Promise<unknown> = Promise.resolve();
+function mutate<T>(operation: () => Promise<T>): Promise<T> {
+    const result = mutationQueue.then(operation);
+    mutationQueue = result.catch(() => {});
+    return result;
+}
+
 export class ControllerSessionStore {
     static async load(deviceId: string): Promise<ControllerSession | null> {
         const { value } = await Preferences.get({ key: keyFor(deviceId) });
@@ -25,10 +32,19 @@ export class ControllerSessionStore {
     }
 
     static async save(session: ControllerSession): Promise<void> {
-        await Preferences.set({ key: keyFor(session.deviceId), value: JSON.stringify(session) });
+        await mutate(() => Preferences.set({ key: keyFor(session.deviceId), value: JSON.stringify(session) }));
+    }
+
+    static async clearIfMatching(deviceId: string, sessionToken: string): Promise<boolean> {
+        return mutate(async () => {
+            const session = await this.load(deviceId);
+            if (session?.sessionToken !== sessionToken) return false;
+            await Preferences.remove({ key: keyFor(deviceId) });
+            return true;
+        });
     }
 
     static async clear(deviceId: string): Promise<void> {
-        await Preferences.remove({ key: keyFor(deviceId) });
+        await mutate(() => Preferences.remove({ key: keyFor(deviceId) }));
     }
 }

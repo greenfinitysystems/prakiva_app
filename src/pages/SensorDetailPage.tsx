@@ -30,6 +30,7 @@ const POLL_INTERVAL_MS = 2000;
 const STALE_AFTER_SECONDS = 15;
 const HISTORY_REFRESH_INTERVAL_MS = 30000;
 const HISTORY_POINT_LIMIT = 288;
+const INITIAL_HISTORY_DELAY_MS = 250;
 
 const SensorDetailPage: React.FC = () => {
     const { capabilityId = '', channelId = '' } = useParams<{ capabilityId: string; channelId: string }>();
@@ -99,6 +100,10 @@ const SensorDetailPage: React.FC = () => {
 
         let active = true;
         let inFlight = false;
+        let historyInFlight = false;
+        let historyStartTimer: number | undefined;
+        let historyTimer: number | undefined;
+        let historyScheduled = false;
         const poll = async () => {
             if (!active || inFlight) return;
             inFlight = true;
@@ -110,6 +115,11 @@ const SensorDetailPage: React.FC = () => {
                     capability.id,
                     channel.id,
                 );
+                if (!active) return;
+                // Publish the live reading before requesting optional calibration data.
+                setCalibrationReadings(null);
+                setReading({ result, receivedAt: Date.now() });
+                setPageError('');
                 // The calibration endpoint returns raw and corrected values from the
                 // controller's acquisition snapshot. Do not infer raw from corrected.
                 // On older firmware / unsupported sensors, retain the original gauge.
@@ -129,8 +139,7 @@ const SensorDetailPage: React.FC = () => {
                 }
                 if (active) {
                     setCalibrationReadings(pair);
-                    setReading({ result, receivedAt: Date.now() });
-                    setPageError('');
+
                 }
             } catch (error) {
                 if (active) {
@@ -140,28 +149,21 @@ const SensorDetailPage: React.FC = () => {
                 }
             } finally {
                 inFlight = false;
+                // History must not compete with the initial measurement request.
+                // Start even after a failed read so history remains accessible.
+                if (active && !historyScheduled) {
+                    historyScheduled = true;
+                    historyStartTimer = window.setTimeout(() => {
+                        void loadHistory();
+                        historyTimer = window.setInterval(() => { void loadHistory(); }, HISTORY_REFRESH_INTERVAL_MS);
+                    }, INITIAL_HISTORY_DELAY_MS);
+                }
             }
         };
 
-        setReading(null);
-        setCalibrationReadings(null);
-        void poll();
-        const timer = window.setInterval(() => { void poll(); }, POLL_INTERVAL_MS);
-        return () => {
-            active = false;
-            window.clearInterval(timer);
-        };
-    }, [location.pathname, capabilityId, channelId, controller, capability, channel, sessionToken, widget]);
-
-    useEffect(() => {
-        if (location.pathname !== `/sensor-detail/${encodeURIComponent(capabilityId)}/${encodeURIComponent(channelId)}` ||
-            !controller || !capability || !channel || !sessionToken || widget === 'none') return;
-
-        let active = true;
-        let inFlight = false;
         const loadHistory = async () => {
-            if (!active || inFlight) return;
-            inFlight = true;
+            if (!active || historyInFlight) return;
+            historyInFlight = true;
             setHistoryLoading(true);
             try {
                 const result = await getSensorHistory(
@@ -179,18 +181,23 @@ const SensorDetailPage: React.FC = () => {
             } catch (error) {
                 if (active) setHistoryError(error instanceof Error ? error.message : 'Could not load sensor history.');
             } finally {
-                inFlight = false;
+                historyInFlight = false;
                 if (active) setHistoryLoading(false);
             }
         };
 
+        setReading(null);
+        setCalibrationReadings(null);
         setHistoryPoints([]);
         setHistoryError('');
-        void loadHistory();
-        const timer = window.setInterval(() => { void loadHistory(); }, HISTORY_REFRESH_INTERVAL_MS);
+        setHistoryLoading(true);
+        void poll();
+        const timer = window.setInterval(() => { void poll(); }, POLL_INTERVAL_MS);
         return () => {
             active = false;
             window.clearInterval(timer);
+            if (historyStartTimer !== undefined) window.clearTimeout(historyStartTimer);
+            if (historyTimer !== undefined) window.clearInterval(historyTimer);
         };
     }, [location.pathname, capabilityId, channelId, controller, capability, channel, sessionToken, widget]);
 

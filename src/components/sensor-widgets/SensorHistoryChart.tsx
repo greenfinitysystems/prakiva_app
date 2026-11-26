@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { SensorHistoryControls } from './SensorHistoryControls';
 import { HISTORY_RANGES, type HistoryRange } from './SensorHistoryRanges';
 import { PanelFasteners } from './PanelFasteners';
-import { IonCard, IonCardContent, IonText } from '@ionic/react';
+import { IonCard, IonCardContent, IonSpinner, IonText } from '@ionic/react';
 import type { SensorHistoryPoint } from '../../services/capability-operations';
 import '../../theme/skins/default/styles/components/sensor-widgets/sensor-widgets.css';
 
@@ -77,6 +77,8 @@ const SensorHistoryChart: React.FC<SensorHistoryChartProps> = ({
         return { segments, yTicks, xIndices, x, y, scale };
     }, [visiblePoints, min, max]);
 
+    const initialLoading = loading && points.length === 0 && !error;
+
     return <>
     <IonCard className="sensor-history-card sensor-fastened-panel">
         <PanelFasteners />
@@ -97,6 +99,12 @@ const SensorHistoryChart: React.FC<SensorHistoryChartProps> = ({
             {!loading && !error && !points.length && <div className="sensor-history-message">No history is available yet.</div>}
             {!loading && !error && points.length > 0 && !visiblePoints.length && <div className="sensor-history-message">No measurements in the selected time range.</div>}
             <div className="sensor-history-chart-wrap">
+                {initialLoading ? (
+                    <div className="sensor-history-loading" role="status">
+                        <IonSpinner name="crescent" aria-hidden="true" />
+                        <span>Loading sensor history…</span>
+                    </div>
+                ) : (
                 <svg className="sensor-history-chart" viewBox={`0 0 ${WIDTH} ${HEIGHT}`} role="img" aria-label={`${title} history chart`}>
                     <defs>
                         <linearGradient id="sensor-history-area" x1="0" y1="0" x2="0" y2="1">
@@ -125,6 +133,7 @@ const SensorHistoryChart: React.FC<SensorHistoryChartProps> = ({
                     })}
                     {unit && <text x={PLOT.left} y={12} className="sensor-history-unit">{unit}</text>}
                 </svg>
+                )}
             </div>
         </IonCardContent>
     </IonCard>
