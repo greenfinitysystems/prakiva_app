@@ -647,3 +647,13 @@ export async function setScheduleOffset(
     return validateTimeStatus(response.data);
 }
 
+
+/** Change the owner password using the current authenticated session. Never retry automatically. */
+export async function changeOwnerPassword(controller: SavedController, sessionToken: string, currentPassword: string, newPassword: string): Promise<void> {
+    const response = await controllerRequest(controller.address, controller.httpPort, 'change_owner_password', {
+        session_token: sessionToken, current_password: currentPassword, new_password: newPassword,
+    });
+    if (response.data.device_id !== controller.deviceId || response.data.password_changed !== true || response.data.session_valid !== false) {
+        throw new ControllerApiError('Password change acknowledgement could not be verified.');
+    }
+}

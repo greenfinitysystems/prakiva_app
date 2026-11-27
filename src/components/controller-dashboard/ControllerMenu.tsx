@@ -8,6 +8,7 @@ import {
 } from '@ionic/react';
 import {
     archiveOutline,
+    lockClosedOutline,
     cloudUploadOutline,
     informationCircleOutline,
     logOutOutline,
@@ -33,6 +34,7 @@ interface ControllerMenuProps {
     onDiagnostics: () => void;
     onApply: () => void;
     onBackupRestore: () => void;
+    onChangePassword?: () => void;
     onLogout: () => void;
 }
 
@@ -55,6 +57,7 @@ const ControllerMenu: FC<ControllerMenuProps> = ({
     onDiagnostics,
     onApply,
     onBackupRestore,
+    onChangePassword,
     onLogout,
 }) => (
     <IonPopover
@@ -92,6 +95,7 @@ const ControllerMenu: FC<ControllerMenuProps> = ({
                 <IonIcon slot="start" icon={cloudUploadOutline} color={applyStatusColor} />
                 <IonLabel>Apply Configuration</IonLabel>
             </IonItem>
+            {onChangePassword && <IonItem button onClick={onChangePassword}><IonIcon slot="start" icon={lockClosedOutline}/><IonLabel>Change Password</IonLabel></IonItem>}
             <IonItem button disabled={loggingOut} onClick={onLogout}>
                 <IonIcon slot="start" icon={logOutOutline} />
                 <IonLabel>{loggingOut ? 'Logging out…' : 'Logout'}</IonLabel>

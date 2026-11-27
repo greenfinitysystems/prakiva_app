@@ -47,6 +47,7 @@ const ControllerDashboard: React.FC = () => {
         () => (location.state as DashboardState | null)?.controller,
         [location.state],
     );
+    const [passwordChangeSupported, setPasswordChangeSupported] = useState(false);
     const [checking, setChecking] = useState(true);
     const [error, setError] = useState('');
     const [sessionToken, setSessionToken] = useState('');
@@ -274,6 +275,7 @@ const ControllerDashboard: React.FC = () => {
                 if (snapshot && active) {
                     setControllerCapabilities(snapshot.capabilities.capabilities);
                     setCapabilities(snapshot.capabilities.capabilities);
+                    setPasswordChangeSupported(snapshot.capabilities.operations?.change_owner_password === true);
                     setVirtualDeclarations(snapshot.capabilities.virtual_sensors ?? []);
                     const exists = snapshot.configuration.configuration_exists;
                     const unixTimestamp = snapshot.configuration.configuration_timestamp;
@@ -292,6 +294,7 @@ const ControllerDashboard: React.FC = () => {
                     }
                 } else {
                     setCapabilities([]);
+                    setPasswordChangeSupported(false);
                     setVirtualDeclarations([]);
                     setError('Your controller information isn’t available right now. Please sign in again to reconnect.');
                     setApplyRecord(getControllerSyncRecord(controller.deviceId));
@@ -411,6 +414,7 @@ const ControllerDashboard: React.FC = () => {
                 requestLeave(() => navigate('/controller-info', { state: { controller } }));
             }}
             onBackupRestore={() => { setMenuOpen(false); requestLeave(() => navigate('/controller-backup-restore', { state: { controller } })); }}
+            onChangePassword={passwordChangeSupported && !checking ? () => { setMenuOpen(false); requestLeave(() => navigate('/controller-change-password', { state: { controller } })); } : undefined}
             onApply={openApplyAction}
             onLogout={() => {
                 setMenuOpen(false);

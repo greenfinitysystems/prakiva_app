@@ -5,7 +5,7 @@ import { ControllerSessionStore } from '../services/controller-session-store';
 import { subscribeSessionInvalidation } from '../services/controller-session-events';
 
 const protectedPaths = new Set([
-    '/controller-dashboard', '/controller-info', '/controller-network-alerts',
+    '/controller-change-password', '/controller-dashboard', '/controller-info', '/controller-network-alerts',
     '/controller-diagnostics', '/controller-backup-restore', '/wifi-configuration',
     '/time-configuration', '/system-timing', '/controls-configuration',
 ]);

@@ -1,3 +1,4 @@
+import { ControllerBiometricVault } from './controller-biometric-vault';
 import { Preferences } from '@capacitor/preferences';
 import { isSavedController, type SavedController } from '../models/saved-controller';
 
@@ -31,6 +32,7 @@ export class ControllerStore {
     }
 
     static async remove(deviceId: string): Promise<SavedController[]> {
+        await ControllerBiometricVault.remove(deviceId);
         const controllers = (await this.loadAll()).filter((item) => item.deviceId !== deviceId);
         await Preferences.set({ key: STORAGE_KEY, value: JSON.stringify(controllers) });
         return controllers;

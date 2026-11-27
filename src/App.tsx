@@ -14,6 +14,7 @@ import ControllerDiscovery from './pages/ControllerDiscovery';
 import ControllerDetails from './pages/ControllerDetails';
 import ControllerSetup from './pages/ControllerSetup';
 import ControllerClaim from './pages/ControllerClaim';
+import ControllerChangePassword from './pages/ControllerChangePassword';
 import ControllerLogin from './pages/ControllerLogin';
 import ControllerReset from './pages/ControllerReset';
 import ControllerDashboard from './pages/ControllerDashboard';
@@ -80,6 +81,7 @@ const App: React.FC = () => {
                     <Route path="/controller-details" element={<ControllerDetails />} />
                     <Route path="/controller-setup" element={<ControllerSetup />} />
                     <Route path="/controller-claim" element={<ControllerClaim />} />
+                    <Route path="/controller-change-password" element={<ControllerChangePassword />} />
                     <Route path="/controller-login" element={<ControllerLogin />} />
                     <Route path="/controller-reset" element={<ControllerReset />} />
                     <Route path="/controller-dashboard" element={<ControllerDashboard />} />

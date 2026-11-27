@@ -1,3 +1,4 @@
+import { ControllerBiometricVault } from '../services/controller-biometric-vault';
 import { useState } from 'react';
 import { IonAlert, IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonLoading, IonSpinner, IonPage, IonText, IonTitle, IonToolbar } from '@ionic/react';
 import { arrowBack, cloudDownloadOutline, cloudUploadOutline, powerOutline, trashOutline, refreshOutline } from 'ionicons/icons';
@@ -122,6 +123,7 @@ const ControllerBackupRestore: React.FC = () => {
             // The controller is about to erase its credentials and stored configuration.
             // Remove device-scoped app caches; retain the saved controller record for discovery.
             await ControllerSessionStore.clear(controller.deviceId);
+            await ControllerBiometricVault.remove(controller.deviceId).catch(() => { console.warn('[Prakiva] Could not clear biometric credentials after confirmed reset.'); });
             await ControllerSynchronizationStore.clear(controller.deviceId);
             const suffix = controller.deviceId;
             for (let index = localStorage.length - 1; index >= 0; index--) {

@@ -1,3 +1,4 @@
+import { ControllerBiometricVault } from '../services/controller-biometric-vault';
 import { useState } from 'react';
 import {
     IonAlert, IonBackButton, IonButton, IonButtons, IonCard, IonCardContent,
@@ -54,6 +55,7 @@ const ControllerReset: React.FC = () => {
             }
 
             await ControllerSessionStore.clear(controller.deviceId);
+            await ControllerBiometricVault.remove(controller.deviceId).catch(() => { setError('Reset confirmed, but biometric credentials could not be removed. Disable biometric login before re-enrolling.'); });
             setSuccess(true);
             setPin('');
         } catch (e) {

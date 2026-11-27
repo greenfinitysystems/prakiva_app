@@ -6,6 +6,7 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(PrakivaDocumentSaverPlugin.class);
+        registerPlugin(PrakivaBiometricVaultPlugin.class);
         super.onCreate(savedInstanceState);
     }
 }
